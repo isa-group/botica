@@ -1,4 +1,8 @@
 /.vscode/
-/target/
+
 /restest.jar
+
 **/.DS_Store
+
+/target
+/src/main/resources/Examples/Ex1_RandomGeneration/test_cases/

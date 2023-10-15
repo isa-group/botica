@@ -18,8 +18,8 @@ public class RabbitMQManager {
         this.queueName = queueName;
         factory = new ConnectionFactory();
 
-        factory.setUsername(username != null ? username : "guest");
-        factory.setPassword(password != null ? password : "guest");
+        factory.setUsername(username != null ? username : "admin");
+        factory.setPassword(password != null ? password : "testing1");
         factory.setVirtualHost(virtualHost != null ? virtualHost : "/");
         factory.setHost(host != null ? host : "localhost");
         factory.setPort(port != 0 ? port : 5672);
@@ -38,7 +38,16 @@ public class RabbitMQManager {
 
     public void sendMessage(String message) throws IOException {
         try{
-            channel.basicPublish("", queueName, null, message.getBytes());
+            channel.basicPublish("restest_exchange", queueName, null, message.getBytes());
+        } catch (Exception e) {
+            System.out.println("Error sending message to RabbitMQ");
+            e.printStackTrace();
+        }
+    }
+
+    public void sendMessageToExchange(String routingKey, String message) throws IOException {
+        try{
+            channel.basicPublish("restest_exchange", routingKey, null, message.getBytes());
         } catch (Exception e) {
             System.out.println("Error sending message to RabbitMQ");
             e.printStackTrace();
