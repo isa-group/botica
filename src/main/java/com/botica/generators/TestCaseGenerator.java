@@ -3,14 +3,14 @@ package com.botica.generators;
 import java.util.Collection;
 
 import com.botica.RabbitMQManager;
-import com.botica.interfaces.GeneratorInterface;
+import com.botica.interfaces.TestCaseGeneratorInterface;
 
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 
-public class TestCaseGenerator implements GeneratorInterface {
+public class TestCaseGenerator implements TestCaseGeneratorInterface {
 
     private AbstractTestCaseGenerator testCaseGenerator;
     private RESTestLoader loader;
