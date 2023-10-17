@@ -15,19 +15,10 @@
 
     <dependencies>
         <!-- https://mvnrepository.com/artifact/es.us.isa/restest -->
-        <!-- <dependency>
-            <groupId>es.us.isa</groupId>
-            <artifactId>restest</artifactId>
-            <version>1.2.0</version>
-        </dependency> -->
-
-        <!-- Add as dependency the restest.jar that is in the root directory -->
         <dependency>
             <groupId>es.us.isa</groupId>
             <artifactId>restest</artifactId>
             <version>1.3.0</version>
-            <scope>system</scope>
-            <systemPath>${basedir}/restest.jar</systemPath>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->

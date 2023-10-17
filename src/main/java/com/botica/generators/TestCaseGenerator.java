@@ -14,7 +14,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
 
     private AbstractTestCaseGenerator testCaseGenerator;
     private RESTestLoader loader;
-    private RabbitMQManager messageSender = new RabbitMQManager("", "admin", "testing1", "/", "localhost", 5672);;
+    private RabbitMQManager messageSender = new RabbitMQManager("", "admin", "testing1", "/", "localhost", 5672);
 
     public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader) {
         this.testCaseGenerator = testCaseGenerator;
@@ -37,7 +37,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
 
         try{
             messageSender.connect();
-            messageSender.sendMessageToExchange(message, "testCasesGenerated");
+            messageSender.sendMessageToExchange("testCasesGenerated", message);
             System.out.println("Message sent to RabbitMQ");
             System.out.println(message);
             messageSender.close();
