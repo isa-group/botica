@@ -28,18 +28,18 @@ public class TestCaseGeneratorLauncher {
 
     private RabbitMQManager messageSender = new RabbitMQManager("testCaseGenerator", "admin", "testing1", "/", "localhost", 5672);
 
-    public void launchTestCases(String propertyFilePath) {
+    public void launchTestCases(String propertyFilePath, String botId) {
         try {
             this.PROPERTY_FILE_PATH = propertyFilePath;
             messageSender.connect();
             System.out.println("Connected to RabbitMQ");
-            messageSender.receiveMessage(PROPERTY_FILE_PATH, "testCaseGenerator");
+            messageSender.receiveMessage(PROPERTY_FILE_PATH, botId, "testCaseGenerator");
         }catch (Exception e){
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
 
-    public static void generateTestCases(String propertyFilePath) {
+    public static void generateTestCases(String propertyFilePath, String botId) {
         try {
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
@@ -64,7 +64,7 @@ public class TestCaseGeneratorLauncher {
                     throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
             }
 
-            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader);
+            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId);
 
             Collection<TestCase> testCases = testGenerator.generate();
 

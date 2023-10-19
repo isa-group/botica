@@ -14,11 +14,13 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
 
     private AbstractTestCaseGenerator testCaseGenerator;
     private RESTestLoader loader;
+    private String botId;
     private RabbitMQManager messageSender = new RabbitMQManager("", "admin", "testing1", "/", "localhost", 5672);
 
-    public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader) {
+    public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader, String botId) {
         this.testCaseGenerator = testCaseGenerator;
         this.loader = loader;
+        this.botId = botId;
     }
 
     @Override
@@ -33,7 +35,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         String getAllureReportsPath = loader.getAllureReportsPath();
         String getExperimentName = loader.getExperimentName();
 
-        String message = "{\"faultyRatio\":" + faultyRatio + ",\"nTotalFaulty\":" + nTotalFaulty + ",\"nTotalNominal\":" + nTotalNominal + ",\"maxTriesPerTestCase\":" + maxTriesPerTestCase + ",\"targetDirJava\":\"" + targetDirJava + "\",\"getAllureReportsPath\":\"" + getAllureReportsPath + "\",\"getExperimentName\":\"" + getExperimentName + "\"}";
+        String message = "{\"botId\":" + this.botId + ",\"faultyRatio\":" + faultyRatio + ",\"nTotalFaulty\":" + nTotalFaulty + ",\"nTotalNominal\":" + nTotalNominal + ",\"maxTriesPerTestCase\":" + maxTriesPerTestCase + ",\"targetDirJava\":\"" + targetDirJava + "\",\"getAllureReportsPath\":\"" + getAllureReportsPath + "\",\"getExperimentName\":\"" + getExperimentName + "\"}";
 
         try{
             messageSender.connect();

@@ -90,14 +90,14 @@ public class RabbitMQManager {
         }
     }
 
-    public void receiveMessage(String propertyFilePath, String bot_type) throws IOException {
+    public void receiveMessage(String propertyFilePath, String botId, String botType) throws IOException {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
             System.out.println(" [x] Received '" +
                 delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
-            if (bot_type.equals("testCaseGenerator")) {
-                if (message.contains("generateTestCases")) {
-                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath);
+            if (botType.equals("testCaseGenerator")) {
+                if (message.contains("generateTestCases") && message.contains(botId)) {
+                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId);
                 }
             }
         };
