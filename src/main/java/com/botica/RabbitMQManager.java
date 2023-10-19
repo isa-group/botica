@@ -1,10 +1,12 @@
 package com.botica;
 
 import com.rabbitmq.client.Connection;
-import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+
+import com.botica.launchers.TestCaseGeneratorLauncher;
+import com.botica.utils.JSON;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -12,9 +14,6 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.json.JSONObject;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 public class RabbitMQManager {
     private final ConnectionFactory factory;
@@ -35,7 +34,7 @@ public class RabbitMQManager {
 
         try {
             String json_path = "conf/server_config.json";
-            String json_content = readFileAsString(json_path);
+            String json_content = JSON.readFileAsString(json_path);
             JSONObject obj = new JSONObject(json_content);
 
             server_username = obj.getString("username");
@@ -107,11 +106,6 @@ public class RabbitMQManager {
     public void close() throws IOException, TimeoutException {
         channel.close();
         connection.close();
-    }
-
-    //JSON methods
-    public static String readFileAsString(String file) throws Exception {
-        return new String(Files.readAllBytes(Paths.get(file)));
     }
 
 }

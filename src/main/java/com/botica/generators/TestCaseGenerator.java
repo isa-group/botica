@@ -15,12 +15,14 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private AbstractTestCaseGenerator testCaseGenerator;
     private RESTestLoader loader;
     private String botId;
+    private String generatorType;
     private RabbitMQManager messageSender = new RabbitMQManager("", "admin", "testing1", "/", "localhost", 5672);
 
-    public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader, String botId) {
+    public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
         this.testCaseGenerator = testCaseGenerator;
         this.loader = loader;
         this.botId = botId;
+        this.generatorType = generatorType;
     }
 
     @Override
@@ -32,10 +34,10 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         int nTotalNominal = testCaseGenerator.getnNominal();
         int maxTriesPerTestCase = testCaseGenerator.getMaxTriesPerTestCase();
         String targetDirJava = loader.getTargetDirJava();
-        String getAllureReportsPath = loader.getAllureReportsPath();
-        String getExperimentName = loader.getExperimentName();
+        String allureReportsPath = loader.getAllureReportsPath();
+        String experimentName = loader.getExperimentName();
 
-        String message = "{\"botId\":" + this.botId + ",\"faultyRatio\":" + faultyRatio + ",\"nTotalFaulty\":" + nTotalFaulty + ",\"nTotalNominal\":" + nTotalNominal + ",\"maxTriesPerTestCase\":" + maxTriesPerTestCase + ",\"targetDirJava\":\"" + targetDirJava + "\",\"getAllureReportsPath\":\"" + getAllureReportsPath + "\",\"getExperimentName\":\"" + getExperimentName + "\"}";
+        String message = "{\"botId\":" + this.botId + ",\"generatorType\":" + generatorType + ",\"faultyRatio\":" + faultyRatio + ",\"nTotalFaulty\":" + nTotalFaulty + ",\"nTotalNominal\":" + nTotalNominal + ",\"maxTriesPerTestCase\":" + maxTriesPerTestCase + ",\"targetDirJava\":\"" + targetDirJava + "\",\"getAllureReportsPath\":\"" + allureReportsPath + "\",\"getExperimentName\":\"" + experimentName + "\"}";
 
         try{
             messageSender.connect();

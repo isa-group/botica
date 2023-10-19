@@ -43,11 +43,11 @@ public class TestCaseGeneratorLauncher {
         try {
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
-            String generator_type = PropertyManager.readProperty(propertyFilePath, "generator");
+            String generatorType = PropertyManager.readProperty(propertyFilePath, "generator");
 
             AbstractTestCaseGenerator generator = null;
 
-            switch (generator_type){
+            switch (generatorType){
                 case "FT":
                     generator = (FuzzingTestCaseGenerator) loader.createGenerator();
                     break;
@@ -64,7 +64,7 @@ public class TestCaseGeneratorLauncher {
                     throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
             }
 
-            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId);
+            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType);
 
             Collection<TestCase> testCases = testGenerator.generate();
 

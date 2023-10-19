@@ -8,7 +8,7 @@ import com.botica.utils.JSON;
 
 import es.us.isa.restest.util.RESTestException;
 
-public class TestCaseGeneration {
+public class TestCaseGeneration1 {
 
     public static final String PROPERTY_FILE_PATH="src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties";		// Path to user properties file with configuration options
     public static final String BOT_ID = "bot_1";
@@ -25,14 +25,13 @@ public class TestCaseGeneration {
 
             JSONArray testCaseGenerators = obj.getJSONArray("testCaseGenerator");
 
-            for(int i = 0; i < testCaseGenerators.length(); i++){
-                JSONObject array_object = testCaseGenerators.getJSONObject(i);
-                propertiesPath = array_object.getString("PROPERTY_FILE_PATH");
-                botId = array_object.getString("BOT_ID");
+            JSONObject array_object = testCaseGenerators.getJSONObject(0);
+            propertiesPath = array_object.getString("PROPERTY_FILE_PATH");
+            botId = array_object.getString("BOT_ID");
 
-                TestCaseGeneratorLauncher launcher = new TestCaseGeneratorLauncher();
-                launcher.launchTestCases(propertiesPath, botId);
-            }    
+            TestCaseGeneratorLauncher launcher = new TestCaseGeneratorLauncher();
+            launcher.launchTestCases(propertiesPath, botId);
+
         } catch (Exception e) {
             System.out.println("Error reading server_config.json");
             e.printStackTrace();
