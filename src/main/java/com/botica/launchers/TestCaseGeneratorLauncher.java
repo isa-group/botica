@@ -45,24 +45,7 @@ public class TestCaseGeneratorLauncher {
 
             String generatorType = PropertyManager.readProperty(propertyFilePath, "generator");
 
-            AbstractTestCaseGenerator generator = null;
-
-            switch (generatorType){
-                case "FT":
-                    generator = (FuzzingTestCaseGenerator) loader.createGenerator();
-                    break;
-                case "RT":
-                    generator = (RandomTestCaseGenerator) loader.createGenerator();
-                    break;
-                case "CBT":
-                    generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
-                    break;
-                case "ART":
-                    generator = (ARTestCaseGenerator) loader.createGenerator();
-                    break;
-                default:
-                    throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
-            }
+            AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
 
             TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType);
 
@@ -83,4 +66,27 @@ public class TestCaseGeneratorLauncher {
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
     }
+
+    private static AbstractTestCaseGenerator getGenerator(RESTestLoader loader, String generatorType) throws RESTestException {
+        AbstractTestCaseGenerator generator = null;
+
+        switch (generatorType){
+            case "FT":
+                generator = (FuzzingTestCaseGenerator) loader.createGenerator();
+                break;
+            case "RT":
+                generator = (RandomTestCaseGenerator) loader.createGenerator();
+                break;
+            case "CBT":
+                generator = (ConstraintBasedTestCaseGenerator) loader.createGenerator();
+                break;
+            case "ART":
+                generator = (ARTestCaseGenerator) loader.createGenerator();
+                break;
+            default:
+                throw new RESTestException("Property 'generator' must be one of 'FT', 'RT', 'CBT' or 'ART'");
+        }
+        return generator;
+    }
+
 }
