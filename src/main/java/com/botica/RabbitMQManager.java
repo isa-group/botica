@@ -28,26 +28,15 @@ public class RabbitMQManager {
     private int server_port;
     private String server_exchange;
 
+    public RabbitMQManager(String queueName){
+        this(queueName, null, null, null, null, 0);
+    }
+
     public RabbitMQManager(String queueName, String username, String password, String virtualHost, String host, int port) {
         this.queueName = queueName;
         factory = new ConnectionFactory();
 
-        try {
-            String json_path = "conf/server_config.json";
-            String json_content = JSON.readFileAsString(json_path);
-            JSONObject obj = new JSONObject(json_content);
-
-            server_username = obj.getString("username");
-            server_password = obj.getString("password");
-            server_virtualHost = obj.getString("virtualHost");
-            server_host = obj.getString("host");
-            server_port = obj.getInt("port");
-            server_exchange = obj.getString("exchange");
-            
-        } catch (Exception e) {
-            System.out.println("Error reading server_config.json");
-            e.printStackTrace();
-        }
+        loadServerConfig();
 
         factory.setUsername(username != null ? username : server_username);
         factory.setPassword(password != null ? password : server_password);
@@ -107,5 +96,24 @@ public class RabbitMQManager {
         channel.close();
         connection.close();
     }
+
+    private void loadServerConfig() {
+        try {
+            String json_path = "conf/server_config.json";
+            String json_content = JSON.readFileAsString(json_path);
+            JSONObject obj = new JSONObject(json_content);
+
+            server_username = obj.getString("username");
+            server_password = obj.getString("password");
+            server_virtualHost = obj.getString("virtualHost");
+            server_host = obj.getString("host");
+            server_port = obj.getInt("port");
+            server_exchange = obj.getString("exchange");
+
+        } catch (Exception e) {
+            System.out.println("Error reading server_config.json");
+            e.printStackTrace();
+        }
+    }    
 
 }

@@ -26,7 +26,7 @@ public class TestCaseGeneratorLauncher {
     public String PROPERTY_FILE_PATH = "";
     public static final Logger logger = Logger.getLogger(TestCaseGeneration.class.getName());
 
-    private RabbitMQManager messageSender = new RabbitMQManager("testCaseGenerator", "admin", "testing1", "/", "localhost", 5672);
+    private RabbitMQManager messageSender = new RabbitMQManager("testCaseGenerator");
 
     public void launchTestCases(String propertyFilePath, String botId) {
         try {

@@ -16,7 +16,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private RESTestLoader loader;
     private String botId;
     private String generatorType;
-    private RabbitMQManager messageSender = new RabbitMQManager("", "admin", "testing1", "/", "localhost", 5672);
+    private RabbitMQManager messageSender = new RabbitMQManager("");
 
     public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
         this.testCaseGenerator = testCaseGenerator;
