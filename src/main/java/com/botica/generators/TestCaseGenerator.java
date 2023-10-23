@@ -16,16 +16,16 @@ import es.us.isa.restest.util.RESTestException;
 
 public class TestCaseGenerator implements TestCaseGeneratorInterface {
 
-    private AbstractTestCaseGenerator testCaseGenerator;
+    private AbstractTestCaseGenerator absractTestCaseGenerator;
     private RESTestLoader loader;
     private String botId;
     private String generatorType;
-    private RabbitMQManager messageSender = new RabbitMQManager("");
+    private RabbitMQManager messageSender = new RabbitMQManager();
 
     private static Logger logger = LogManager.getLogger(TestCaseGenerator.class);
 
-    public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
-        this.testCaseGenerator = testCaseGenerator;
+    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
+        this.absractTestCaseGenerator = absractTestCaseGenerator;
         this.loader = loader;
         this.botId = botId;
         this.generatorType = generatorType;
@@ -33,12 +33,12 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
 
     @Override
     public Collection<TestCase> generate() throws RESTestException {
-        Collection<TestCase> testCases = testCaseGenerator.generate();
+        Collection<TestCase> testCases = absractTestCaseGenerator.generate();
 
         String message = generateJSONMessage();
 
         try{
-            messageSender.connect();
+            messageSender.connect("", null, false);
             messageSender.sendMessageToExchange("testCasesGenerated", message);
             logger.info("Message sent to RabbitMQ: {}", message);
             messageSender.close();
@@ -55,10 +55,10 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         JSONObject message = new JSONObject();
         message.put("botId", this.botId);
         message.put("generatorType", generatorType);
-        message.put("faultyRatio", testCaseGenerator.getFaultyRatio());
-        message.put("nTotalFaulty", testCaseGenerator.getnFaulty());
-        message.put("nTotalNominal", testCaseGenerator.getnNominal());
-        message.put("maxTriesPerTestCase", testCaseGenerator.getMaxTriesPerTestCase());
+        message.put("faultyRatio", absractTestCaseGenerator.getFaultyRatio());
+        message.put("nTotalFaulty", absractTestCaseGenerator.getnFaulty());
+        message.put("nTotalNominal", absractTestCaseGenerator.getnNominal());
+        message.put("maxTriesPerTestCase", absractTestCaseGenerator.getMaxTriesPerTestCase());
         message.put("targetDirJava", loader.getTargetDirJava());
         message.put("getAllureReportsPath", loader.getAllureReportsPath());
         message.put("getExperimentName", loader.getExperimentName());

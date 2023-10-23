@@ -1,0 +1,9 @@
+{
+    "testCaseGenerators": [
+        {
+            "botId": "bot_1",
+            "propertyFilePath": "src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties",
+            "isPersistent": false
+        }
+    ]
+}

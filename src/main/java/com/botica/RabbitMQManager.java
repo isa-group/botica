@@ -9,6 +9,7 @@ import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.botica.utils.JSON;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
@@ -21,7 +22,6 @@ public class RabbitMQManager {
     private final ConnectionFactory factory;
     private Connection connection;
     private Channel channel;
-    private final String queueName;
 
     private String serverUsername;
     private String serverPassword;
@@ -32,12 +32,11 @@ public class RabbitMQManager {
 
     private static Logger logger = LogManager.getLogger(RabbitMQManager.class);
 
-    public RabbitMQManager(String queueName){
-        this(queueName, null, null, null, null, 0);
+    public RabbitMQManager(){
+        this(null, null, null, null, 0);
     }
 
-    public RabbitMQManager(String queueName, String username, String password, String virtualHost, String host, int port) {
-        this.queueName = queueName;
+    public RabbitMQManager(String username, String password, String virtualHost, String host, int port) {
         factory = new ConnectionFactory();
 
         loadServerConfig();
@@ -49,7 +48,7 @@ public class RabbitMQManager {
         factory.setPort(port != 0 ? port : serverPort);
     }
 
-    public void connect() throws IOException, TimeoutException {
+    public void connect(String queueName, String bindingKey, boolean autoDelete) throws IOException, TimeoutException {
         try{
             connection = factory.newConnection();
             channel = connection.createChannel();
@@ -57,14 +56,18 @@ public class RabbitMQManager {
             Map<String, Object> arguments = new HashMap<>();
             arguments.put("x-message-ttl", 3600000);
 
-            channel.queueDeclare(queueName, true, false, false, arguments);
+            channel.queueDeclare(queueName, true, false, autoDelete, arguments);
+            if (bindingKey != null){
+                channel.queueBind(queueName, serverExchange, bindingKey);
+            }
+
         } catch (Exception e) {
             logger.error("Error connecting to RabbitMQ");
             e.printStackTrace();
         }
     }
 
-    public void sendMessage(String message) throws IOException {
+    public void sendMessage(String queueName, String message) throws IOException {
         try{
             channel.basicPublish(serverExchange, queueName, null, message.getBytes());
         } catch (Exception e) {
@@ -82,14 +85,18 @@ public class RabbitMQManager {
         }
     }
 
-    public void receiveMessage(String propertyFilePath, String botId, String botType) throws IOException {
+    public void receiveMessage(String queueName, String propertyFilePath, String botId, boolean isPersistent, String botType) throws IOException {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-            String message = new String(delivery.getBody(), "UTF-8");
-            logger.info(" [x] Received '" +
-                delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
-            if (botType.equals("testCaseGenerator")) {
-                if (message.contains("generateTestCases") && message.contains(botId)) {
+            String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+            logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
+            if (botType.equals("testCaseGenerator") && message.contains("generateTestCases")) {
                     TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId);
+            }
+            if (!isPersistent){
+                try {
+                    close();
+                } catch (TimeoutException e) {
+                    e.printStackTrace();
                 }
             }
         };

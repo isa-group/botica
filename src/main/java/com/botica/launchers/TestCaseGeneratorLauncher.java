@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.botica.examples.TestCaseGeneration;
 import com.botica.generators.TestCaseGenerator;
 import com.botica.RabbitMQManager;
 
@@ -23,17 +22,18 @@ import static es.us.isa.restest.util.FileManager.createDir;
 
 public class TestCaseGeneratorLauncher {
 
-    public String PROPERTY_FILE_PATH = "";
-    public static final Logger logger = Logger.getLogger(TestCaseGeneration.class.getName());
+    public static final Logger logger = Logger.getLogger(TestCaseGeneratorLauncher.class.getName());
 
-    private RabbitMQManager messageSender = new RabbitMQManager("testCaseGenerator");
+    private RabbitMQManager messageSender = new RabbitMQManager();
 
-    public void launchTestCases(String propertyFilePath, String botId) {
+    public void launchTestCases(String propertyFilePath, String botId, boolean isPersistent) {
+        
+        String queueName = botId;
+        
         try {
-            this.PROPERTY_FILE_PATH = propertyFilePath;
-            messageSender.connect();
+            messageSender.connect(queueName, "testCaseGenerator." + botId, true);
             logger.info("Connected to RabbitMQ");
-            messageSender.receiveMessage(PROPERTY_FILE_PATH, botId, "testCaseGenerator");
+            messageSender.receiveMessage(queueName, propertyFilePath, botId, isPersistent, "testCaseGenerator");
         }catch (Exception e){
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
