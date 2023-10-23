@@ -2,6 +2,8 @@ package com.botica.generators;
 
 import java.util.Collection;
 
+import org.json.JSONObject;
+
 import com.botica.RabbitMQManager;
 import com.botica.interfaces.TestCaseGeneratorInterface;
 
@@ -29,15 +31,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     public Collection<TestCase> generate() throws RESTestException {
         Collection<TestCase> testCases = testCaseGenerator.generate();
 
-        Float faultyRatio = testCaseGenerator.getFaultyRatio();
-        int nTotalFaulty = testCaseGenerator.getnFaulty();
-        int nTotalNominal = testCaseGenerator.getnNominal();
-        int maxTriesPerTestCase = testCaseGenerator.getMaxTriesPerTestCase();
-        String targetDirJava = loader.getTargetDirJava();
-        String allureReportsPath = loader.getAllureReportsPath();
-        String experimentName = loader.getExperimentName();
-
-        String message = "{\"botId\":" + this.botId + ",\"generatorType\":" + generatorType + ",\"faultyRatio\":" + faultyRatio + ",\"nTotalFaulty\":" + nTotalFaulty + ",\"nTotalNominal\":" + nTotalNominal + ",\"maxTriesPerTestCase\":" + maxTriesPerTestCase + ",\"targetDirJava\":\"" + targetDirJava + "\",\"getAllureReportsPath\":\"" + allureReportsPath + "\",\"getExperimentName\":\"" + experimentName + "\"}";
+        String message = generateJSONMessage();
 
         try{
             messageSender.connect();
@@ -51,6 +45,22 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         }
 
         return testCases;
+    }
+
+    private String generateJSONMessage() {
+
+        JSONObject message = new JSONObject();
+        message.put("botId", this.botId);
+        message.put("generatorType", generatorType);
+        message.put("faultyRatio", testCaseGenerator.getFaultyRatio());
+        message.put("nTotalFaulty", testCaseGenerator.getnFaulty());
+        message.put("nTotalNominal", testCaseGenerator.getnNominal());
+        message.put("maxTriesPerTestCase", testCaseGenerator.getMaxTriesPerTestCase());
+        message.put("targetDirJava", loader.getTargetDirJava());
+        message.put("getAllureReportsPath", loader.getAllureReportsPath());
+        message.put("getExperimentName", loader.getExperimentName());
+
+        return message.toString();
     }
     
 }
