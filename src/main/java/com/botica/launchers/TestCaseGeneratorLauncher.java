@@ -32,7 +32,7 @@ public class TestCaseGeneratorLauncher {
         try {
             this.PROPERTY_FILE_PATH = propertyFilePath;
             messageSender.connect();
-            System.out.println("Connected to RabbitMQ");
+            logger.info("Connected to RabbitMQ");
             messageSender.receiveMessage(PROPERTY_FILE_PATH, botId, "testCaseGenerator");
         }catch (Exception e){
             logger.log(Level.SEVERE, e.getMessage(), e);

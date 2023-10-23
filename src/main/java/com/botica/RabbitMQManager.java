@@ -13,6 +13,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 public class RabbitMQManager {
@@ -27,6 +29,8 @@ public class RabbitMQManager {
     private String serverHost;
     private int serverPort;
     private String serverExchange;
+
+    private static Logger logger = LogManager.getLogger(RabbitMQManager.class);
 
     public RabbitMQManager(String queueName){
         this(queueName, null, null, null, null, 0);
@@ -55,7 +59,7 @@ public class RabbitMQManager {
 
             channel.queueDeclare(queueName, true, false, false, arguments);
         } catch (Exception e) {
-            System.err.println("Error connecting to RabbitMQ");
+            logger.error("Error connecting to RabbitMQ");
             e.printStackTrace();
         }
     }
@@ -64,7 +68,7 @@ public class RabbitMQManager {
         try{
             channel.basicPublish(serverExchange, queueName, null, message.getBytes());
         } catch (Exception e) {
-            System.err.println("Error sending message to RabbitMQ");
+            logger.error("Error sending message to RabbitMQ");
             e.printStackTrace();
         }
     }
@@ -73,7 +77,7 @@ public class RabbitMQManager {
         try{
             channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
         } catch (Exception e) {
-            System.err.println("Error sending message to RabbitMQ");
+            logger.error("Error sending message to RabbitMQ");
             e.printStackTrace();
         }
     }
@@ -81,7 +85,7 @@ public class RabbitMQManager {
     public void receiveMessage(String propertyFilePath, String botId, String botType) throws IOException {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), "UTF-8");
-            System.out.println(" [x] Received '" +
+            logger.info(" [x] Received '" +
                 delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
             if (botType.equals("testCaseGenerator")) {
                 if (message.contains("generateTestCases") && message.contains(botId)) {
@@ -111,7 +115,7 @@ public class RabbitMQManager {
             serverExchange = obj.getString("exchange");
 
         } catch (Exception e) {
-            System.err.println("Error reading server-config.json");
+            logger.error("Error reading server-config.json");
             e.printStackTrace();
         }
     }    

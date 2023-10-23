@@ -2,6 +2,8 @@ package com.botica.generators;
 
 import java.util.Collection;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.botica.RabbitMQManager;
@@ -20,6 +22,8 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private String generatorType;
     private RabbitMQManager messageSender = new RabbitMQManager("");
 
+    private static Logger logger = LogManager.getLogger(TestCaseGenerator.class);
+
     public TestCaseGenerator(AbstractTestCaseGenerator testCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
         this.testCaseGenerator = testCaseGenerator;
         this.loader = loader;
@@ -36,11 +40,10 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         try{
             messageSender.connect();
             messageSender.sendMessageToExchange("testCasesGenerated", message);
-            System.out.println("Message sent to RabbitMQ");
-            System.out.println(message);
+            logger.info("Message sent to RabbitMQ: {}", message);
             messageSender.close();
         } catch (Exception e) {
-            System.err.println("Error sending message to RabbitMQ");
+            logger.error("Error sending message to RabbitMQ");
             e.printStackTrace();
         }
 
