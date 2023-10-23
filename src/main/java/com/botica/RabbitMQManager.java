@@ -21,12 +21,12 @@ public class RabbitMQManager {
     private Channel channel;
     private final String queueName;
 
-    private String server_username;
-    private String server_password;
-    private String server_virtualHost;
-    private String server_host;
-    private int server_port;
-    private String server_exchange;
+    private String serverUsername;
+    private String serverPassword;
+    private String serverVirtualHost;
+    private String serverHost;
+    private int serverPort;
+    private String serverExchange;
 
     public RabbitMQManager(String queueName){
         this(queueName, null, null, null, null, 0);
@@ -38,11 +38,11 @@ public class RabbitMQManager {
 
         loadServerConfig();
 
-        factory.setUsername(username != null ? username : server_username);
-        factory.setPassword(password != null ? password : server_password);
-        factory.setVirtualHost(virtualHost != null ? virtualHost : server_virtualHost);
-        factory.setHost(host != null ? host : server_host);
-        factory.setPort(port != 0 ? port : server_port);
+        factory.setUsername(username != null ? username : serverUsername);
+        factory.setPassword(password != null ? password : serverPassword);
+        factory.setVirtualHost(virtualHost != null ? virtualHost : serverVirtualHost);
+        factory.setHost(host != null ? host : serverHost);
+        factory.setPort(port != 0 ? port : serverPort);
     }
 
     public void connect() throws IOException, TimeoutException {
@@ -55,25 +55,25 @@ public class RabbitMQManager {
 
             channel.queueDeclare(queueName, true, false, false, arguments);
         } catch (Exception e) {
-            System.out.println("Error connecting to RabbitMQ");
+            System.err.println("Error connecting to RabbitMQ");
             e.printStackTrace();
         }
     }
 
     public void sendMessage(String message) throws IOException {
         try{
-            channel.basicPublish(server_exchange, queueName, null, message.getBytes());
+            channel.basicPublish(serverExchange, queueName, null, message.getBytes());
         } catch (Exception e) {
-            System.out.println("Error sending message to RabbitMQ");
+            System.err.println("Error sending message to RabbitMQ");
             e.printStackTrace();
         }
     }
 
     public void sendMessageToExchange(String routingKey, String message) throws IOException {
         try{
-            channel.basicPublish(server_exchange, routingKey, null, message.getBytes());
+            channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
         } catch (Exception e) {
-            System.out.println("Error sending message to RabbitMQ");
+            System.err.println("Error sending message to RabbitMQ");
             e.printStackTrace();
         }
     }
@@ -99,19 +99,19 @@ public class RabbitMQManager {
 
     private void loadServerConfig() {
         try {
-            String json_path = "conf/server_config.json";
-            String json_content = JSON.readFileAsString(json_path);
-            JSONObject obj = new JSONObject(json_content);
+            String jsonPath = "conf/server-config.json";
+            String jsonContent = JSON.readFileAsString(jsonPath);
+            JSONObject obj = new JSONObject(jsonContent);
 
-            server_username = obj.getString("username");
-            server_password = obj.getString("password");
-            server_virtualHost = obj.getString("virtualHost");
-            server_host = obj.getString("host");
-            server_port = obj.getInt("port");
-            server_exchange = obj.getString("exchange");
+            serverUsername = obj.getString("username");
+            serverPassword = obj.getString("password");
+            serverVirtualHost = obj.getString("virtualHost");
+            serverHost = obj.getString("host");
+            serverPort = obj.getInt("port");
+            serverExchange = obj.getString("exchange");
 
         } catch (Exception e) {
-            System.out.println("Error reading server_config.json");
+            System.err.println("Error reading server-config.json");
             e.printStackTrace();
         }
     }    

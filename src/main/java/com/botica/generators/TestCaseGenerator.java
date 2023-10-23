@@ -40,7 +40,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
             System.out.println(message);
             messageSender.close();
         } catch (Exception e) {
-            System.out.println("Error sending message to RabbitMQ");
+            System.err.println("Error sending message to RabbitMQ");
             e.printStackTrace();
         }
 
