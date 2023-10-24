@@ -8,6 +8,8 @@ import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.json.JSONObject;
+
 import com.botica.generators.TestCaseGenerator;
 import com.botica.RabbitMQManager;
 
@@ -23,16 +25,17 @@ import static es.us.isa.restest.util.FileManager.createDir;
 public class TestCaseGeneratorLauncher {
 
     public static final Logger logger = Logger.getLogger(TestCaseGeneratorLauncher.class.getName());
+    private static final String BOT_ID_JSON_KEY = "botId";
 
     private RabbitMQManager messageSender = new RabbitMQManager();
 
-    public void launchTestCases(String propertyFilePath, String botId, boolean isPersistent) {
+    public void launchTestCases(JSONObject botData, String order, String keyToPublish) {
         
-        String queueName = botId;
+        String queueName = botData.getString(BOT_ID_JSON_KEY);
         
         try {
             connectToRabbitMQ(queueName);
-            messageSender.receiveMessage(queueName, propertyFilePath, botId, isPersistent, "testCaseGenerator");
+            messageSender.receiveMessage(queueName, botData, "testCaseGenerator", order, keyToPublish);
         }catch (Exception e){
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
@@ -44,7 +47,7 @@ public class TestCaseGeneratorLauncher {
         logger.info("Connected to RabbitMQ");
     }
 
-    public static void generateTestCases(String propertyFilePath, String botId) {
+    public static void generateTestCases(String propertyFilePath, String botId, String keyToPublish) {
         try {
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
@@ -52,7 +55,7 @@ public class TestCaseGeneratorLauncher {
 
             AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
 
-            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType);
+            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType, keyToPublish);
 
             Collection<TestCase> testCases = testGenerator.generate();
 

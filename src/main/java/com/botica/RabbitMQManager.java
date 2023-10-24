@@ -37,6 +37,10 @@ public class RabbitMQManager {
     private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
 
+    private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
+    private static final String BOT_ID_JSON_KEY = "botId";
+    private static final String IS_PERSISTENT_JSON_KEY = "isPersistent";
+
     public RabbitMQManager(){
         this(null, null, null, null, 0);
     }
@@ -79,21 +83,26 @@ public class RabbitMQManager {
         }
     }
 
-    public void receiveMessage(String queueName, String propertyFilePath, String botId, boolean isPersistent, String botType) throws IOException {
+    public void receiveMessage(String queueName, JSONObject botData, String botType, String order, String keyToPublish) throws IOException {
+
+        String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+        String botId = botData.getString(BOT_ID_JSON_KEY);
+        boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
+
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
-            if (botType.equals("testCaseGenerator") && message.contains("generateTestCases")) {
-                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId);
-            }
-            if (!isPersistent){
-                try {
-                    close();
-                } catch (TimeoutException e) {
-                    Utils.handleException(logger, "Error closing channel and connection", e);
+
+            if (message.contains(order)){
+                if (botType.equals("testCaseGenerator")) {
+                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId, keyToPublish);
+                } else if(botType.equals("testExecutor")) {
+                    //TODO: Implement testExecutor
                 }
+                disconnectBot(isPersistent);
             }
         };
+
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
 
@@ -116,6 +125,16 @@ public class RabbitMQManager {
 
         } catch (Exception e) {
             Utils.handleException(logger, "Error reading " + CONFIG_FILE_NAME, e);
+        }
+    }
+
+    private void disconnectBot(boolean isPersistent) throws IOException{
+        if (!isPersistent){
+            try {
+                close();
+            } catch (TimeoutException e) {
+                Utils.handleException(logger, "Error closing channel and connection", e);
+            }
         }
     }
 

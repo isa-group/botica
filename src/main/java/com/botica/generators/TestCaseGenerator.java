@@ -23,15 +23,17 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private RESTestLoader loader;
     private String botId;
     private String generatorType;
+    private String keyToPublish;
     private RabbitMQManager messageSender = new RabbitMQManager();
 
     private static final Logger logger = LogManager.getLogger(TestCaseGenerator.class);
 
-    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
+    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType, String keyToPublish) {
         this.absractTestCaseGenerator = absractTestCaseGenerator;
         this.loader = loader;
         this.botId = botId;
         this.generatorType = generatorType;
+        this.keyToPublish = keyToPublish;
     }
 
     @Override
@@ -64,7 +66,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         try{
             List<Boolean> queueOptions = Arrays.asList(true, false, false);
             messageSender.connect("", null, queueOptions);
-            messageSender.sendMessageToExchange("testCasesGenerated", message);
+            messageSender.sendMessageToExchange(keyToPublish, message);
             logger.info("Message sent to RabbitMQ: {}", message);
             messageSender.close();
         } catch (Exception e) {

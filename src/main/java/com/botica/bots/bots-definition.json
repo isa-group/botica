@@ -1,9 +1,23 @@
 {
-    "testCaseGenerators": [
-        {
-            "botId": "bot_1",
-            "propertyFilePath": "src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties",
-            "isPersistent": false
-        }
-    ]
+    "testCaseGenerators": {
+        "order": "generateTestCases",
+        "keyToPublish": "testCasesGenerated",
+        "bots": [
+            {
+                "botId": "bot_1",
+                "propertyFilePath": "src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties",
+                "isPersistent": false
+            },
+            {
+                "botId": "bot_2",
+                "propertyFilePath": "src/main/resources/Examples/Ex2_FuzzingGeneration/user_config.properties",
+                "isPersistent": true
+            },
+            {
+                "botId": "bot_3",
+                "propertyFilePath": "src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties",
+                "isPersistent": false
+            }
+        ]
+    }
 }
