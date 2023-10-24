@@ -24,7 +24,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private String generatorType;
     private RabbitMQManager messageSender = new RabbitMQManager();
 
-    private static Logger logger = LogManager.getLogger(TestCaseGenerator.class);
+    private static final Logger logger = LogManager.getLogger(TestCaseGenerator.class);
 
     public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType) {
         this.absractTestCaseGenerator = absractTestCaseGenerator;

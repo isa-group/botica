@@ -7,6 +7,7 @@ import com.rabbitmq.client.DeliverCallback;
 
 import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.botica.utils.JSON;
+import com.botica.utils.Utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,7 +32,7 @@ public class RabbitMQManager {
     private int serverPort;
     private String serverExchange;
 
-    private static Logger logger = LogManager.getLogger(RabbitMQManager.class);
+    private static final Logger logger = LogManager.getLogger(RabbitMQManager.class);
     private static final String CONFIG_FILE_NAME = "server-config.json";
     private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
@@ -66,7 +67,7 @@ public class RabbitMQManager {
             }
 
         } catch (IOException | TimeoutException e) {
-            handleException("Error connecting to RabbitMQ", e);
+            Utils.handleException(logger, "Error connecting to RabbitMQ", e);
         }
     }
 
@@ -74,7 +75,7 @@ public class RabbitMQManager {
         try{
             channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
         } catch (Exception e) {
-            handleException("Error sending message to RabbitMQ", e);
+            Utils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
     }
 
@@ -89,7 +90,7 @@ public class RabbitMQManager {
                 try {
                     close();
                 } catch (TimeoutException e) {
-                    handleException("Error closing channel and connection", e);
+                    Utils.handleException(logger, "Error closing channel and connection", e);
                 }
             }
         };
@@ -114,13 +115,8 @@ public class RabbitMQManager {
             serverExchange = obj.getString("exchange");
 
         } catch (Exception e) {
-            handleException("Error reading " + CONFIG_FILE_NAME, e);
+            Utils.handleException(logger, "Error reading " + CONFIG_FILE_NAME, e);
         }
-    }
-
-    private void handleException(String message, Exception e) {
-        logger.error(message);
-        e.printStackTrace();
     }
 
 }

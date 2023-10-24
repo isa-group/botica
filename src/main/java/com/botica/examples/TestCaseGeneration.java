@@ -1,41 +1,47 @@
 package com.botica.examples;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.botica.utils.JSON;
 public class TestCaseGeneration {
 
-    private static Logger logger = LogManager.getLogger(TestCaseGeneration.class);
+    private static final String BOTS_DEFINITION_FILE_NAME = "bots-definition.json";
+    private static final String DEFAULT_BOTS_DEFINITION_PATH = "src/main/java/com/botica/bots/" + BOTS_DEFINITION_FILE_NAME;
+    
+    private static final String JSON_ARRAY = "testCaseGenerators";
+    private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
+    private static final String BOT_ID_JSON_KEY = "botId";
+    private static final String IS_PERSISTENT_JSON_KEY = "isPersistent";
+    
     public static void main(String[] args) {
 
-        String propertiesPath = null;
-        String botId = null;
-        boolean isPersistent = false;
-
         try {
-            String jsonPath = "src/main/java/com/botica/bots/bots-definition.json";
-            String jsonContent = JSON.readFileAsString(jsonPath);
-            JSONObject obj = new JSONObject(jsonContent);
-
-            JSONArray testCaseGenerators = obj.getJSONArray("testCaseGenerators");
-
-            for(int i = 0; i < testCaseGenerators.length(); i++){
-                JSONObject arrayObject = testCaseGenerators.getJSONObject(i);
-                propertiesPath = arrayObject.getString("propertyFilePath");
-                botId = arrayObject.getString("botId");
-                isPersistent = arrayObject.getBoolean("isPersistent");
-
-                TestCaseGeneratorLauncher launcher = new TestCaseGeneratorLauncher();
-                launcher.launchTestCases(propertiesPath, botId, isPersistent);
-            }    
-        } catch (Exception e) {
-            logger.error("Error reading bots-definition.json");
-            e.printStackTrace();
+            JSONArray testCaseGenerators = loadBotsDefinition();
+            launchTestCasesGenerator(testCaseGenerators);
+        } catch (JSONException e) {
+            throw new JSONException("Error reading file: " + DEFAULT_BOTS_DEFINITION_PATH);
         }
-      
     }
+
+    private static JSONArray loadBotsDefinition() throws JSONException {
+        String jsonContent = JSON.readFileAsString(DEFAULT_BOTS_DEFINITION_PATH);
+        JSONObject obj = new JSONObject(jsonContent);
+        return obj.getJSONArray(JSON_ARRAY);
+    }
+
+    private static void launchTestCasesGenerator(JSONArray testCaseGenerators) {
+        for (int i = 0; i < testCaseGenerators.length(); i++) {
+            JSONObject arrayObject = testCaseGenerators.getJSONObject(i);
+            String propertiesPath = arrayObject.getString(PROPERTY_FILE_PATH_JSON_KEY);
+            String botId = arrayObject.getString(BOT_ID_JSON_KEY);
+            boolean isPersistent = arrayObject.getBoolean(IS_PERSISTENT_JSON_KEY);
+
+            TestCaseGeneratorLauncher launcher = new TestCaseGeneratorLauncher();
+            launcher.launchTestCases(propertiesPath, botId, isPersistent);
+        }
+    }
+
 }
