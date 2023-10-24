@@ -1,6 +1,8 @@
 package com.botica.launchers;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +33,8 @@ public class TestCaseGeneratorLauncher {
         String queueName = botId;
         
         try {
-            messageSender.connect(queueName, "testCaseGenerator." + botId, true);
+            List<Boolean> queueOptions = Arrays.asList(true, false, true);
+            messageSender.connect(queueName, "testCaseGenerator." + botId, queueOptions);
             logger.info("Connected to RabbitMQ");
             messageSender.receiveMessage(queueName, propertyFilePath, botId, isPersistent, "testCaseGenerator");
         }catch (Exception e){

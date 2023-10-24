@@ -11,6 +11,7 @@ import com.botica.utils.JSON;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
@@ -31,6 +32,9 @@ public class RabbitMQManager {
     private String serverExchange;
 
     private static Logger logger = LogManager.getLogger(RabbitMQManager.class);
+    private static final String CONFIG_FILE_NAME = "server-config.json";
+    private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
+    private static final int MESSAGE_TTL = 3600000;
 
     public RabbitMQManager(){
         this(null, null, null, null, 0);
@@ -48,31 +52,21 @@ public class RabbitMQManager {
         factory.setPort(port != 0 ? port : serverPort);
     }
 
-    public void connect(String queueName, String bindingKey, boolean autoDelete) throws IOException, TimeoutException {
+    public void connect(String queueName, String bindingKey, List<Boolean> queueOptions) throws IOException, TimeoutException {
         try{
             connection = factory.newConnection();
             channel = connection.createChannel();
 
             Map<String, Object> arguments = new HashMap<>();
-            arguments.put("x-message-ttl", 3600000);
+            arguments.put("x-message-ttl", MESSAGE_TTL);
 
-            channel.queueDeclare(queueName, true, false, autoDelete, arguments);
+            channel.queueDeclare(queueName, queueOptions.get(0), queueOptions.get(1), queueOptions.get(2), arguments);
             if (bindingKey != null){
                 channel.queueBind(queueName, serverExchange, bindingKey);
             }
 
-        } catch (Exception e) {
-            logger.error("Error connecting to RabbitMQ");
-            e.printStackTrace();
-        }
-    }
-
-    public void sendMessage(String queueName, String message) throws IOException {
-        try{
-            channel.basicPublish(serverExchange, queueName, null, message.getBytes());
-        } catch (Exception e) {
-            logger.error("Error sending message to RabbitMQ");
-            e.printStackTrace();
+        } catch (IOException | TimeoutException e) {
+            handleException("Error connecting to RabbitMQ", e);
         }
     }
 
@@ -80,8 +74,7 @@ public class RabbitMQManager {
         try{
             channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
         } catch (Exception e) {
-            logger.error("Error sending message to RabbitMQ");
-            e.printStackTrace();
+            handleException("Error sending message to RabbitMQ", e);
         }
     }
 
@@ -96,7 +89,7 @@ public class RabbitMQManager {
                 try {
                     close();
                 } catch (TimeoutException e) {
-                    e.printStackTrace();
+                    handleException("Error closing channel and connection", e);
                 }
             }
         };
@@ -110,8 +103,7 @@ public class RabbitMQManager {
 
     private void loadServerConfig() {
         try {
-            String jsonPath = "conf/server-config.json";
-            String jsonContent = JSON.readFileAsString(jsonPath);
+            String jsonContent = JSON.readFileAsString(DEFAULT_CONFIG_PATH);
             JSONObject obj = new JSONObject(jsonContent);
 
             serverUsername = obj.getString("username");
@@ -122,9 +114,13 @@ public class RabbitMQManager {
             serverExchange = obj.getString("exchange");
 
         } catch (Exception e) {
-            logger.error("Error reading server-config.json");
-            e.printStackTrace();
+            handleException("Error reading " + CONFIG_FILE_NAME, e);
         }
-    }    
+    }
+
+    private void handleException(String message, Exception e) {
+        logger.error(message);
+        e.printStackTrace();
+    }
 
 }

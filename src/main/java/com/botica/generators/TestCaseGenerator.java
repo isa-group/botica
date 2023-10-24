@@ -1,6 +1,8 @@
 package com.botica.generators;
 
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -38,7 +40,8 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         String message = generateJSONMessage();
 
         try{
-            messageSender.connect("", null, false);
+            List<Boolean> queueOptions = Arrays.asList(true, false, false);
+            messageSender.connect("", null, queueOptions);
             messageSender.sendMessageToExchange("testCasesGenerated", message);
             logger.info("Message sent to RabbitMQ: {}", message);
             messageSender.close();
