@@ -20,6 +20,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
+/**
+ * The RabbitMQManager class manages connections and interactions with RabbitMQ.
+ * It handles the connection to RabbitMQ, sending and receiving messages, and
+ * provides functionality to connect, send, and receive messages from the
+ * RabbitMQ server. It reads server configuration from a JSON file and allows
+ * dynamic configuration for specific connections.
+ */
 public class RabbitMQManager {
     private final ConnectionFactory factory;
     private Connection connection;
@@ -45,6 +52,15 @@ public class RabbitMQManager {
         this(null, null, null, null, 0);
     }
 
+    /**
+     * Constructor for RabbitMQManager.
+     *
+     * @param username    The username for RabbitMQ connection.
+     * @param password    The password for RabbitMQ connection.
+     * @param virtualHost The virtual host for RabbitMQ connection.
+     * @param host        The host (server) for RabbitMQ connection.
+     * @param port        The port for RabbitMQ connection.
+     */
     public RabbitMQManager(String username, String password, String virtualHost, String host, int port) {
         factory = new ConnectionFactory();
 
@@ -57,6 +73,15 @@ public class RabbitMQManager {
         factory.setPort(port != 0 ? port : serverPort);
     }
 
+    /**
+     * Connect to RabbitMQ server with specified queue options.
+     *
+     * @param queueName         The name of the queue to declare.
+     * @param bindingKey        The binding key to bind the queue to the exchange.
+     * @param queueOptions      A list of queue options (durable, exclusive, autoDelete).
+     * @throws IOException      If an I/O error occurs while connecting.
+     * @throws TimeoutException If a timeout occurs while connecting.
+     */
     public void connect(String queueName, String bindingKey, List<Boolean> queueOptions) throws IOException, TimeoutException {
         try{
             connection = factory.newConnection();
@@ -75,6 +100,13 @@ public class RabbitMQManager {
         }
     }
 
+    /**
+     * Send a message to the RabbitMQ exchange.
+     *
+     * @param routingKey The routing key for the message.
+     * @param message    The message to send.
+     * @throws IOException If an I/O error occurs while sending the message.
+     */
     public void sendMessageToExchange(String routingKey, String message) throws IOException {
         try{
             channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
@@ -83,6 +115,16 @@ public class RabbitMQManager {
         }
     }
 
+    /**
+     * Receive and process messages from the specified queue.
+     *
+     * @param queueName    The name of the queue to receive messages from.
+     * @param botData      A JSON object containing bot-specific data.
+     * @param botType      The type of the bot (e.g., "testCaseGenerator" or "testExecutor").
+     * @param order        The order (command) to process when received in a message.
+     * @param keyToPublish The binding key to publish  a message to the RabbitMQ broker.
+     * @throws IOException If an I/O error occurs while receiving messages.
+     */
     public void receiveMessage(String queueName, JSONObject botData, String botType, String order, String keyToPublish) throws IOException {
 
         String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
@@ -106,6 +148,14 @@ public class RabbitMQManager {
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
 
+    /**
+     * Close the RabbitMQ channel and connection if not set to be persistent.
+     *
+     * @throws IOException      If an I/O error occurs while closing the channel and
+     *                          connection.
+     * @throws TimeoutException If a timeout occurs while closing the channel and
+     *                          connection.
+     */
     public void close() throws IOException, TimeoutException {
         channel.close();
         connection.close();

@@ -22,6 +22,12 @@ import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import static es.us.isa.restest.util.FileManager.createDir;
 
+/**
+ * The TestCaseGeneratorLauncher class serves as a utility for launching test
+ * case generation processes and interacting with RabbitMQ. It connects to
+ * RabbitMQ, receives and sends messages, and generates test cases based on the
+ * specified generator type.
+ */
 public class TestCaseGeneratorLauncher {
 
     public static final Logger logger = Logger.getLogger(TestCaseGeneratorLauncher.class.getName());
@@ -29,6 +35,14 @@ public class TestCaseGeneratorLauncher {
 
     private RabbitMQManager messageSender = new RabbitMQManager();
 
+    /**
+     * Launches test case generator based on bot data provided, and sends and 
+     * receives messages through RabbitMQ.
+     *
+     * @param botData      The JSON object containing bot data.
+     * @param order        The order that identifies the message sent.
+     * @param keyToPublish The binding key for publishing messages to RabbitMQ.
+     */
     public void launchTestCases(JSONObject botData, String order, String keyToPublish) {
         
         String queueName = botData.getString(BOT_ID_JSON_KEY);
@@ -47,6 +61,14 @@ public class TestCaseGeneratorLauncher {
         logger.info("Connected to RabbitMQ");
     }
 
+    /**
+     * Generates test cases based on the specified generator type.
+     *
+     * @param propertyFilePath The path to the property file for test case
+     *                         generator.
+     * @param botId            The test case generator identifier.
+     * @param keyToPublish     The binding key for publishing messages to RabbitMQ.
+     */
     public static void generateTestCases(String propertyFilePath, String botId, String keyToPublish) {
         try {
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
