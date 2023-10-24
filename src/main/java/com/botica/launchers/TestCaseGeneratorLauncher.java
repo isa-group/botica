@@ -1,19 +1,17 @@
 package com.botica.launchers;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.botica.generators.TestCaseGenerator;
 import com.botica.RabbitMQManager;
 
-import es.us.isa.restest.generators.ARTestCaseGenerator;
-import es.us.isa.restest.generators.AbstractTestCaseGenerator;
-import es.us.isa.restest.generators.ConstraintBasedTestCaseGenerator;
-import es.us.isa.restest.generators.FuzzingTestCaseGenerator;
-import es.us.isa.restest.generators.RandomTestCaseGenerator;
+import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.PropertyManager;
@@ -33,13 +31,17 @@ public class TestCaseGeneratorLauncher {
         String queueName = botId;
         
         try {
-            List<Boolean> queueOptions = Arrays.asList(true, false, true);
-            messageSender.connect(queueName, "testCaseGenerator." + botId, queueOptions);
-            logger.info("Connected to RabbitMQ");
+            connectToRabbitMQ(queueName);
             messageSender.receiveMessage(queueName, propertyFilePath, botId, isPersistent, "testCaseGenerator");
         }catch (Exception e){
             logger.log(Level.SEVERE, e.getMessage(), e);
         }
+    }
+
+    private void connectToRabbitMQ(String queueName) throws IOException, TimeoutException {
+        List<Boolean> queueOptions = Arrays.asList(true, false, true);
+        messageSender.connect(queueName, "testCaseGenerator." + queueName, queueOptions);
+        logger.info("Connected to RabbitMQ");
     }
 
     public static void generateTestCases(String propertyFilePath, String botId) {

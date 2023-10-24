@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import com.botica.RabbitMQManager;
 import com.botica.interfaces.TestCaseGeneratorInterface;
+import com.botica.utils.Utils;
 
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestLoader;
@@ -38,18 +39,8 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         Collection<TestCase> testCases = absractTestCaseGenerator.generate();
 
         String message = generateJSONMessage();
-
-        try{
-            List<Boolean> queueOptions = Arrays.asList(true, false, false);
-            messageSender.connect("", null, queueOptions);
-            messageSender.sendMessageToExchange("testCasesGenerated", message);
-            logger.info("Message sent to RabbitMQ: {}", message);
-            messageSender.close();
-        } catch (Exception e) {
-            logger.error("Error sending message to RabbitMQ");
-            e.printStackTrace();
-        }
-
+        sendMessage(message);
+        
         return testCases;
     }
 
@@ -67,6 +58,18 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         message.put("getExperimentName", loader.getExperimentName());
 
         return message.toString();
+    }
+
+    private void sendMessage(String message){
+        try{
+            List<Boolean> queueOptions = Arrays.asList(true, false, false);
+            messageSender.connect("", null, queueOptions);
+            messageSender.sendMessageToExchange("testCasesGenerated", message);
+            logger.info("Message sent to RabbitMQ: {}", message);
+            messageSender.close();
+        } catch (Exception e) {
+            Utils.handleException(logger, "Error sending message to RabbitMQ", e);
+        }
     }
     
 }
