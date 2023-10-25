@@ -131,10 +131,16 @@ public class RabbitMQManager {
         String botId = botData.getString(BOT_ID_JSON_KEY);
         boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
 
+        //Send the same message to all generators
+        //channel.queueBind(queueName, "restest_exchange", "testCaseGenerator.*");
+
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
 
+            //If the message is sent to all generators, the message will contain the botId
+            // to identify the bot that should process the message
+            //if (message.contains(order) && message.contains(botId)){
             if (message.contains(order)){
                 if (botType.equals("testCaseGenerator")) {
                     TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId, keyToPublish);

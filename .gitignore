@@ -3,4 +3,4 @@
 **/.DS_Store
 
 /target
-/src/main/resources/Examples/Ex1_RandomGeneration/test_cases/
+/src/main/resources/Examples/*/test_cases/
