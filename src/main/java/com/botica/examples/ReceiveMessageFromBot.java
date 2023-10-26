@@ -19,7 +19,7 @@ public class ReceiveMessageFromBot {
         RabbitMQManager messageSender = new RabbitMQManager();
 
         try{
-            List<Boolean> queueOptions = Arrays.asList(true, false, true); //TODO: Change to true, false, true
+            List<Boolean> queueOptions = Arrays.asList(true, false, true);
             String queueName = messageSender.connect("", BINDING_KEY, queueOptions);
             messageSender.receiveMessage(queueName);
         } catch (Exception e) {

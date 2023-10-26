@@ -20,7 +20,7 @@ public class SendOrderToBot {
         RabbitMQManager messageSender = new RabbitMQManager();
 
         try{
-            List<Boolean> queueOptions = Arrays.asList(true, false, false); // TODO: Change to true, false, true
+            List<Boolean> queueOptions = Arrays.asList(true, false, true);
             messageSender.connect("", null, queueOptions);
             messageSender.sendMessageToExchange(KEY_TO_PUBLISH, MESSAGE);
             logger.info("Message sent to RabbitMQ: {}", MESSAGE);
