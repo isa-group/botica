@@ -57,8 +57,8 @@ public class TestCaseGeneratorLauncher {
 
     private void connectToRabbitMQ(String queueName) throws IOException, TimeoutException {
         List<Boolean> queueOptions = Arrays.asList(true, false, true);
-        messageSender.connect(queueName, "testCaseGenerator." + queueName, queueOptions);
-        logger.info("Connected to RabbitMQ");
+        messageSender.connect(queueName, "testCaseGenerator." + queueName, queueOptions); //TODO: Change the binding key depending on the bot
+        logger.log(Level.INFO, "{0} connected to RabbitMQ", new Object[]{queueName});
     }
 
     /**

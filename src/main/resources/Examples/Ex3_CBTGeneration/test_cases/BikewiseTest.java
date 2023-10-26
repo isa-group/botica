@@ -41,11 +41,11 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_to2amvjj3qeb_GETversionincidentsformat() {
-		String testResultId = "test_to2amvjj3qeb_GETversionincidentsformat";
+	public void test_1hv61900mtnc2_GETversionincidentsformat() {
+		String testResultId = "test_1hv61900mtnc2_GETversionincidentsformat";
 
-		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter page from '54' to string 'VztQQJPdfzMslUey'");
-		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter page from '54' to string 'VztQQJPdfzMslUey'");
+		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of string (enum) parameter incident_type from 'theft' to boolean 'false'");
+		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of string (enum) parameter incident_type from 'theft' to boolean 'false'");
 		csvFilter.setTestResultId(testResultId);
 		statusCode5XXFilter.setTestResultId(testResultId);
 		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
@@ -54,10 +54,10 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("proximity", "silique")
-				.queryParam("occurred_after", "48")
-				.queryParam("proximity_square", "12")
-				.queryParam("page", "VztQQJPdfzMslUey")
+				.queryParam("incident_type", "false")
+				.queryParam("occurred_before", "79")
+				.queryParam("occurred_after", "19")
+				.queryParam("page", "35")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -75,8 +75,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_rhlna7ufjdyc_GETversionincidentsformat() {
-		String testResultId = "test_rhlna7ufjdyc_GETversionincidentsformat";
+	public void test_qxyvx6lvsym0_GETversionincidentsformat() {
+		String testResultId = "test_qxyvx6lvsym0_GETversionincidentsformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -88,834 +88,624 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("per_page", "49")
-				.queryParam("occurred_after", "65")
-				.queryParam("query", "bird-nest")
-				.queryParam("proximity_square", "72")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_skmrqjrv5i5s_GETversionincidentsformat() {
-		String testResultId = "test_skmrqjrv5i5s_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("incident_type", "crash")
-				.queryParam("proximity", "impunity")
-				.queryParam("occurred_before", "51")
-				.queryParam("query", "distort")
-				.queryParam("proximity_square", "40")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_t4l4u2ehgqpk_GETversionincidentsformat() {
-		String testResultId = "test_t4l4u2ehgqpk_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("proximity", "salmo")
-				.queryParam("occurred_after", "41")
-				.queryParam("proximity_square", "13")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_sl3we8ank4f8_GETversionincidentsformat() {
-		String testResultId = "test_sl3we8ank4f8_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("incident_type", "unconfirmed")
-				.queryParam("occurred_before", "43")
-				.queryParam("occurred_after", "72")
-				.queryParam("page", "86")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1jefgqppuwx0y_GETversionincidentsformat() {
-		String testResultId = "test_1jefgqppuwx0y_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("per_page", "48")
-				.queryParam("incident_type", "crash")
-				.queryParam("proximity_square", "70")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_uruo7vg84t45_GETversionincidentsformat() {
-		String testResultId = "test_uruo7vg84t45_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("per_page", "92")
-				.queryParam("incident_type", "crash")
-				.queryParam("proximity", "innkeeper")
-				.queryParam("occurred_before", "37")
-				.queryParam("occurred_after", "41")
-				.queryParam("query", "speckle")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_to7vf8uysunp_GETversionincidentsformat() {
-		String testResultId = "test_to7vf8uysunp_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("query", "vault")
-				.queryParam("proximity_square", "35")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_s0x8d1dqlmqr_GETversionincidentsformat() {
-		String testResultId = "test_s0x8d1dqlmqr_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("incident_type", "crash")
-				.queryParam("query", "lionize")
-				.queryParam("proximity_square", "58")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_qxtb7fyjl0l1_GETversionincidentsformat() {
-		String testResultId = "test_qxtb7fyjl0l1_GETversionincidentsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("incident_type", "crash")
-				.queryParam("proximity", "twinkler")
-				.queryParam("occurred_before", "26")
-				.queryParam("occurred_after", "59")
-				.queryParam("query", "diazotize")
-				.queryParam("proximity_square", "15")
-				.queryParam("page", "18")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1jia26c6s233n_GETversionincidentsidformat() {
-		String testResultId = "test_1jia26c6s233n_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter id from '40' to string 'mVcaukINWKKxdn'");
-		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter id from '40' to string 'mVcaukINWKKxdn'");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "mVcaukINWKKxdn")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1iv1jskff4cbo_GETversionincidentsidformat() {
-		String testResultId = "test_1iv1jskff4cbo_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "35")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_vf45o8rprmt2_GETversionincidentsidformat() {
-		String testResultId = "test_vf45o8rprmt2_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "22")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1h7x05n2nfdip_GETversionincidentsidformat() {
-		String testResultId = "test_1h7x05n2nfdip_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "22")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1ib8snr5qiu06_GETversionincidentsidformat() {
-		String testResultId = "test_1ib8snr5qiu06_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "93")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1ib6hyrbr7a02_GETversionincidentsidformat() {
-		String testResultId = "test_1ib6hyrbr7a02_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "41")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_rl5589jafyas_GETversionincidentsidformat() {
-		String testResultId = "test_rl5589jafyas_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "38")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_s5054d9a7rjt_GETversionincidentsidformat() {
-		String testResultId = "test_s5054d9a7rjt_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "52")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_toieyuaobq5v_GETversionincidentsidformat() {
-		String testResultId = "test_toieyuaobq5v_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "37")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_qxttx6p9uque_GETversionincidentsidformat() {
-		String testResultId = "test_qxttx6p9uque_GETversionincidentsidformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.pathParam("id", "41")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/incidents/{id}");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_rkwryucssunr_GETversionlocationsformat() {
-		String testResultId = "test_rkwryucssunr_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter proximity_square from 'null' to string 'twYUHuvDCWNp'");
-		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter proximity_square from 'null' to string 'twYUHuvDCWNp'");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "false")
-				.queryParam("occurred_before", "50")
-				.queryParam("occurred_after", "20")
-				.queryParam("proximity_square", "twYUHuvDCWNp")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1jy4xdw49ujc5_GETversionlocationsformat() {
-		String testResultId = "test_1jy4xdw49ujc5_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "true")
-				.queryParam("occurred_before", "55")
-				.queryParam("proximity_square", "75")
-				.queryParam("limit", "15")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1jelizoqaebzl_GETversionlocationsformat() {
-		String testResultId = "test_1jelizoqaebzl_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "true")
-				.queryParam("occurred_before", "56")
-				.queryParam("occurred_after", "14")
-				.queryParam("query", "resolvable")
-				.queryParam("proximity_square", "36")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_rkwtzj13nhpi_GETversionlocationsformat() {
-		String testResultId = "test_rkwtzj13nhpi_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "true")
-				.queryParam("proximity", "undiscoverable")
-				.queryParam("occurred_after", "26")
-				.queryParam("limit", "24")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1hrlyyr6xyjw6_GETversionlocationsformat() {
-		String testResultId = "test_1hrlyyr6xyjw6_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "false")
-				.queryParam("proximity", "tawny")
-				.queryParam("occurred_after", "67")
-				.queryParam("proximity_square", "92")
-				.queryParam("limit", "25")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_to4kxu8tky0l_GETversionlocationsformat() {
-		String testResultId = "test_to4kxu8tky0l_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "true")
-				.queryParam("occurred_before", "92")
-				.queryParam("occurred_after", "8")
-				.queryParam("query", "curatorial")
-				.queryParam("limit", "71")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1hv8adyz7fgok_GETversionlocationsformat() {
-		String testResultId = "test_1hv8adyz7fgok_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "true")
+				.queryParam("per_page", "69")
 				.queryParam("incident_type", "hazard")
-				.queryParam("occurred_before", "66")
-				.queryParam("occurred_after", "66")
+				.queryParam("proximity", "palladio")
+				.queryParam("occurred_before", "58")
+				.queryParam("proximity_square", "90")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_rhtzbq9c4yex_GETversionincidentsformat() {
+		String testResultId = "test_rhtzbq9c4yex_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("incident_type", "hazard")
+				.queryParam("proximity", "luce")
+				.queryParam("occurred_after", "53")
+				.queryParam("query", "cheque")
+				.queryParam("proximity_square", "30")
+				.queryParam("page", "45")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1ibh3iyc802n6_GETversionincidentsformat() {
+		String testResultId = "test_1ibh3iyc802n6_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("per_page", "29")
+				.queryParam("occurred_after", "96")
+				.queryParam("query", "proportion")
+				.queryParam("page", "56")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_qxfjg7f7446o_GETversionincidentsformat() {
+		String testResultId = "test_qxfjg7f7446o_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("per_page", "67")
+				.queryParam("proximity", "topiary")
+				.queryParam("occurred_before", "26")
+				.queryParam("occurred_after", "87")
+				.queryParam("query", "copy")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1iykjw6g24n6s_GETversionincidentsformat() {
+		String testResultId = "test_1iykjw6g24n6s_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("per_page", "88")
+				.queryParam("incident_type", "unconfirmed")
+				.queryParam("occurred_after", "56")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_rhald1rez2nq_GETversionincidentsformat() {
+		String testResultId = "test_rhald1rez2nq_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1hvbkh8z6zghg_GETversionincidentsformat() {
+		String testResultId = "test_1hvbkh8z6zghg_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("query", "mope")
+				.queryParam("proximity_square", "48")
+				.queryParam("page", "64")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_sknbme7lk4tf_GETversionincidentsformat() {
+		String testResultId = "test_sknbme7lk4tf_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("occurred_before", "57")
+				.queryParam("occurred_after", "70")
+				.queryParam("proximity_square", "61")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1hb7nrhy7r8z9_GETversionincidentsformat() {
+		String testResultId = "test_1hb7nrhy7r8z9_GETversionincidentsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("per_page", "90")
+				.queryParam("query", "rootle")
+				.queryParam("page", "2")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1jy2opwrul1dk_GETversionincidentsidformat() {
+		String testResultId = "test_1jy2opwrul1dk_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter id from '95' to number '7732.809975655589'");
+		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter id from '95' to number '7732.809975655589'");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "7732.809975655589")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1k22cau80dnp5_GETversionincidentsidformat() {
+		String testResultId = "test_1k22cau80dnp5_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "25")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_ure0eniiog8o_GETversionincidentsidformat() {
+		String testResultId = "test_ure0eniiog8o_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "71")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_tonxssmdcxgk_GETversionincidentsidformat() {
+		String testResultId = "test_tonxssmdcxgk_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "3")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_qxi9o14s30wy_GETversionincidentsidformat() {
+		String testResultId = "test_qxi9o14s30wy_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "22")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_toig4pp65o36_GETversionincidentsidformat() {
+		String testResultId = "test_toig4pp65o36_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "56")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_t4svyqwi60dd_GETversionincidentsidformat() {
+		String testResultId = "test_t4svyqwi60dd_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "60")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1k1zkx9psgjld_GETversionincidentsidformat() {
+		String testResultId = "test_1k1zkx9psgjld_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "92")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_r1a3e69x9kc6_GETversionincidentsidformat() {
+		String testResultId = "test_r1a3e69x9kc6_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "87")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_u8aq9fmiykvp_GETversionincidentsidformat() {
+		String testResultId = "test_u8aq9fmiykvp_GETversionincidentsidformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.pathParam("id", "14")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/incidents/{id}");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_trz4taaqdowy_GETversionlocationsformat() {
+		String testResultId = "test_trz4taaqdowy_GETversionlocationsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of boolean parameter all from 'false' to number '4944.176600605484'");
+		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of boolean parameter all from 'false' to number '4944.176600605484'");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "4944.176600605484")
+				.queryParam("proximity", "uxoricide")
+				.queryParam("occurred_before", "85")
+				.queryParam("occurred_after", "21")
+				.queryParam("proximity_square", "40")
+				.queryParam("limit", "61")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -933,215 +723,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_1jyd93mncw1no_GETversionlocationsformat() {
-		String testResultId = "test_1jyd93mncw1no_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("incident_type", "crash")
-				.queryParam("occurred_after", "59")
-				.queryParam("limit", "13")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1iun4npzi1vtu_GETversionlocationsformat() {
-		String testResultId = "test_1iun4npzi1vtu_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "false")
-				.queryParam("proximity", "unreadable")
-				.queryParam("occurred_after", "94")
-				.queryParam("query", "wagnerian")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_t4nfgvnjcbja_GETversionlocationsformat() {
-		String testResultId = "test_t4nfgvnjcbja_GETversionlocationsformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("occurred_before", "38")
-				.queryParam("proximity_square", "72")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1jeoadswxdzjp_GETversionlocationsmarkersformat() {
-		String testResultId = "test_1jeoadswxdzjp_GETversionlocationsmarkersformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of boolean parameter all from 'null' to number '7240.26268160095'");
-		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of boolean parameter all from 'null' to number '7240.26268160095'");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "7240.26268160095")
-				.queryParam("incident_type", "crash")
-				.queryParam("proximity", "winker")
-				.queryParam("occurred_before", "94")
-				.queryParam("occurred_after", "50")
-				.queryParam("query", "heathlike")
-				.queryParam("proximity_square", "64")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations/markers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1k1uifvz0o02p_GETversionlocationsmarkersformat() {
-		String testResultId = "test_1k1uifvz0o02p_GETversionlocationsmarkersformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("all", "false")
-				.queryParam("proximity", "mayday")
-				.queryParam("occurred_before", "43")
-				.queryParam("occurred_after", "4")
-				.queryParam("proximity_square", "4")
-				.queryParam("limit", "92")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations/markers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_rhofg4euif6r_GETversionlocationsmarkersformat() {
-		String testResultId = "test_rhofg4euif6r_GETversionlocationsmarkersformat";
-
-		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
-		statusCode5XXFilter.updateFaultyData(false, true, "none");
-		csvFilter.setTestResultId(testResultId);
-		statusCode5XXFilter.setTestResultId(testResultId);
-		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
-		validationFilter.setTestResultId(testResultId);
-
-		try {
-			Response response = RestAssured
-			.given()
-				.queryParam("proximity", "colloquialism")
-				.queryParam("occurred_before", "46")
-				.queryParam("occurred_after", "30")
-				.queryParam("proximity_square", "72")
-				.queryParam("limit", "70")
-				.filter(allureFilter)
-				.filter(statusCode5XXFilter)
-				.filter(nominalOrFaultyTestCaseFilter)
-				.filter(validationFilter)
-				.filter(csvFilter)
-			.when()
-				.get("/v2/locations/markers");
-
-			response.then();
-			System.out.println("Test passed.");
-		} catch (RuntimeException ex) {
-			System.err.println(ex.getMessage());
-			fail(ex.getMessage());
-		}
-	}
-
-	@Test
-	public void test_1iauw5weang3d_GETversionlocationsmarkersformat() {
-		String testResultId = "test_1iauw5weang3d_GETversionlocationsmarkersformat";
+	public void test_1jy2p3tjjt2lh_GETversionlocationsformat() {
+		String testResultId = "test_1jy2p3tjjt2lh_GETversionlocationsformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1155,16 +738,13 @@ public class BikewiseTest {
 			.given()
 				.queryParam("all", "true")
 				.queryParam("incident_type", "theft")
-				.queryParam("occurred_before", "33")
-				.queryParam("occurred_after", "60")
-				.queryParam("limit", "81")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
 				.filter(validationFilter)
 				.filter(csvFilter)
 			.when()
-				.get("/v2/locations/markers");
+				.get("/v2/locations");
 
 			response.then();
 			System.out.println("Test passed.");
@@ -1175,8 +755,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_uboo9n0fpdmd_GETversionlocationsmarkersformat() {
-		String testResultId = "test_uboo9n0fpdmd_GETversionlocationsmarkersformat";
+	public void test_uv6cudr86ed4_GETversionlocationsformat() {
+		String testResultId = "test_uv6cudr86ed4_GETversionlocationsformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1188,15 +768,20 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("all", "true")
-				.queryParam("query", "nonphysical")
+				.queryParam("all", "false")
+				.queryParam("incident_type", "crash")
+				.queryParam("proximity", "ni-resist")
+				.queryParam("occurred_before", "88")
+				.queryParam("query", "convincing")
+				.queryParam("proximity_square", "24")
+				.queryParam("limit", "59")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
 				.filter(validationFilter)
 				.filter(csvFilter)
 			.when()
-				.get("/v2/locations/markers");
+				.get("/v2/locations");
 
 			response.then();
 			System.out.println("Test passed.");
@@ -1207,8 +792,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_1hruaa2so9fzm_GETversionlocationsmarkersformat() {
-		String testResultId = "test_1hruaa2so9fzm_GETversionlocationsmarkersformat";
+	public void test_1ib8p5h7eoppy_GETversionlocationsformat() {
+		String testResultId = "test_1ib8p5h7eoppy_GETversionlocationsformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1220,17 +805,15 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("proximity", "nematocera")
-				.queryParam("occurred_before", "5")
-				.queryParam("occurred_after", "75")
-				.queryParam("query", "neoclassical")
+				.queryParam("query", "ectopic")
+				.queryParam("proximity_square", "97")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
 				.filter(validationFilter)
 				.filter(csvFilter)
 			.when()
-				.get("/v2/locations/markers");
+				.get("/v2/locations");
 
 			response.then();
 			System.out.println("Test passed.");
@@ -1241,8 +824,75 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_u7wvpl7mvltf_GETversionlocationsmarkersformat() {
-		String testResultId = "test_u7wvpl7mvltf_GETversionlocationsmarkersformat";
+	public void test_1hrp9g0a5f86r_GETversionlocationsformat() {
+		String testResultId = "test_1hrp9g0a5f86r_GETversionlocationsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("incident_type", "chop_shop")
+				.queryParam("proximity_square", "71")
+				.queryParam("limit", "29")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1ji1o48q1dhdh_GETversionlocationsformat() {
+		String testResultId = "test_1ji1o48q1dhdh_GETversionlocationsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "false")
+				.queryParam("incident_type", "unconfirmed")
+				.queryParam("occurred_before", "70")
+				.queryParam("proximity_square", "72")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1jyiuzz3uj6t1_GETversionlocationsformat() {
+		String testResultId = "test_1jyiuzz3uj6t1_GETversionlocationsformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1255,11 +905,152 @@ public class BikewiseTest {
 			Response response = RestAssured
 			.given()
 				.queryParam("incident_type", "hazard")
-				.queryParam("occurred_before", "57")
-				.queryParam("occurred_after", "22")
-				.queryParam("query", "unlucky")
-				.queryParam("proximity_square", "4")
-				.queryParam("limit", "56")
+				.queryParam("occurred_before", "9")
+				.queryParam("occurred_after", "40")
+				.queryParam("limit", "84")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_urrw24tim4ac_GETversionlocationsformat() {
+		String testResultId = "test_urrw24tim4ac_GETversionlocationsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("incident_type", "infrastructure_issue")
+				.queryParam("proximity", "byelorussian")
+				.queryParam("occurred_before", "35")
+				.queryParam("occurred_after", "4")
+				.queryParam("query", "stripped-down")
+				.queryParam("proximity_square", "15")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_r1cvk9455ik2_GETversionlocationsformat() {
+		String testResultId = "test_r1cvk9455ik2_GETversionlocationsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "false")
+				.queryParam("incident_type", "hazard")
+				.queryParam("proximity", "sexagenarian")
+				.queryParam("occurred_before", "92")
+				.queryParam("occurred_after", "50")
+				.queryParam("proximity_square", "9")
+				.queryParam("limit", "67")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_qdysgsnxbg3d_GETversionlocationsformat() {
+		String testResultId = "test_qdysgsnxbg3d_GETversionlocationsformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "true")
+				.queryParam("proximity", "praxis")
+				.queryParam("occurred_before", "36")
+				.queryParam("occurred_after", "1")
+				.queryParam("limit", "23")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_rkwuoumfw186_GETversionlocationsmarkersformat() {
+		String testResultId = "test_rkwuoumfw186_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter proximity_square from 'null' to boolean 'false'");
+		statusCode5XXFilter.updateFaultyData(true, true, "individual_parameter_constraint:Changed value of integer parameter proximity_square from 'null' to boolean 'false'");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("proximity", "fluoridate")
+				.queryParam("occurred_before", "86")
+				.queryParam("query", "forfend")
+				.queryParam("limit", "26")
+				.queryParam("proximity_square", "false")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -1277,8 +1068,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_vf97ooguhohi_GETversionlocationsmarkersformat() {
-		String testResultId = "test_vf97ooguhohi_GETversionlocationsmarkersformat";
+	public void test_skk1j8k3a7hd_GETversionlocationsmarkersformat() {
+		String testResultId = "test_skk1j8k3a7hd_GETversionlocationsmarkersformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1290,8 +1081,8 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("proximity_square", "53")
-				.queryParam("limit", "72")
+				.queryParam("occurred_before", "74")
+				.queryParam("proximity_square", "56")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -1309,8 +1100,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_sl3es7mmqpnp_GETversionlocationsmarkersformat() {
-		String testResultId = "test_sl3es7mmqpnp_GETversionlocationsmarkersformat";
+	public void test_ubgv9jxjq81e_GETversionlocationsmarkersformat() {
+		String testResultId = "test_ubgv9jxjq81e_GETversionlocationsmarkersformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1322,9 +1113,10 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("occurred_before", "58")
-				.queryParam("query", "centenarian")
-				.queryParam("limit", "3")
+				.queryParam("all", "false")
+				.queryParam("incident_type", "chop_shop")
+				.queryParam("occurred_after", "48")
+				.queryParam("proximity_square", "71")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)
@@ -1342,8 +1134,8 @@ public class BikewiseTest {
 	}
 
 	@Test
-	public void test_s1gptmq2jg37_GETversionlocationsmarkersformat() {
-		String testResultId = "test_s1gptmq2jg37_GETversionlocationsmarkersformat";
+	public void test_1ibh3zemrhl5y_GETversionlocationsmarkersformat() {
+		String testResultId = "test_1ibh3zemrhl5y_GETversionlocationsmarkersformat";
 
 		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
 		statusCode5XXFilter.updateFaultyData(false, true, "none");
@@ -1355,7 +1147,212 @@ public class BikewiseTest {
 		try {
 			Response response = RestAssured
 			.given()
-				.queryParam("limit", "90")
+				.queryParam("incident_type", "hazard")
+				.queryParam("proximity", "twig")
+				.queryParam("occurred_after", "93")
+				.queryParam("proximity_square", "99")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations/markers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_t49in4pa0485_GETversionlocationsmarkersformat() {
+		String testResultId = "test_t49in4pa0485_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "true")
+				.queryParam("occurred_before", "82")
+				.queryParam("proximity_square", "56")
+				.queryParam("limit", "32")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations/markers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_sonf40pmr61u_GETversionlocationsmarkersformat() {
+		String testResultId = "test_sonf40pmr61u_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("incident_type", "chop_shop")
+				.queryParam("proximity", "frighten")
+				.queryParam("occurred_before", "56")
+				.queryParam("query", "cocker")
+				.queryParam("limit", "14")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations/markers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_us07b1aa80fo_GETversionlocationsmarkersformat() {
+		String testResultId = "test_us07b1aa80fo_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "false")
+				.queryParam("incident_type", "chop_shop")
+				.queryParam("query", "drift")
+				.queryParam("proximity_square", "32")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations/markers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_1jy7ri0wzadlx_GETversionlocationsmarkersformat() {
+		String testResultId = "test_1jy7ri0wzadlx_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("incident_type", "crash")
+				.queryParam("occurred_after", "51")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations/markers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_to4m435ri04x_GETversionlocationsmarkersformat() {
+		String testResultId = "test_to4m435ri04x_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("proximity", "reorientate")
+				.queryParam("occurred_before", "81")
+				.queryParam("query", "fluctuate")
+				.queryParam("limit", "43")
+				.filter(allureFilter)
+				.filter(statusCode5XXFilter)
+				.filter(nominalOrFaultyTestCaseFilter)
+				.filter(validationFilter)
+				.filter(csvFilter)
+			.when()
+				.get("/v2/locations/markers");
+
+			response.then();
+			System.out.println("Test passed.");
+		} catch (RuntimeException ex) {
+			System.err.println(ex.getMessage());
+			fail(ex.getMessage());
+		}
+	}
+
+	@Test
+	public void test_t4yhdzfdb78k_GETversionlocationsmarkersformat() {
+		String testResultId = "test_t4yhdzfdb78k_GETversionlocationsmarkersformat";
+
+		nominalOrFaultyTestCaseFilter.updateFaultyData(false, true, "none");
+		statusCode5XXFilter.updateFaultyData(false, true, "none");
+		csvFilter.setTestResultId(testResultId);
+		statusCode5XXFilter.setTestResultId(testResultId);
+		nominalOrFaultyTestCaseFilter.setTestResultId(testResultId);
+		validationFilter.setTestResultId(testResultId);
+
+		try {
+			Response response = RestAssured
+			.given()
+				.queryParam("all", "false")
+				.queryParam("occurred_after", "63")
+				.queryParam("limit", "18")
 				.filter(allureFilter)
 				.filter(statusCode5XXFilter)
 				.filter(nominalOrFaultyTestCaseFilter)

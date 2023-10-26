@@ -82,7 +82,10 @@ public class RabbitMQManager {
      * @throws IOException      If an I/O error occurs while connecting.
      * @throws TimeoutException If a timeout occurs while connecting.
      */
-    public void connect(String queueName, String bindingKey, List<Boolean> queueOptions) throws IOException, TimeoutException {
+    public String connect(String queueName, String bindingKey, List<Boolean> queueOptions) throws IOException, TimeoutException {
+        
+        String queue = null;
+
         try{
             connection = factory.newConnection();
             channel = connection.createChannel();
@@ -91,13 +94,14 @@ public class RabbitMQManager {
             arguments.put("x-message-ttl", MESSAGE_TTL);
 
             channel.queueDeclare(queueName, queueOptions.get(0), queueOptions.get(1), queueOptions.get(2), arguments);
+            queue = channel.queueDeclare().getQueue();
             if (bindingKey != null){
                 channel.queueBind(queueName, serverExchange, bindingKey);
             }
-
         } catch (IOException | TimeoutException e) {
             Utils.handleException(logger, "Error connecting to RabbitMQ", e);
         }
+        return queue;
     }
 
     /**
@@ -113,6 +117,23 @@ public class RabbitMQManager {
         } catch (Exception e) {
             Utils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
+    }
+
+    /**
+     * Receive messages from the specified queue.
+     *
+     * @param queueName The name of the queue to receive messages from.
+     * @throws IOException If an I/O error occurs while receiving messages.
+     */
+    public void receiveMessage(String queueName) throws IOException {
+
+        logger.info(" [*] Waiting for messages. To exit press CTRL+C");
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
+            logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
+        };
+        channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
 
     /**
