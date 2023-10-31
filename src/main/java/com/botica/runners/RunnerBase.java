@@ -1,5 +1,7 @@
 package com.botica.runners;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -7,10 +9,13 @@ import org.json.JSONObject;
 import com.botica.utils.JSON;
 
 public class RunnerBase {
+
     private static final String BOTS_DEFINITION_FILE_NAME = "bots-definition.json";
     public static final String DEFAULT_BOTS_DEFINITION_PATH = "src/main/java/com/botica/bots/" + BOTS_DEFINITION_FILE_NAME;
 
     protected static final String JSON_ARRAY = "bots";
+
+    private static final Logger logger = LogManager.getLogger(RunnerBase.class);
 
     /**
      * Loads the bots data from the JSON file.
@@ -28,17 +33,27 @@ public class RunnerBase {
 
     protected static void launchBots(JSONObject botDefinition, LauncherInterface launcher) {
         
-        //TODO: Add validation to check if the JSON object contains the required keys.
+        if (isValidBotDefinition(botDefinition)) {
         
-        JSONArray bots = botDefinition.getJSONArray(JSON_ARRAY);
-        String order = botDefinition.getString("order");
-        String keyToPublish = botDefinition.getString("keyToPublish");
-        String orderToPublish = botDefinition.getString("orderToPublish");
+            JSONArray bots = botDefinition.getJSONArray(JSON_ARRAY);
+            String order = botDefinition.getString("order");
+            String keyToPublish = botDefinition.getString("keyToPublish");
+            String orderToPublish = botDefinition.getString("orderToPublish");
 
-        for (int i = 0; i < bots.length(); i++) {
-            JSONObject botData = bots.getJSONObject(i);
-            launcher.launchBot(botData, order, keyToPublish, orderToPublish);
+            for (int i = 0; i < bots.length(); i++) {
+                JSONObject botData = bots.getJSONObject(i);
+                launcher.launchBot(botData, order, keyToPublish, orderToPublish);
+            }
+        } else {
+            logger.error("Invalid bot definition");
         }
+    }
+
+    private static boolean isValidBotDefinition(JSONObject botDefinition) {
+        return botDefinition.has(JSON_ARRAY) &&
+                botDefinition.has("order") &&
+                botDefinition.has("keyToPublish") &&
+                botDefinition.has("orderToPublish");
     }
 
     protected interface LauncherInterface {

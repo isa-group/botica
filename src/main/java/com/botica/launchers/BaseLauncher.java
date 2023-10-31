@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 import org.json.JSONObject;
 
 import com.botica.RabbitMQManager;
+import com.botica.utils.BotConfig;
 
 public class BaseLauncher {
 
@@ -17,14 +18,13 @@ public class BaseLauncher {
     private static final String BOT_ID_JSON_KEY = "botId";
     protected final RabbitMQManager messageSender = new RabbitMQManager();
 
-    //TODO: Reduce the number of parameters
-    protected void launchBot(JSONObject botData, String queueName, String bindingKey, String order, String keyToPublish, String orderToPublish, boolean autoDelete, String botType) {
+    protected void launchBot(JSONObject botData, BotConfig botConfig, String queueName, String bindingKey, boolean autoDelete) {
         
         String botId = botData.getString(BOT_ID_JSON_KEY);
 
         try {
             connectToRabbitMQ(queueName, bindingKey, botId, autoDelete);
-            messageSender.receiveMessage(queueName, botData, botType, order, keyToPublish, orderToPublish);
+            messageSender.receiveMessage(queueName, botData, botConfig.getBotType(), botConfig.getOrder(), botConfig.getKeyToPublish(), botConfig.getOrderToPublish());
         } catch (Exception e) {
             logger.log(Level.SEVERE, e.getMessage(), e);
         }

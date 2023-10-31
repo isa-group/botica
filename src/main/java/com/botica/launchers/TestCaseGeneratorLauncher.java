@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import org.json.JSONObject;
 
 import com.botica.generators.TestCaseGenerator;
+import com.botica.utils.BotConfig;
 
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
@@ -37,9 +38,10 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
      */
     public void launchTestGenerator(JSONObject botData, String order, String keyToPublish, String orderToPublish) {
         
+        BotConfig botConfig = new BotConfig(null, order, keyToPublish, orderToPublish, BOT_TYPE);
         String queueName = botData.getString(BOT_ID_JSON_KEY);
         String bindingKey = "testCaseGenerator." + queueName;
-        launchBot(botData, queueName, bindingKey, order, keyToPublish, orderToPublish, true, BOT_TYPE);
+        launchBot(botData, botConfig, queueName, bindingKey, true);
     }
 
     /**
@@ -58,7 +60,9 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
 
             AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
 
-            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType, keyToPublish, orderToPublish, propertyFilePath);
+            BotConfig botConfig = new BotConfig(botId, null, keyToPublish, orderToPublish, BOT_TYPE);
+
+            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botConfig, generatorType, propertyFilePath);
 
             Collection<TestCase> testCases = testGenerator.generate();
 

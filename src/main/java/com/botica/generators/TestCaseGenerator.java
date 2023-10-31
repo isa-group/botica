@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.botica.interfaces.TestCaseGeneratorInterface;
+import com.botica.utils.BotConfig;
 import com.botica.utils.RabbitCommunicator;
 
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
@@ -40,13 +41,13 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
      * @param generatorType            The test case generator type ('FT', 'RT', 'CBT' or 'ART').
      * @param keyToPublish             The binding key to publish a message to the RabbitMQ broker.
      */
-    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType, String keyToPublish, String orderToPublish, String propertyFilePath) {
+    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, BotConfig botConfig, String generatorType, String propertyFilePath) {
         this.absractTestCaseGenerator = absractTestCaseGenerator;
         this.loader = loader;
-        this.botId = botId;
+        this.botId = botConfig.getBotId();
         this.generatorType = generatorType;
-        this.keyToPublish = keyToPublish;
-        this.orderToPublish = orderToPublish;
+        this.keyToPublish = botConfig.getKeyToPublish();
+        this.orderToPublish = botConfig.getOrderToPublish();
         this.propertyFilePath = propertyFilePath;
         this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
     }

@@ -3,6 +3,8 @@ package com.botica.launchers;
 import org.json.JSONObject;
 
 import com.botica.generators.TestCaseExecutor;
+import com.botica.utils.BotConfig;
+
 import es.us.isa.restest.runners.RESTestExecutor;
 public class TestCaseExecutorLauncher extends BaseLauncher{
 
@@ -19,8 +21,9 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
      */
     public void launchTestExecutor(JSONObject botData, String order, String keyToPublish, String orderToPublish) {
         
+        BotConfig botConfig = new BotConfig(null, order, keyToPublish, orderToPublish, BOT_TYPE);
         String queueName = BOT_TYPE;
-        launchBot(botData, queueName, BINDING_KEY, order, keyToPublish, orderToPublish, false, BOT_TYPE);
+        launchBot(botData, botConfig, queueName, BINDING_KEY, false);
     }
 
     /**
