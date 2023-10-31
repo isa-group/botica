@@ -8,6 +8,11 @@ import org.json.JSONObject;
 
 import com.botica.utils.JSON;
 
+/**
+ * The RunnerBase class serves as the base class for bot runners and provides
+ * methods for loading bot data from a JSON file, launching bots, and checking
+ * the validity of bot definitions.
+ */
 public class RunnerBase {
 
     private static final String BOTS_DEFINITION_FILE_NAME = "bots-definition.json";

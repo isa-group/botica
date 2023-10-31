@@ -7,6 +7,15 @@ public class BotConfig {
     private String orderToPublish;
     private String botType;
 
+    /**
+     * Constructor for the BotConfig class.
+     *
+     * @param botId          The identifier of the bot.
+     * @param order          The order associated with the bot.
+     * @param keyToPublish   The binding key for publishing messages.
+     * @param orderToPublish The order to be sent in the message.
+     * @param botType        The type of the bot.
+     */
     public BotConfig(String botId, String order, String keyToPublish, String orderToPublish, String botType) {
         this.botId = botId;
         this.order = order;

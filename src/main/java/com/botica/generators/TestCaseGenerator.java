@@ -37,9 +37,9 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
      * 
      * @param absractTestCaseGenerator The AbstractTestCaseGenerator class used to generate test cases.
      * @param loader                   The RESTestLoader class used to load the properties files.
-     * @param botId                    The test case generator id.
+     * @param botConfig                The BotConfig class containing the bot configuration.
      * @param generatorType            The test case generator type ('FT', 'RT', 'CBT' or 'ART').
-     * @param keyToPublish             The binding key to publish a message to the RabbitMQ broker.
+     * @param propertyFilePath         The path to the properties file.
      */
     public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, BotConfig botConfig, String generatorType, String propertyFilePath) {
         this.absractTestCaseGenerator = absractTestCaseGenerator;
@@ -52,6 +52,9 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
     }
 
+    /**
+     * Generates test cases and sends a completion message through RabbitMQ.
+     */
     @Override
     public Collection<TestCase> generate() throws RESTestException {
         Collection<TestCase> testCases = absractTestCaseGenerator.generate();

@@ -6,6 +6,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import com.botica.launchers.TestCaseExecutorLauncher;
 import com.botica.launchers.TestCaseGeneratorLauncher;
+import com.botica.utils.BotConfig;
 import com.botica.utils.JSON;
 import com.botica.utils.Utils;
 
@@ -146,11 +147,14 @@ public class RabbitMQManager {
      * @param keyToPublish The binding key to publish  a message to the RabbitMQ broker.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, JSONObject botData, String botType, String order, String keyToPublish, String orderToPublish) throws IOException {
+    public void receiveMessage(String queueName, JSONObject botData, BotConfig botConfig) throws IOException {
 
-        
         String botId = botData.getString(BOT_ID_JSON_KEY);
         boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
+        String botType = botConfig.getBotType();
+        String order = botConfig.getOrder();
+        String keyToPublish = botConfig.getKeyToPublish();
+        String orderToPublish = botConfig.getOrderToPublish();
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -158,6 +162,7 @@ public class RabbitMQManager {
 
             String messageOrder = new JSONObject(message).getString("order");
 
+            //TODO: Extract this to a method
             if (messageOrder.contains(order)){
                 if (botType.equals("testCaseGenerator")) {
                     String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);

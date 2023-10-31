@@ -32,9 +32,10 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
      * Launches test case generator based on bot data provided, and sends and 
      * receives messages through RabbitMQ.
      *
-     * @param botData      The JSON object containing bot data.
-     * @param order        The order that identifies the message sent.
-     * @param keyToPublish The binding key for publishing messages to RabbitMQ.
+     * @param botData           The JSON object containing bot data.
+     * @param order             The order that identifies the message sent.
+     * @param keyToPublish      The binding key for publishing messages to RabbitMQ.
+     * @param orderToPublish    The order to send in the message.
      */
     public void launchTestGenerator(JSONObject botData, String order, String keyToPublish, String orderToPublish) {
         

@@ -6,6 +6,11 @@ import com.botica.generators.TestCaseExecutor;
 import com.botica.utils.BotConfig;
 
 import es.us.isa.restest.runners.RESTestExecutor;
+
+/**
+ * This class is a launcher for executing test cases based on bot data and
+ * generating test cases of specified types.
+ */
 public class TestCaseExecutorLauncher extends BaseLauncher{
 
     private static final String BOT_TYPE = "testCaseExecutor";
@@ -15,9 +20,10 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
      * Launches test case generator based on bot data provided, and sends and 
      * receives messages through RabbitMQ.
      *
-     * @param botData      The JSON object containing bot data.
-     * @param order        The order that identifies the message sent.
-     * @param keyToPublish The binding key for publishing messages to RabbitMQ.
+     * @param botData           The JSON object containing bot data.
+     * @param order             The order that identifies the message received.
+     * @param keyToPublish      The binding key for publishing messages to RabbitMQ.
+     * @param orderToPublish    The order to send in the message.
      */
     public void launchTestExecutor(JSONObject botData, String order, String keyToPublish, String orderToPublish) {
         
@@ -31,7 +37,6 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
      *
      * @param propertyFilePath The path to the property file for test case
      *                         generator.
-     * @param botId            The test case generator identifier.
      * @param keyToPublish     The binding key for publishing messages to RabbitMQ.
      */
     public static void executeTestCases(String propertyFilePath, String keyToPublish) {
