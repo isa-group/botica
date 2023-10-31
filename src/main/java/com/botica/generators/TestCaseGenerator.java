@@ -1,16 +1,13 @@
 package com.botica.generators;
 
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
-import com.botica.RabbitMQManager;
 import com.botica.interfaces.TestCaseGeneratorInterface;
-import com.botica.utils.Utils;
+import com.botica.utils.RabbitCommunicator;
 
 import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestLoader;
@@ -28,7 +25,9 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private String botId;
     private String generatorType;
     private String keyToPublish;
-    private RabbitMQManager messageSender = new RabbitMQManager();
+    private String orderToPublish;
+    private String propertyFilePath;
+    private RabbitCommunicator rabbitCommunicator;
 
     private static final Logger logger = LogManager.getLogger(TestCaseGenerator.class);
 
@@ -41,12 +40,15 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
      * @param generatorType            The test case generator type ('FT', 'RT', 'CBT' or 'ART').
      * @param keyToPublish             The binding key to publish a message to the RabbitMQ broker.
      */
-    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType, String keyToPublish) {
+    public TestCaseGenerator(AbstractTestCaseGenerator absractTestCaseGenerator, RESTestLoader loader, String botId, String generatorType, String keyToPublish, String orderToPublish, String propertyFilePath) {
         this.absractTestCaseGenerator = absractTestCaseGenerator;
         this.loader = loader;
         this.botId = botId;
         this.generatorType = generatorType;
         this.keyToPublish = keyToPublish;
+        this.orderToPublish = orderToPublish;
+        this.propertyFilePath = propertyFilePath;
+        this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
     }
 
     @Override
@@ -54,7 +56,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         Collection<TestCase> testCases = absractTestCaseGenerator.generate();
 
         String message = generateJSONMessage();
-        sendMessage(message);
+        rabbitCommunicator.sendMessage(message);
         
         return testCases;
     }
@@ -68,6 +70,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     private String generateJSONMessage() {
 
         JSONObject message = new JSONObject();
+        message.put("order", orderToPublish);
         message.put("botId", this.botId);
         message.put("generatorType", generatorType);
         message.put("faultyRatio", absractTestCaseGenerator.getFaultyRatio());
@@ -75,28 +78,11 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         message.put("nTotalNominal", absractTestCaseGenerator.getnNominal());
         message.put("maxTriesPerTestCase", absractTestCaseGenerator.getMaxTriesPerTestCase());
         message.put("targetDirJava", loader.getTargetDirJava());
-        message.put("getAllureReportsPath", loader.getAllureReportsPath());
-        message.put("getExperimentName", loader.getExperimentName());
+        message.put("allureReportsPath", loader.getAllureReportsPath());
+        message.put("experimentName", loader.getExperimentName());
+        message.put("propertyFilePath", this.propertyFilePath);
 
         return message.toString();
-    }
-
-    /**
-     * Sends a message through RabbitMQ with relevant information about the test
-     * case generation.
-     * 
-     * @param message The message to send.
-     */
-    private void sendMessage(String message){
-        try{
-            List<Boolean> queueOptions = Arrays.asList(true, false, false);
-            messageSender.connect("", null, queueOptions);
-            messageSender.sendMessageToExchange(keyToPublish, message);
-            logger.info("Message sent to RabbitMQ: {}", message);
-            messageSender.close();
-        } catch (Exception e) {
-            Utils.handleException(logger, "Error sending message to RabbitMQ", e);
-        }
     }
     
 }

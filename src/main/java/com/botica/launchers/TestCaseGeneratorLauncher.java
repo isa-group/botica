@@ -1,17 +1,11 @@
 package com.botica.launchers;
 
-import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.json.JSONObject;
 
 import com.botica.generators.TestCaseGenerator;
-import com.botica.RabbitMQManager;
 
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
@@ -28,12 +22,10 @@ import static es.us.isa.restest.util.FileManager.createDir;
  * RabbitMQ, receives and sends messages, and generates test cases based on the
  * specified generator type.
  */
-public class TestCaseGeneratorLauncher {
+public class TestCaseGeneratorLauncher extends BaseLauncher {
 
-    public static final Logger logger = Logger.getLogger(TestCaseGeneratorLauncher.class.getName());
     private static final String BOT_ID_JSON_KEY = "botId";
-
-    private RabbitMQManager messageSender = new RabbitMQManager();
+    private static final String BOT_TYPE = "testCaseGenerator";
 
     /**
      * Launches test case generator based on bot data provided, and sends and 
@@ -43,22 +35,11 @@ public class TestCaseGeneratorLauncher {
      * @param order        The order that identifies the message sent.
      * @param keyToPublish The binding key for publishing messages to RabbitMQ.
      */
-    public void launchTestCases(JSONObject botData, String order, String keyToPublish) {
+    public void launchTestGenerator(JSONObject botData, String order, String keyToPublish, String orderToPublish) {
         
         String queueName = botData.getString(BOT_ID_JSON_KEY);
-        
-        try {
-            connectToRabbitMQ(queueName);
-            messageSender.receiveMessage(queueName, botData, "testCaseGenerator", order, keyToPublish);
-        }catch (Exception e){
-            logger.log(Level.SEVERE, e.getMessage(), e);
-        }
-    }
-
-    private void connectToRabbitMQ(String queueName) throws IOException, TimeoutException {
-        List<Boolean> queueOptions = Arrays.asList(true, false, true);
-        messageSender.connect(queueName, "testCaseGenerator." + queueName, queueOptions); //TODO: Change the binding key depending on the bot
-        logger.log(Level.INFO, "{0} connected to RabbitMQ", new Object[]{queueName});
+        String bindingKey = "testCaseGenerator." + queueName;
+        launchBot(botData, queueName, bindingKey, order, keyToPublish, orderToPublish, true, BOT_TYPE);
     }
 
     /**
@@ -69,7 +50,7 @@ public class TestCaseGeneratorLauncher {
      * @param botId            The test case generator identifier.
      * @param keyToPublish     The binding key for publishing messages to RabbitMQ.
      */
-    public static void generateTestCases(String propertyFilePath, String botId, String keyToPublish) {
+    public static void generateTestCases(String propertyFilePath, String botId, String keyToPublish, String orderToPublish) {
         try {
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
@@ -77,7 +58,7 @@ public class TestCaseGeneratorLauncher {
 
             AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
 
-            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType, keyToPublish);
+            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botId, generatorType, keyToPublish, orderToPublish, propertyFilePath);
 
             Collection<TestCase> testCases = testGenerator.generate();
 

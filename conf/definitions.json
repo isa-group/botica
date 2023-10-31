@@ -66,6 +66,15 @@
             }
         },
         {
+            "name": "testCaseExecutor",
+            "vhost": "/",
+            "durable": true,
+            "auto_delete": false,
+            "arguments": {
+                "x-message-ttl": 3600000
+            }
+        },
+        {
             "name": "testReporter",
             "vhost": "/",
             "durable": true,
@@ -112,6 +121,14 @@
         }
     ],
     "bindings": [
+        {
+            "source": "restest_exchange",
+            "vhost": "/",
+            "destination": "testCaseExecutor",
+            "destination_type": "queue",
+            "routing_key": "testCasesGenerated",
+            "arguments": {}
+        },
         {
             "source": "restest_exchange",
             "vhost": "/",
@@ -166,14 +183,6 @@
             "destination": "manager",
             "destination_type": "queue",
             "routing_key": "testOraclesGenerated",
-            "arguments": {}
-        },
-        {
-            "source": "restest_exchange",
-            "vhost": "/",
-            "destination": "testCaseGenerator",
-            "destination_type": "queue",
-            "routing_key": "action",
             "arguments": {}
         }
     ]

@@ -4,7 +4,7 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
-
+import com.botica.launchers.TestCaseExecutorLauncher;
 import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.botica.utils.JSON;
 import com.botica.utils.Utils;
@@ -146,27 +146,28 @@ public class RabbitMQManager {
      * @param keyToPublish The binding key to publish  a message to the RabbitMQ broker.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, JSONObject botData, String botType, String order, String keyToPublish) throws IOException {
+    public void receiveMessage(String queueName, JSONObject botData, String botType, String order, String keyToPublish, String orderToPublish) throws IOException {
 
-        String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+        
         String botId = botData.getString(BOT_ID_JSON_KEY);
         boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
-
-        //Send the same message to all generators
-        //channel.queueBind(queueName, "restest_exchange", "testCaseGenerator.*");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
 
-            //If the message is sent to all generators, the message will contain the botId
-            // to identify the bot that should process the message
-            //if (message.contains(order) && message.contains(botId)){
-            if (message.contains(order)){
+            String messageOrder = new JSONObject(message).getString("order");
+
+            if (messageOrder.contains(order)){
                 if (botType.equals("testCaseGenerator")) {
-                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId, keyToPublish);
-                } else if(botType.equals("testExecutor")) {
-                    //TODO: Implement testExecutor
+                    String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+
+                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId, keyToPublish, orderToPublish);
+                } else if(botType.equals("testCaseExecutor")) {
+
+                    JSONObject messageData = new JSONObject(message);
+                    String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+                    TestCaseExecutorLauncher.executeTestCases(propertyFilePath, keyToPublish);
                 }
                 disconnectBot(isPersistent);
             }

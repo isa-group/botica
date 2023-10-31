@@ -12,8 +12,8 @@ import com.botica.utils.Utils;
 public class SendOrderToBot {
 
     private static final Logger logger = LogManager.getLogger(SendOrderToBot.class);
-    private static final String KEY_TO_PUBLISH = "testCaseGenerator.bot_2";
-    private static final String MESSAGE = "generateTestCases";
+    private static final String KEY_TO_PUBLISH = "testCaseGenerator.gen_4";
+    private static final String MESSAGE = "{\"order\": \"generateTestCases\"}";
 
     public static void main(String[] argv) throws Exception {
 

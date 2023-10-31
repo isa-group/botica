@@ -4,3 +4,7 @@
 
 /target
 /src/main/resources/Examples/*/test_cases/
+
+/allure-results
+
+restest.jar
