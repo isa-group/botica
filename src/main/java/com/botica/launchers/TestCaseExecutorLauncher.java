@@ -1,9 +1,13 @@
 package com.botica.launchers;
 
+import static es.us.isa.restest.util.FileManager.createDir;
+import static es.us.isa.restest.util.FileManager.deleteDir;
+
 import org.json.JSONObject;
 
 import com.botica.generators.TestCaseExecutor;
 import com.botica.utils.BotConfig;
+import com.botica.utils.RESTestUtil;
 
 import es.us.isa.restest.runners.RESTestExecutor;
 
@@ -44,6 +48,23 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
         RESTestExecutor executor = new RESTestExecutor(propertyFilePath);
 
         TestCaseExecutor testExecutor = new TestCaseExecutor(executor, keyToPublish);
+
+        // TODO: Check if is correct
+        // Create directories to store test data extracted from the execution
+        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+
+        String testDataDir = RESTestUtil.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
+        String coverageDataDir = RESTestUtil.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
+
+        //TODO: Check if "deletepreviousresults" is not null
+        if (Boolean.parseBoolean(RESTestUtil.readProperty(propertyFilePath, "deletepreviousresults"))) {
+            deleteDir(testDataDir);
+            deleteDir(coverageDataDir);
+        }
+
+        createDir(testDataDir);
+        createDir(coverageDataDir);
+        //
 
         testExecutor.execute();
     }

@@ -7,15 +7,12 @@ import org.json.JSONObject;
 
 import com.botica.generators.TestCaseGenerator;
 import com.botica.utils.BotConfig;
+import com.botica.utils.RESTestUtil;
 
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
-import es.us.isa.restest.util.PropertyManager;
 import es.us.isa.restest.util.RESTestException;
-import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
-
-import static es.us.isa.restest.util.FileManager.createDir;
 
 /**
  * The TestCaseGeneratorLauncher class serves as a utility for launching test
@@ -57,7 +54,7 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
         try {
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
-            String generatorType = PropertyManager.readProperty(propertyFilePath, "generator");
+            String generatorType = RESTestUtil.readProperty(propertyFilePath, "generator");
 
             AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
 
@@ -66,13 +63,6 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
             TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botConfig, generatorType, propertyFilePath);
 
             Collection<TestCase> testCases = testGenerator.generate();
-
-            // Create target directory for test cases if it does not exist
-            createDir(loader.getTargetDirJava());
-
-            // Write (RestAssured) test cases
-            RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
-            writer.write(testCases);
 
             if (logger.isLoggable(Level.INFO)) {
                 String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());

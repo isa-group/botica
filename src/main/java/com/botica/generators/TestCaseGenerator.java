@@ -1,5 +1,8 @@
 package com.botica.generators;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.util.Collection;
 
 import org.apache.logging.log4j.LogManager;
@@ -14,7 +17,9 @@ import es.us.isa.restest.generators.AbstractTestCaseGenerator;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
+import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
+import static es.us.isa.restest.util.FileManager.createDir;
 /**
  * This class is responsible for generating test cases and
  * sending messages through RabbitMQ with relevant information.
@@ -59,7 +64,24 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
     public Collection<TestCase> generate() throws RESTestException {
         Collection<TestCase> testCases = absractTestCaseGenerator.generate();
 
-        String message = generateJSONMessage();
+        String testCasesPath = loader.getTargetDirJava() + "/t.tmp";
+        try (FileOutputStream fos = new FileOutputStream(testCasesPath);
+                ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(testCases);
+        } catch (IOException e) {
+            logger.error("Error writing test cases to file: {}", e.getMessage());
+        }
+
+        // TODO: Extract this to the TestCaseGeneratorLauncher class
+        // Create target directory for test cases if it does not exist
+        createDir(loader.getTargetDirJava());
+
+        // Write (RestAssured) test cases
+        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
+        writer.write(testCases);
+        //
+
+        String message = generateJSONMessage(testCasesPath);
         rabbitCommunicator.sendMessage(message);
         
         return testCases;
@@ -71,7 +93,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
      * 
      * @return The JSON message as a string.
      */
-    private String generateJSONMessage() {
+    private String generateJSONMessage(String testCasesPath) {
 
         JSONObject message = new JSONObject();
         message.put("order", orderToPublish);
@@ -85,6 +107,7 @@ public class TestCaseGenerator implements TestCaseGeneratorInterface {
         message.put("allureReportsPath", loader.getAllureReportsPath());
         message.put("experimentName", loader.getExperimentName());
         message.put("propertyFilePath", this.propertyFilePath);
+        message.put("testCasesPath", testCasesPath);
 
         return message.toString();
     }
