@@ -45,8 +45,7 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
     /**
      * Generates test cases based on the specified generator type.
      *
-     * @param propertyFilePath The path to the property file for test case
-     *                         generator.
+     * @param propertyFilePath The path to the property file.
      * @param botId            The test case generator identifier.
      * @param keyToPublish     The binding key for publishing messages to RabbitMQ.
      */

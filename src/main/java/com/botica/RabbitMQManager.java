@@ -144,9 +144,7 @@ public class RabbitMQManager {
      *
      * @param queueName    The name of the queue to receive messages from.
      * @param botData      A JSON object containing bot-specific data.
-     * @param botType      The type of the bot (e.g., "testCaseGenerator" or "testExecutor").
-     * @param order        The order (command) to process when received in a message.
-     * @param keyToPublish The binding key to publish  a message to the RabbitMQ broker.
+     * @param botConfig    A BotConfig object containing bot-specific configuration.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
     public void receiveMessage(String queueName, JSONObject botData, BotConfig botConfig) throws IOException {

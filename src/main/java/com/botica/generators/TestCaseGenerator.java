@@ -20,6 +20,7 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 import static es.us.isa.restest.util.FileManager.createDir;
+
 /**
  * This class is responsible for generating test cases and
  * sending messages through RabbitMQ with relevant information.

@@ -23,6 +23,10 @@ import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 
+/**
+ * This class is responsible for generating test reports and
+ * sending messages through RabbitMQ with relevant information.
+ */
 public class TestReportGenerator implements TestReportGeneratorInterface {
 
     private String propertyFilePath;
@@ -33,6 +37,15 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
 
     private static final Logger logger = LogManager.getLogger(TestReportGenerator.class);
     
+    /**
+     * Constructor for the TestReportGenerator class.
+     * 
+     * @param propertyFilePath  The path to the properties file.
+     * @param testCasesPath     The path to the test cases generated.
+     * @param keyToPublish      The binding key to publish a message to the RabbitMQ
+     *                          broker.
+     * @param orderToPublish    The order to publish in the message.
+     */
     public TestReportGenerator(String propertyFilePath, String testCasesPath, String keyToPublish, String orderToPublish) {
         this.propertyFilePath = propertyFilePath;
         this.testCasesPath = testCasesPath;
@@ -41,6 +54,9 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
         this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
     }
 
+    /**
+     * Generates the test reports and sends a completion message through RabbitMQ.
+     */
     @Override
     public void generate() {
         
