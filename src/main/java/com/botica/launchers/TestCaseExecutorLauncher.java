@@ -21,7 +21,7 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
     private static final String BINDING_KEY = "testCasesGenerated";
 
     /**
-     * Launches test case generator based on bot data provided, and sends and 
+     * Launches test case executor based on bot data provided, and sends and 
      * receives messages through RabbitMQ.
      *
      * @param botData           The JSON object containing bot data.
@@ -37,17 +37,19 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
     }
 
     /**
-     * Generates test cases based on the specified generator type.
+     * Executes test cases based.
      *
      * @param propertyFilePath The path to the property file for test case
-     *                         generator.
+     *                         executor.
+     * @param testCasesPath    The path to the test cases generated.
      * @param keyToPublish     The binding key for publishing messages to RabbitMQ.
+     * @param orderToPublish   The order to send in the message.
      */
-    public static void executeTestCases(String propertyFilePath, String keyToPublish) {
+    public static void executeTestCases(String propertyFilePath, String testCasesPath, String keyToPublish, String orderToPublish) {
 
         RESTestExecutor executor = new RESTestExecutor(propertyFilePath);
 
-        TestCaseExecutor testExecutor = new TestCaseExecutor(executor, keyToPublish);
+        TestCaseExecutor testExecutor = new TestCaseExecutor(executor, propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
 
         // TODO: Check if is correct
         // Create directories to store test data extracted from the execution

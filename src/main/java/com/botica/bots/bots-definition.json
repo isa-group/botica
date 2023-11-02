@@ -34,15 +34,30 @@
     "testCaseExecutors": {
         "order": "executeTestCases",
         "keyToPublish": "testCasesExecuted",
-        "orderToPublish": "",
+        "orderToPublish": "generateTestReport",
         "bots": [
             {
                 "botId": "ex_1",
-                "isPersistent": false
+                "isPersistent": true
             },
             {
                 "botId": "ex_2",
-                "isPersistent": false
+                "isPersistent": true
+            }
+        ]
+    },
+    "testReporters": {
+        "order": "generateTestReport",
+        "keyToPublish": "testReportGenerated",
+        "orderToPublish": "",
+        "bots": [
+            {
+                "botId": "re_1",
+                "isPersistent": true
+            },
+            {
+                "botId": "re_2",
+                "isPersistent": true
             }
         ]
     }

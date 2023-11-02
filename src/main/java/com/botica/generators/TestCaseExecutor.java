@@ -2,6 +2,7 @@ package com.botica.generators;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 
 import com.botica.interfaces.TestCaseExecutorInterface;
 import com.botica.utils.RabbitCommunicator;
@@ -15,7 +16,10 @@ import es.us.isa.restest.runners.RESTestExecutor;
 public class TestCaseExecutor implements TestCaseExecutorInterface {
 
     private RESTestExecutor executor;
+    private String propertyFilePath;
+    private String testCasesPath;
     private String keyToPublish;
+    private String orderToPublish;
     private RabbitCommunicator rabbitCommunicator;
 
     private static final Logger logger = LogManager.getLogger(TestCaseExecutor.class);
@@ -23,13 +27,19 @@ public class TestCaseExecutor implements TestCaseExecutorInterface {
     /**
      * Constructor for the TestCaseExecutor class.
      * 
-     * @param executor     The RESTestExecutor class used to execute test cases.
-     * @param keyToPublish The binding key to publish a message to the RabbitMQ
-     *                     broker.
+     * @param executor          The RESTestExecutor class used to execute test cases.
+     * @param propertyFilePath  The path to the property file.
+     * @param testCasesPath     The path to the test cases generated.
+     * @param keyToPublish      The binding key to publish a message to the RabbitMQ
+     *                          broker.
+     * @param orderToPublish    The order to publish in the message.
      */
-    public TestCaseExecutor(RESTestExecutor executor, String keyToPublish) {
+    public TestCaseExecutor(RESTestExecutor executor, String propertyFilePath, String testCasesPath, String keyToPublish, String orderToPublish) {
         this.executor = executor;
+        this.propertyFilePath = propertyFilePath;
+        this.testCasesPath = testCasesPath;
         this.keyToPublish = keyToPublish;
+        this.orderToPublish = orderToPublish;
         this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
     }
 
@@ -40,8 +50,12 @@ public class TestCaseExecutor implements TestCaseExecutorInterface {
     public void execute() {
         executor.execute();
 
-        String message = "Test case execution finished";
-        rabbitCommunicator.sendMessage(message);
+        JSONObject message = new JSONObject();
+        message.put("order", orderToPublish);
+        message.put("propertyFilePath", propertyFilePath);
+        message.put("testCasesPath", testCasesPath);
+
+        rabbitCommunicator.sendMessage(message.toString());
 
     }
     

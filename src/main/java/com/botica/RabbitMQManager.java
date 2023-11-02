@@ -6,6 +6,7 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import com.botica.launchers.TestCaseExecutorLauncher;
 import com.botica.launchers.TestCaseGeneratorLauncher;
+import com.botica.launchers.TestReportGeneratorLauncher;
 import com.botica.utils.BotConfig;
 import com.botica.utils.JSON;
 import com.botica.utils.Utils;
@@ -48,6 +49,7 @@ public class RabbitMQManager {
     private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
     private static final String BOT_ID_JSON_KEY = "botId";
     private static final String IS_PERSISTENT_JSON_KEY = "isPersistent";
+    private static final String TEST_CASES_PATH = "testCasesPath";
 
     public RabbitMQManager(){
         this(null, null, null, null, 0);
@@ -172,7 +174,13 @@ public class RabbitMQManager {
 
                     JSONObject messageData = new JSONObject(message);
                     String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
-                    TestCaseExecutorLauncher.executeTestCases(propertyFilePath, keyToPublish);
+                    String testCasesPath = messageData.getString(TEST_CASES_PATH);
+                    TestCaseExecutorLauncher.executeTestCases(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
+                } else if(botType.equals("testReporter")) {
+                    JSONObject messageData = new JSONObject(message);
+                    String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+                    String testCasesPath = messageData.getString(TEST_CASES_PATH);
+                    TestReportGeneratorLauncher.generateTestReport(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
                 }
                 disconnectBot(isPersistent);
             }

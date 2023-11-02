@@ -134,7 +134,7 @@
             "vhost": "/",
             "destination": "testReporter",
             "destination_type": "queue",
-            "routing_key": "testCasesGenerated",
+            "routing_key": "testCasesExecuted",
             "arguments": {}
         },
         {
