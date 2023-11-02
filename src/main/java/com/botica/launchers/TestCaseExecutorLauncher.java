@@ -58,8 +58,8 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
         String testDataDir = RESTestUtil.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
         String coverageDataDir = RESTestUtil.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
 
-        //TODO: Check if "deletepreviousresults" is not null
-        if (Boolean.parseBoolean(RESTestUtil.readProperty(propertyFilePath, "deletepreviousresults"))) {
+        String deletePreviousResults = RESTestUtil.readProperty(propertyFilePath, "deletepreviousresults");
+        if (deletePreviousResults != null && Boolean.parseBoolean(deletePreviousResults)) {
             deleteDir(testDataDir);
             deleteDir(coverageDataDir);
         }
