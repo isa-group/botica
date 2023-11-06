@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +22,7 @@ import es.us.isa.restest.reporting.StatsReportManager;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.specification.OpenAPISpecification;
 import es.us.isa.restest.testcases.TestCase;
+import es.us.isa.restest.util.AllureAuthManager;
 import es.us.isa.restest.util.RESTestException;
 
 /**
@@ -77,7 +79,7 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
             logger.error("Error creating generator: {}", e.getMessage());
         }
 
-        AllureReportManager allureReportManager = loader.createAllureReportManager();
+        AllureReportManager allureReportManager = createAllureReportManager(propertyFilePath);
         StatsReportManager statsReportManager = createStatsReportManager(propertyFilePath);
         
         allureReportManager.generateReport();
@@ -127,6 +129,25 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
 
 		return new StatsReportManager(testDataDir, coverageDataDir, enableCSVStats, enableInputCoverage,
 					enableOutputCoverage, coverageMeter);
+	}
+
+    //TODO: Change (Own definition of createAllureReportManager)
+    private static AllureReportManager createAllureReportManager(String propertyFilePath) {
+		AllureReportManager arm = null;
+        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        String allureResultsDir = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
+        String allureReportDir = RESTestUtil.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
+        String confPath = RESTestUtil.readProperty(propertyFilePath, "conf.path");
+        String OAISpecPath = RESTestUtil.readProperty(propertyFilePath, "oas.path");
+		
+        //Find auth property names (if any)
+        List<String> authProperties = AllureAuthManager.findAuthProperties(new OpenAPISpecification(OAISpecPath), confPath);
+
+        arm = new AllureReportManager(allureResultsDir, allureReportDir, authProperties);
+        arm.setEnvironmentProperties(propertyFilePath);
+        arm.setHistoryTrend(true);
+		
+		return arm;
 	}
 
 }

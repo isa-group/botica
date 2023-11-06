@@ -5,6 +5,7 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.botica.interfaces.TestCaseExecutorInterface;
+import com.botica.utils.RESTestUtil;
 import com.botica.utils.RabbitCommunicator;
 
 import es.us.isa.restest.runners.RESTestExecutor;
@@ -48,6 +49,10 @@ public class TestCaseExecutor implements TestCaseExecutorInterface {
      */
     @Override
     public void execute() {
+        
+        String allureResultsDirPath = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir");
+        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        System.setProperty("allure.results.directory", allureResultsDirPath + "/" + experimentName);
         executor.execute();
 
         JSONObject message = new JSONObject();

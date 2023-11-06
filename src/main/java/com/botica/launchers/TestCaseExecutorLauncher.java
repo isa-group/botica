@@ -55,11 +55,15 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
 
         String testDataDir = RESTestUtil.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
         String coverageDataDir = RESTestUtil.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
+        String allureResultsDir = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
+        String allureReportDir = RESTestUtil.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
 
         String deletePreviousResults = RESTestUtil.readProperty(propertyFilePath, "deletepreviousresults");
         if (deletePreviousResults != null && Boolean.parseBoolean(deletePreviousResults)) {
             deleteDir(testDataDir);
             deleteDir(coverageDataDir);
+            deleteDir(allureResultsDir);
+            deleteDir(allureReportDir);
         }
 
         createDir(testDataDir);
