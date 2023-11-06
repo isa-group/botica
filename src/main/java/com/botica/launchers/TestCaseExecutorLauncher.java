@@ -5,7 +5,7 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
 
 import org.json.JSONObject;
 
-import com.botica.generators.TestCaseExecutor;
+import com.botica.bots.TestCaseExecutor;
 import com.botica.utils.BotConfig;
 import com.botica.utils.RESTestUtil;
 
@@ -70,6 +70,6 @@ public class TestCaseExecutorLauncher extends BaseLauncher{
         createDir(coverageDataDir);
         //
 
-        testExecutor.execute();
+        testExecutor.executeBotActionAndSendMessage();
     }
 }

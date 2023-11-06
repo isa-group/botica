@@ -1,4 +1,4 @@
-package com.botica.generators;
+package com.botica.bots;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -7,13 +7,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
-import com.botica.interfaces.TestReportGeneratorInterface;
 import com.botica.utils.RESTestUtil;
-import com.botica.utils.RabbitCommunicator;
 
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
@@ -29,15 +25,12 @@ import es.us.isa.restest.util.RESTestException;
  * This class is responsible for generating test reports and
  * sending messages through RabbitMQ with relevant information.
  */
-public class TestReportGenerator implements TestReportGeneratorInterface {
+public class TestReportGenerator extends AbstractBot{
 
     private String propertyFilePath;
     private String testCasesPath;
-    private String keyToPublish;
-    private String orderToPublish;
-    private RabbitCommunicator rabbitCommunicator;
 
-    private static final Logger logger = LogManager.getLogger(TestReportGenerator.class);
+    private static final String EXPERIMENT_NAME_PROPERTY = "experiment.name";
     
     /**
      * Constructor for the TestReportGenerator class.
@@ -49,19 +42,13 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
      * @param orderToPublish    The order to publish in the message.
      */
     public TestReportGenerator(String propertyFilePath, String testCasesPath, String keyToPublish, String orderToPublish) {
+        super(keyToPublish, orderToPublish);
         this.propertyFilePath = propertyFilePath;
         this.testCasesPath = testCasesPath;
-        this.keyToPublish = keyToPublish;
-        this.orderToPublish = orderToPublish;
-        this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
     }
 
-    /**
-     * Generates the test reports and sends a completion message through RabbitMQ.
-     */
     @Override
-    public void generate() {
-        
+    protected void botAction() {
         Collection<TestCase> testCases = new ArrayList<>();
 
         try (FileInputStream fis = new FileInputStream(testCasesPath);
@@ -71,7 +58,7 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
         
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        String experimentName = RESTestUtil.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
         RESTestLoader loader = new RESTestLoader(propertyFilePath);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
@@ -85,12 +72,14 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
         allureReportManager.generateReport();
         statsReportManager.setTestCases(testCases);
         statsReportManager.generateReport(experimentName, true);
+    }
 
-
+    @Override
+    protected JSONObject createMessage() {
         JSONObject message = new JSONObject();
         message.put("order", orderToPublish);
 
-        rabbitCommunicator.sendMessage(message.toString());
+        return message;
     }
 
     private Collection<TestCase> readTestCasesFromObjectStream(ObjectInputStream ois, Collection<TestCase> testCases) throws IOException {
@@ -115,7 +104,7 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
     //TODO: Change (Own definition of createStatsReportManager)
     private static StatsReportManager createStatsReportManager(String propertyFilePath) {
 
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        String experimentName = RESTestUtil.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
         String testDataDir = RESTestUtil.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
         String coverageDataDir = RESTestUtil.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
         boolean enableCSVStats = Boolean.parseBoolean(RESTestUtil.readProperty(propertyFilePath, "stats.csv"));
@@ -134,7 +123,7 @@ public class TestReportGenerator implements TestReportGeneratorInterface {
     //TODO: Change (Own definition of createAllureReportManager)
     private static AllureReportManager createAllureReportManager(String propertyFilePath) {
 		AllureReportManager arm = null;
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        String experimentName = RESTestUtil.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
         String allureResultsDir = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
         String allureReportDir = RESTestUtil.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
         String confPath = RESTestUtil.readProperty(propertyFilePath, "conf.path");

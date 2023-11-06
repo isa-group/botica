@@ -1,17 +1,15 @@
 package com.botica.launchers;
 
-import java.util.Collection;
 import java.util.logging.Level;
 
 import org.json.JSONObject;
 
-import com.botica.generators.TestCaseGenerator;
+import com.botica.bots.TestCaseGenerator;
 import com.botica.utils.BotConfig;
 import com.botica.utils.RESTestUtil;
 
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
-import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
 
 /**
@@ -51,6 +49,7 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
      */
     public static void generateTestCases(String propertyFilePath, String botId, String keyToPublish, String orderToPublish) {
         try {
+            //PROBLEM HERE
             RESTestLoader loader = new RESTestLoader(propertyFilePath);
 
             String generatorType = RESTestUtil.readProperty(propertyFilePath, "generator");
@@ -61,12 +60,8 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
 
             TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botConfig, generatorType, propertyFilePath);
 
-            Collection<TestCase> testCases = testGenerator.generate();
-
-            if (logger.isLoggable(Level.INFO)) {
-                String message = String.format("%d test cases generated and written to %s", testCases.size(), loader.getTargetDirJava());
-                logger.info(message);
-            }
+            testGenerator.executeBotActionAndSendMessage();
+        
         }catch (RESTestException e){
             logger.log(Level.SEVERE, e.getMessage(), e);
         }

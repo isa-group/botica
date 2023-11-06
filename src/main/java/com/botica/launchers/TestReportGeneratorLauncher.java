@@ -2,7 +2,7 @@ package com.botica.launchers;
 
 import org.json.JSONObject;
 
-import com.botica.generators.TestReportGenerator;
+import com.botica.bots.TestReportGenerator;
 import com.botica.utils.BotConfig;
 
 /**
@@ -40,7 +40,7 @@ public class TestReportGeneratorLauncher extends BaseLauncher {
     
         TestReportGenerator testReportGenerator = new TestReportGenerator(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
 
-        testReportGenerator.generate();
+        testReportGenerator.executeBotActionAndSendMessage();
     
     }
 }
