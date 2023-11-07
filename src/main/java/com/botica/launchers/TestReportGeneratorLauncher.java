@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import com.botica.utils.BotConfig;
 import com.botica.utils.RESTestUtil;
 
 import es.us.isa.restest.coverage.CoverageGatherer;
@@ -26,8 +25,6 @@ import es.us.isa.restest.util.RESTestException;
  * This class is a launcher for generating test reports.
  */
 public class TestReportGeneratorLauncher extends AbstractLauncher {
-    private static final String BOT_TYPE = "testReporter";
-    private static final String BINDING_KEY = "testCasesExecuted";
     private static final String EXPERIMENT_NAME_PROPERTY = "experiment.name";
 
     private String propertyFilePath;
@@ -41,23 +38,6 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
         super(keyToPublish, orderToPublish);
         this.propertyFilePath = propertyFilePath;
         this.testCasesPath = testCasesPath;
-    }
-
-    //TODO: Refactor method checking other launchers
-    /**
-     * Launches test report generator based on bot data provided, and sends and 
-     * receives messages through RabbitMQ.
-     *
-     * @param botData           The JSON object containing bot data.
-     * @param order             The order that identifies the message received.
-     * @param keyToPublish      The binding key for publishing messages to RabbitMQ.
-     * @param orderToPublish    The order to send in the message.
-     */
-    public void launchTestReportGenerator(JSONObject botData, String order) {
-        
-        BotConfig botConfig = new BotConfig(null, order, this.keyToPublish, this.orderToPublish, BOT_TYPE);
-        String queueName = BOT_TYPE;
-        launchBot(botData, botConfig, queueName, BINDING_KEY, false);
     }
 
     /**

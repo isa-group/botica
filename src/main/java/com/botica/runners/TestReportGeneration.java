@@ -8,16 +8,15 @@ import com.botica.launchers.TestReportGeneratorLauncher;
 public class TestReportGeneration extends RunnerBase {
     
     private static final String JSON_OBJECT = "testReporters";
+    private static final String BOT_TYPE = JSON_OBJECT.substring(0, JSON_OBJECT.length() - 1);
 
     public static void main(String[] args) {
 
         try {
-            JSONObject testReporters = loadBotsDefinition(JSON_OBJECT);
-
-            launchBots(testReporters, (botData, o, k, op) -> {
-                TestReportGeneratorLauncher launcher = new TestReportGeneratorLauncher(k, op);
-                launcher.launchTestReportGenerator(botData, o);
-            });
+            JSONObject botDefinition = loadBotsDefinition(JSON_OBJECT);
+            String keyToPublish = botDefinition.getString("keyToPublish");
+            String orderToPublish = botDefinition.getString("orderToPublish");
+            launchBots(botDefinition, BOT_TYPE, new TestReportGeneratorLauncher(keyToPublish, orderToPublish));
         } catch (JSONException e) {
             throw new JSONException("Error reading file: " + DEFAULT_BOTS_DEFINITION_PATH);
         }

@@ -3,6 +3,13 @@
         "order": "generateTestCases",
         "keyToPublish": "testCasesGenerated",
         "orderToPublish": "executeTestCases",
+        "rabbitOptions": {
+            "mainQueue": "testCaseGenerator",
+            "bindings": [
+                "testOraclesGenerated"
+            ],
+            "queueByBot": true
+        },
         "bots": [
             {
                 "botId": "gen_1",
@@ -35,6 +42,13 @@
         "order": "executeTestCases",
         "keyToPublish": "testCasesExecuted",
         "orderToPublish": "generateTestReport",
+        "rabbitOptions": {
+            "mainQueue": "testCaseExecutor",
+            "bindings": [
+                "testCasesGenerated"
+            ],
+            "queueByBot": false
+        },
         "bots": [
             {
                 "botId": "ex_1",
@@ -50,6 +64,13 @@
         "order": "generateTestReport",
         "keyToPublish": "testReportGenerated",
         "orderToPublish": "",
+        "rabbitOptions": {
+            "mainQueue": "testReporter",
+            "bindings": [
+                "testCasesExecuted"
+            ],
+            "queueByBot": false
+        },
         "bots": [
             {
                 "botId": "re_1",

@@ -1,11 +1,17 @@
 package com.botica.runners;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import com.botica.launchers.AbstractLauncher;
+import com.botica.utils.BotConfig;
 import com.botica.utils.JSON;
 
 /**
@@ -36,7 +42,7 @@ public class RunnerBase {
         return obj.getJSONObject(jsonObjectName);
     }
 
-    protected static void launchBots(JSONObject botDefinition, LauncherInterface launcher) {
+    protected static void launchBots(JSONObject botDefinition, String botType, AbstractLauncher launcher) { //TODO: DOCKERIZE
         
         if (isValidBotDefinition(botDefinition)) {
         
@@ -45,12 +51,38 @@ public class RunnerBase {
             String keyToPublish = botDefinition.getString("keyToPublish");
             String orderToPublish = botDefinition.getString("orderToPublish");
 
+            JSONObject rabbitOptions = botDefinition.getJSONObject("rabbitOptions");
+
             for (int i = 0; i < bots.length(); i++) {
                 JSONObject botData = bots.getJSONObject(i);
-                launcher.launchBot(botData, order, keyToPublish, orderToPublish);
+                connectBotsToRabbit(botData, order, keyToPublish, orderToPublish, rabbitOptions, botType, launcher);
             }
         } else {
             logger.error("Invalid bot definition");
+        }
+    }
+
+    protected static void connectBotsToRabbit(JSONObject botData, String order, String keyToPublish,
+            String orderToPublish, JSONObject rabbitOptions, String botType, AbstractLauncher launcher) {
+        
+        String id = botData.getString("botId");
+        String mainQueue = rabbitOptions.getString("mainQueue");
+        boolean queueByBot = rabbitOptions.getBoolean("queueByBot");
+
+        List<String> bindings = rabbitOptions.getJSONArray("bindings").toList()
+                .stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+        BotConfig botConfig = new BotConfig(id, order, keyToPublish, orderToPublish, botType);
+        if (queueByBot) {
+            String bindingKey = botType + "." + id;
+            List<String> bindingKeys = new ArrayList<>();
+            bindingKeys.add(bindingKey);
+            
+            launcher.launchBot(botData, botConfig, id, bindingKeys, true);
+        } else {
+            launcher.launchBot(botData, botConfig, mainQueue, bindings, false);
         }
     }
 
@@ -58,10 +90,11 @@ public class RunnerBase {
         return botDefinition.has(JSON_ARRAY) &&
                 botDefinition.has("order") &&
                 botDefinition.has("keyToPublish") &&
-                botDefinition.has("orderToPublish");
+                botDefinition.has("orderToPublish") &&
+                botDefinition.has("rabbitOptions");
     }
 
-    protected interface LauncherInterface {
-        void launchBot(JSONObject botData, String order, String keyToPublish, String orderToPublish);
+    protected interface RunnerInterface {
+        void botsInformation(JSONObject botData, String order, String keyToPublish, String orderToPublis, JSONObject rabbitOptions);
     }
 }

@@ -9,7 +9,6 @@ import java.util.Collection;
 
 import org.json.JSONObject;
 
-import com.botica.utils.BotConfig;
 import com.botica.utils.RESTestUtil;
 
 import es.us.isa.restest.generators.*;
@@ -27,7 +26,6 @@ import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 public class TestCaseGeneratorLauncher extends AbstractLauncher {
 
     private static final String BOT_ID_JSON_KEY = "botId";
-    private static final String BOT_TYPE = "testCaseGenerator";
 
     private String propertyFilePath;
     private String botId;
@@ -45,23 +43,6 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
         super(keyToPublish, orderToPublish);
         this.propertyFilePath = propertyFilePath;
         this.botId = botId;
-    }
-
-    /**
-     * Launches test case generator based on bot data provided, and sends and 
-     * receives messages through RabbitMQ.
-     *
-     * @param botData           The JSON object containing bot data.
-     * @param order             The order that identifies the message sent.
-     * @param keyToPublish      The binding key for publishing messages to RabbitMQ.
-     * @param orderToPublish    The order to send in the message.
-     */
-    public void launchTestGenerator(JSONObject botData, String order) {
-        
-        BotConfig botConfig = new BotConfig(null, order, this.keyToPublish, this.orderToPublish, BOT_TYPE);
-        String queueName = botData.getString(BOT_ID_JSON_KEY);
-        String bindingKey = "testCaseGenerator." + queueName;
-        launchBot(botData, botConfig, queueName, bindingKey, true);
     }
 
     /**

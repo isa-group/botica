@@ -4,6 +4,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.AMQP.Queue.DeclareOk;
+
 import com.botica.launchers.TestCaseExecutorLauncher;
 import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.botica.launchers.TestReportGeneratorLauncher;
@@ -13,6 +15,7 @@ import com.botica.utils.Utils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -85,7 +88,7 @@ public class RabbitMQManager {
      * @throws IOException      If an I/O error occurs while connecting.
      * @throws TimeoutException If a timeout occurs while connecting.
      */
-    public String connect(String queueName, String bindingKey, List<Boolean> queueOptions) throws IOException, TimeoutException {
+    public String connect(String queueName, List<String> bindingKeys, List<Boolean> queueOptions) throws IOException, TimeoutException {
         
         String queue = null;
 
@@ -96,15 +99,33 @@ public class RabbitMQManager {
             Map<String, Object> arguments = new HashMap<>();
             arguments.put("x-message-ttl", MESSAGE_TTL);
 
-            channel.queueDeclare(queueName, queueOptions.get(0), queueOptions.get(1), queueOptions.get(2), arguments);
-            queue = channel.queueDeclare().getQueue();
-            if (bindingKey != null){
-                channel.queueBind(queueName, serverExchange, bindingKey);
+            DeclareOk queueDeclared = channel.queueDeclare(queueName, queueOptions.get(0), queueOptions.get(1), queueOptions.get(2), arguments);
+            queue = queueDeclared.getQueue();
+            if (bindingKeys != null){
+                for (String bindingKey : bindingKeys){
+                    channel.queueBind(queueName, serverExchange, bindingKey);
+                }
             }
         } catch (IOException | TimeoutException e) {
             Utils.handleException(logger, "Error connecting to RabbitMQ", e);
         }
         return queue;
+    }
+
+    /**
+     * Connects to RabbitMQ with the specified parameters.
+     * 
+     * @param queueName  The name of the RabbitMQ queue.
+     * @param bindingKey The binding key for the RabbitMQ queue.
+     * @param botId      The identifier of the bot.
+     * @param autoDelete Whether the RabbitMQ queue should be auto-deleted.
+     * @throws IOException
+     * @throws TimeoutException
+     */
+    public void connect(String queueName, List<String> bindingKeys, String botId, boolean autoDelete) throws IOException, TimeoutException {
+        List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
+        connect(queueName, bindingKeys, queueOptions);
+        logger.info("Bot {} connected to RabbitMQ", botId);
     }
 
     /**
@@ -116,7 +137,12 @@ public class RabbitMQManager {
      */
     public void sendMessageToExchange(String routingKey, String message) throws IOException {
         try{
+            List<Boolean> queueOptions = Arrays.asList(true, false, true);
+            String queue = connect("", null, queueOptions);
             channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
+            channel.queueDelete(queue);
+            logger.info("Message sent to RabbitMQ: {}", message);
+            close(); // TODO: Review
         } catch (Exception e) {
             Utils.handleException(logger, "Error sending message to RabbitMQ", e);
         }

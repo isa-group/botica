@@ -1,5 +1,6 @@
 package com.botica.examples;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,8 +20,10 @@ public class ReceiveMessageFromBot {
         RabbitMQManager messageSender = new RabbitMQManager();
 
         try{
+            List<String> bindingKeys = new ArrayList<>();
+            bindingKeys.add(BINDING_KEY);
             List<Boolean> queueOptions = Arrays.asList(true, false, true);
-            String queueName = messageSender.connect("", BINDING_KEY, queueOptions);
+            String queueName = messageSender.connect("", bindingKeys, queueOptions);
             messageSender.receiveMessage(queueName);
         } catch (Exception e) {
             Utils.handleException(logger, "Error sending message to RabbitMQ", e);

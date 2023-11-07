@@ -1,8 +1,5 @@
 package com.botica.examples;
 
-import java.util.Arrays;
-import java.util.List;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,8 +17,6 @@ public class SendOrderToBot {
         RabbitMQManager messageSender = new RabbitMQManager();
 
         try{
-            List<Boolean> queueOptions = Arrays.asList(true, false, true);
-            messageSender.connect("", null, queueOptions);
             messageSender.sendMessageToExchange(KEY_TO_PUBLISH, MESSAGE);
             logger.info("Message sent to RabbitMQ: {}", MESSAGE);
             messageSender.close();
