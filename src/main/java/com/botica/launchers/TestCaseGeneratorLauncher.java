@@ -1,16 +1,22 @@
 package com.botica.launchers;
 
-import java.util.logging.Level;
+import static es.us.isa.restest.util.FileManager.createDir;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.util.Collection;
 
 import org.json.JSONObject;
 
-import com.botica.bots.TestCaseGenerator;
 import com.botica.utils.BotConfig;
 import com.botica.utils.RESTestUtil;
 
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
+import es.us.isa.restest.testcases.TestCase;
 import es.us.isa.restest.util.RESTestException;
+import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 /**
  * The TestCaseGeneratorLauncher class serves as a utility for launching test
@@ -18,10 +24,28 @@ import es.us.isa.restest.util.RESTestException;
  * RabbitMQ, receives and sends messages, and generates test cases based on the
  * specified generator type.
  */
-public class TestCaseGeneratorLauncher extends BaseLauncher {
+public class TestCaseGeneratorLauncher extends AbstractLauncher {
 
     private static final String BOT_ID_JSON_KEY = "botId";
     private static final String BOT_TYPE = "testCaseGenerator";
+
+    private String propertyFilePath;
+    private String botId;
+
+    private RESTestLoader loader;
+    private AbstractTestCaseGenerator absractTestCaseGenerator;
+    private String generatorType;
+    private String testCasesPath;
+
+    public TestCaseGeneratorLauncher(String keyToPublish, String orderToPublish) {
+        super(keyToPublish, orderToPublish);
+    }
+
+    public TestCaseGeneratorLauncher(String propertyFilePath, String botId, String keyToPublish, String orderToPublish) {
+        super(keyToPublish, orderToPublish);
+        this.propertyFilePath = propertyFilePath;
+        this.botId = botId;
+    }
 
     /**
      * Launches test case generator based on bot data provided, and sends and 
@@ -32,9 +56,9 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
      * @param keyToPublish      The binding key for publishing messages to RabbitMQ.
      * @param orderToPublish    The order to send in the message.
      */
-    public void launchTestGenerator(JSONObject botData, String order, String keyToPublish, String orderToPublish) {
+    public void launchTestGenerator(JSONObject botData, String order) {
         
-        BotConfig botConfig = new BotConfig(null, order, keyToPublish, orderToPublish, BOT_TYPE);
+        BotConfig botConfig = new BotConfig(null, order, this.keyToPublish, this.orderToPublish, BOT_TYPE);
         String queueName = botData.getString(BOT_ID_JSON_KEY);
         String bindingKey = "testCaseGenerator." + queueName;
         launchBot(botData, botConfig, queueName, bindingKey, true);
@@ -42,29 +66,68 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
 
     /**
      * Generates test cases based on the specified generator type.
-     *
-     * @param propertyFilePath The path to the property file.
-     * @param botId            The test case generator identifier.
-     * @param keyToPublish     The binding key for publishing messages to RabbitMQ.
      */
-    public static void generateTestCases(String propertyFilePath, String botId, String keyToPublish, String orderToPublish) {
+    @Override
+    protected void botAction() {
         try {
             //PROBLEM HERE
-            RESTestLoader loader = new RESTestLoader(propertyFilePath);
+            RESTestLoader botLoader = new RESTestLoader(this.propertyFilePath);
+            this.loader = botLoader;
 
-            String generatorType = RESTestUtil.readProperty(propertyFilePath, "generator");
+            String botGeneratorType = RESTestUtil.readProperty(this.propertyFilePath, "generator");
+            this.generatorType = botGeneratorType;
 
             AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
+            this.absractTestCaseGenerator = generator;
 
-            BotConfig botConfig = new BotConfig(botId, null, keyToPublish, orderToPublish, BOT_TYPE);
-
-            TestCaseGenerator testGenerator = new TestCaseGenerator(generator, loader, botConfig, generatorType, propertyFilePath);
-
-            testGenerator.executeBotActionAndSendMessage();
+            auxBotAction(loader, generator);
         
         }catch (RESTestException e){
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.error("Error launching test generator: {}", this.botId, e);
         }
+    }
+
+    @Override
+    protected JSONObject createMessage() {
+        JSONObject message = new JSONObject();
+        message.put("order", orderToPublish);
+        message.put(BOT_ID_JSON_KEY, this.botId);
+        message.put("generatorType", generatorType);
+        message.put("faultyRatio", absractTestCaseGenerator.getFaultyRatio());
+        message.put("nTotalFaulty", absractTestCaseGenerator.getnFaulty());
+        message.put("nTotalNominal", absractTestCaseGenerator.getnNominal());
+        message.put("maxTriesPerTestCase", absractTestCaseGenerator.getMaxTriesPerTestCase());
+        message.put("targetDirJava", loader.getTargetDirJava());
+        message.put("allureReportsPath", loader.getAllureReportsPath());
+        message.put("experimentName", loader.getExperimentName());
+        message.put("propertyFilePath", this.propertyFilePath);
+        message.put("testCasesPath", this.testCasesPath);
+
+        return message;
+    }
+
+    private void auxBotAction(RESTestLoader loader, AbstractTestCaseGenerator generator){
+        Collection<TestCase> testCases = null; 
+        try{
+            testCases = generator.generate();
+        } catch (RESTestException e) {
+            logger.error("Error generating test cases: {}", e.getMessage());
+        }
+
+        this.testCasesPath = loader.getTargetDirJava() + "/t.tmp";
+        try (FileOutputStream fos = new FileOutputStream(this.testCasesPath);
+                ObjectOutputStream oos = new ObjectOutputStream(fos)) {
+            oos.writeObject(testCases);
+        } catch (IOException e) {
+            logger.error("Error writing test cases to file: {}", e.getMessage());
+        }
+
+        // Create target directory for test cases if it does not exist
+        createDir(loader.getTargetDirJava());
+
+        // Write (RestAssured) test cases
+        RESTAssuredWriter writer = (RESTAssuredWriter) loader.createWriter();
+        writer.write(testCases);
     }
 
     private static AbstractTestCaseGenerator getGenerator(RESTestLoader loader, String generatorType) throws RESTestException {
@@ -88,5 +151,4 @@ public class TestCaseGeneratorLauncher extends BaseLauncher {
         }
         return generator;
     }
-
 }

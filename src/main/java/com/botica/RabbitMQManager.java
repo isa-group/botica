@@ -166,19 +166,21 @@ public class RabbitMQManager {
             if (messageOrder.contains(order)){
                 if (botType.equals("testCaseGenerator")) {
                     String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
-
-                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId, keyToPublish, orderToPublish);
+                    TestCaseGeneratorLauncher testCaseGeneratorLauncher = new TestCaseGeneratorLauncher(propertyFilePath, botId, keyToPublish, orderToPublish);
+                    testCaseGeneratorLauncher.executeBotActionAndSendMessage();
                 } else if(botType.equals("testCaseExecutor")) {
 
                     JSONObject messageData = new JSONObject(message);
                     String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
                     String testCasesPath = messageData.getString(TEST_CASES_PATH);
-                    TestCaseExecutorLauncher.executeTestCases(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
+                    TestCaseExecutorLauncher testCaseExecutorLauncher = new TestCaseExecutorLauncher(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
+                    testCaseExecutorLauncher.executeBotActionAndSendMessage();
                 } else if(botType.equals("testReporter")) {
                     JSONObject messageData = new JSONObject(message);
                     String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
                     String testCasesPath = messageData.getString(TEST_CASES_PATH);
-                    TestReportGeneratorLauncher.generateTestReport(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
+                    TestReportGeneratorLauncher testReportGeneratorLauncher = new TestReportGeneratorLauncher(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
+                    testReportGeneratorLauncher.executeBotActionAndSendMessage();
                 }
                 disconnectBot(isPersistent);
             }

@@ -4,23 +4,34 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import org.json.JSONObject;
 
 import com.botica.RabbitMQManager;
 import com.botica.utils.BotConfig;
+import com.botica.utils.RabbitCommunicator;
 
 /**
  * This class serves as the base launcher for bots and provides methods for
  * connecting to RabbitMQ and launching bot-related tasks.
  */
-public class BaseLauncher {
+public abstract class AbstractLauncher {
 
-    public static final Logger logger = Logger.getLogger(BaseLauncher.class.getName());
-    private static final String BOT_ID_JSON_KEY = "botId";
+    protected String keyToPublish;
+    protected String orderToPublish;
+    protected RabbitCommunicator rabbitCommunicator;
     protected final RabbitMQManager messageSender = new RabbitMQManager();
+
+    protected static final Logger logger = LogManager.getLogger(AbstractLauncher.class);
+    private static final String BOT_ID_JSON_KEY = "botId";
+
+    protected AbstractLauncher(String keyToPublish, String orderToPublish) {
+        this.keyToPublish = keyToPublish;
+        this.orderToPublish = orderToPublish;
+        this.rabbitCommunicator = new RabbitCommunicator(this.keyToPublish, logger);
+    }
 
     /**
      * Launches a bot with the provided configuration and parameters.
@@ -39,7 +50,7 @@ public class BaseLauncher {
             connectToRabbitMQ(queueName, bindingKey, botId, autoDelete);
             messageSender.receiveMessage(queueName, botData, botConfig);
         } catch (Exception e) {
-            logger.log(Level.SEVERE, e.getMessage(), e);
+            logger.error("Error launching bot: {}", botId, e);
         }
     }
 
@@ -56,7 +67,16 @@ public class BaseLauncher {
     private void connectToRabbitMQ(String queueName, String bindingKey, String botId, boolean autoDelete) throws IOException, TimeoutException {
         List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
         messageSender.connect(queueName, bindingKey, queueOptions);
-        logger.log(Level.INFO, "{0} connected to RabbitMQ", new Object[]{botId});
+        logger.info("Bot {} connected to RabbitMQ", botId);
+    }
+    
+    protected abstract void botAction();
+
+    protected abstract JSONObject createMessage();
+
+    public void executeBotActionAndSendMessage() {
+        botAction();
+        rabbitCommunicator.sendMessage(createMessage().toString());
     }
 
 }

@@ -15,8 +15,8 @@ public class TestCaseGeneration extends RunnerBase{
             JSONObject testCaseGenerators = loadBotsDefinition(JSON_OBJECT);
 
             launchBots(testCaseGenerators, (botData, o, k, op) -> {
-                TestCaseGeneratorLauncher launcher = new TestCaseGeneratorLauncher();
-                launcher.launchTestGenerator(botData, o, k, op);
+                TestCaseGeneratorLauncher launcher = new TestCaseGeneratorLauncher(k, op);
+                launcher.launchTestGenerator(botData, o);
             });
         } catch (JSONException e) {
             throw new JSONException("Error reading file: " + DEFAULT_BOTS_DEFINITION_PATH);
