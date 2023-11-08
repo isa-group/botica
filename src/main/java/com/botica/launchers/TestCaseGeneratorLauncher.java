@@ -9,7 +9,7 @@ import java.util.Collection;
 
 import org.json.JSONObject;
 
-import com.botica.utils.RESTestUtil;
+import com.botica.utils.property.PropertyReader;
 
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
@@ -55,7 +55,7 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
             RESTestLoader botLoader = new RESTestLoader(this.propertyFilePath);
             this.loader = botLoader;
 
-            String botGeneratorType = RESTestUtil.readProperty(this.propertyFilePath, "generator");
+            String botGeneratorType = PropertyReader.readProperty(this.propertyFilePath, "generator");
             this.generatorType = botGeneratorType;
 
             AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);

@@ -1,13 +1,13 @@
-package com.botica.utils;
+package com.botica.utils.json;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.json.JSONException;
 
-public class JSON {
+public class JSONUtils {
 
-    private JSON() {
+    private JSONUtils() {
     }
 
     /**

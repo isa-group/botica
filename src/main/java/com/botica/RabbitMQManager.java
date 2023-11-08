@@ -6,12 +6,10 @@ import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 
-import com.botica.launchers.TestCaseExecutorLauncher;
-import com.botica.launchers.TestCaseGeneratorLauncher;
-import com.botica.launchers.TestReportGeneratorLauncher;
-import com.botica.utils.BotConfig;
-import com.botica.utils.JSON;
-import com.botica.utils.Utils;
+import com.botica.utils.logging.ExceptionUtils;
+import com.botica.utils.bot.BotConfig;
+import com.botica.utils.bot.BotHandler;
+import com.botica.utils.json.JSONUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -49,10 +47,7 @@ public class RabbitMQManager {
     private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
 
-    private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
-    private static final String BOT_ID_JSON_KEY = "botId";
     private static final String IS_PERSISTENT_JSON_KEY = "isPersistent";
-    private static final String TEST_CASES_PATH = "testCasesPath";
 
     public RabbitMQManager(){
         this(null, null, null, null, 0);
@@ -107,7 +102,7 @@ public class RabbitMQManager {
                 }
             }
         } catch (IOException | TimeoutException e) {
-            Utils.handleException(logger, "Error connecting to RabbitMQ", e);
+            ExceptionUtils.handleException(logger, "Error connecting to RabbitMQ", e);
         }
         return queue;
     }
@@ -122,8 +117,7 @@ public class RabbitMQManager {
      * @throws IOException
      * @throws TimeoutException
      */
-    public void connect(String queueName, List<String> bindingKeys, String botId, boolean autoDelete) throws IOException, TimeoutException {
-        List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
+    public void connect(String queueName, List<String> bindingKeys, List<Boolean> queueOptions, String botId) throws IOException, TimeoutException {
         connect(queueName, bindingKeys, queueOptions);
         logger.info("Bot {} connected to RabbitMQ", botId);
     }
@@ -144,7 +138,7 @@ public class RabbitMQManager {
             logger.info("Message sent to RabbitMQ: {}", message);
             close(); // TODO: Review
         } catch (Exception e) {
-            Utils.handleException(logger, "Error sending message to RabbitMQ", e);
+            ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
     }
 
@@ -175,12 +169,8 @@ public class RabbitMQManager {
      */
     public void receiveMessage(String queueName, JSONObject botData, BotConfig botConfig) throws IOException {
 
-        String botId = botData.getString(BOT_ID_JSON_KEY);
         boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
-        String botType = botConfig.getBotType();
         String order = botConfig.getOrder();
-        String keyToPublish = botConfig.getKeyToPublish();
-        String orderToPublish = botConfig.getOrderToPublish();
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -188,26 +178,9 @@ public class RabbitMQManager {
 
             String messageOrder = new JSONObject(message).getString("order");
 
-            //TODO: Extract this to a method
             if (messageOrder.contains(order)){
-                if (botType.equals("testCaseGenerator")) {
-                    String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
-                    TestCaseGeneratorLauncher testCaseGeneratorLauncher = new TestCaseGeneratorLauncher(propertyFilePath, botId, keyToPublish, orderToPublish);
-                    testCaseGeneratorLauncher.executeBotActionAndSendMessage();
-                } else if(botType.equals("testCaseExecutor")) {
-
-                    JSONObject messageData = new JSONObject(message);
-                    String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
-                    String testCasesPath = messageData.getString(TEST_CASES_PATH);
-                    TestCaseExecutorLauncher testCaseExecutorLauncher = new TestCaseExecutorLauncher(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
-                    testCaseExecutorLauncher.executeBotActionAndSendMessage();
-                } else if(botType.equals("testReporter")) {
-                    JSONObject messageData = new JSONObject(message);
-                    String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
-                    String testCasesPath = messageData.getString(TEST_CASES_PATH);
-                    TestReportGeneratorLauncher testReportGeneratorLauncher = new TestReportGeneratorLauncher(propertyFilePath, testCasesPath, keyToPublish, orderToPublish);
-                    testReportGeneratorLauncher.executeBotActionAndSendMessage();
-                }
+                JSONObject messageData = new JSONObject(message);
+                BotHandler.handleBotMessage(botConfig, botData, messageData);
                 disconnectBot(isPersistent);
             }
         };
@@ -230,7 +203,7 @@ public class RabbitMQManager {
 
     private void loadServerConfig() {
         try {
-            String jsonContent = JSON.readFileAsString(DEFAULT_CONFIG_PATH);
+            String jsonContent = JSONUtils.readFileAsString(DEFAULT_CONFIG_PATH);
             JSONObject obj = new JSONObject(jsonContent);
 
             serverUsername = obj.getString("username");
@@ -241,7 +214,7 @@ public class RabbitMQManager {
             serverExchange = obj.getString("exchange");
 
         } catch (Exception e) {
-            Utils.handleException(logger, "Error reading " + CONFIG_FILE_NAME, e);
+            ExceptionUtils.handleException(logger, "Error reading " + CONFIG_FILE_NAME, e);
         }
     }
 
@@ -250,7 +223,7 @@ public class RabbitMQManager {
             try {
                 close();
             } catch (TimeoutException e) {
-                Utils.handleException(logger, "Error closing channel and connection", e);
+                ExceptionUtils.handleException(logger, "Error closing channel and connection", e);
             }
         }
     }

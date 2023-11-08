@@ -11,8 +11,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.botica.launchers.AbstractLauncher;
-import com.botica.utils.BotConfig;
-import com.botica.utils.JSON;
+import com.botica.utils.bot.BotConfig;
+import com.botica.utils.json.JSONUtils;
 
 /**
  * The RunnerBase class serves as the base class for bot runners and provides
@@ -24,7 +24,7 @@ public class RunnerBase {
     private static final String BOTS_DEFINITION_FILE_NAME = "bots-definition.json";
     public static final String DEFAULT_BOTS_DEFINITION_PATH = "src/main/java/com/botica/bots/" + BOTS_DEFINITION_FILE_NAME;
 
-    protected static final String JSON_ARRAY = "bots";
+    private static final String JSON_ARRAY = "bots";
 
     private static final Logger logger = LogManager.getLogger(RunnerBase.class);
 
@@ -37,7 +37,7 @@ public class RunnerBase {
      *                       JSON.
      */
     protected static JSONObject loadBotsDefinition(String jsonObjectName) throws JSONException {
-        String jsonContent = JSON.readFileAsString(DEFAULT_BOTS_DEFINITION_PATH);
+        String jsonContent = JSONUtils.readFileAsString(DEFAULT_BOTS_DEFINITION_PATH);
         JSONObject obj = new JSONObject(jsonContent);
         return obj.getJSONObject(jsonObjectName);
     }
@@ -62,7 +62,7 @@ public class RunnerBase {
         }
     }
 
-    protected static void connectBotsToRabbit(JSONObject botData, String order, String keyToPublish,
+    private static void connectBotsToRabbit(JSONObject botData, String order, String keyToPublish,
             String orderToPublish, JSONObject rabbitOptions, String botType, AbstractLauncher launcher) {
         
         String id = botData.getString("botId");
@@ -94,7 +94,4 @@ public class RunnerBase {
                 botDefinition.has("rabbitOptions");
     }
 
-    protected interface RunnerInterface {
-        void botsInformation(JSONObject botData, String order, String keyToPublish, String orderToPublis, JSONObject rabbitOptions);
-    }
 }

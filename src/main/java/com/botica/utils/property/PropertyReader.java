@@ -1,10 +1,10 @@
-package com.botica.utils;
+package com.botica.utils.property;
 
 import es.us.isa.restest.util.PropertyManager;
 
-public class RESTestUtil {
+public class PropertyReader {
 
-    private RESTestUtil() {
+    private PropertyReader() {
         throw new IllegalStateException("Utility class");
     }
 

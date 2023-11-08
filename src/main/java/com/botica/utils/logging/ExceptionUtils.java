@@ -1,10 +1,10 @@
-package com.botica.utils;
+package com.botica.utils.logging;
 
 import org.apache.logging.log4j.Logger;
 
-public class Utils {
+public class ExceptionUtils {
 
-    private Utils() {
+    private ExceptionUtils() {
     }
 
     /**

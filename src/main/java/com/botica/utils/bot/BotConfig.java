@@ -1,4 +1,4 @@
-package com.botica.utils;
+package com.botica.utils.bot;
 
 public class BotConfig {
     private String botId;

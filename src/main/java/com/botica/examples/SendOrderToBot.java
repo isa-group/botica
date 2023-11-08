@@ -4,7 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.botica.RabbitMQManager;
-import com.botica.utils.Utils;
+import com.botica.utils.logging.ExceptionUtils;
 
 public class SendOrderToBot {
 
@@ -21,7 +21,7 @@ public class SendOrderToBot {
             logger.info("Message sent to RabbitMQ: {}", MESSAGE);
             messageSender.close();
         } catch (Exception e) {
-            Utils.handleException(logger, "Error sending message to RabbitMQ", e);
+            ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
     }
 }

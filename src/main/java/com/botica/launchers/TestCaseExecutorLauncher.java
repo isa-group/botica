@@ -5,7 +5,7 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
 
 import org.json.JSONObject;
 
-import com.botica.utils.RESTestUtil;
+import com.botica.utils.property.PropertyReader;
 
 import es.us.isa.restest.runners.RESTestExecutor;
 
@@ -36,14 +36,14 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
 
         // TODO: Check if is correct
         // Create directories to store test data extracted from the execution
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        String experimentName = PropertyReader.readProperty(propertyFilePath, "experiment.name");
 
-        String testDataDir = RESTestUtil.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
-        String coverageDataDir = RESTestUtil.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
-        String allureResultsDir = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
-        String allureReportDir = RESTestUtil.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
+        String testDataDir = PropertyReader.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
+        String coverageDataDir = PropertyReader.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
+        String allureResultsDir = PropertyReader.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
+        String allureReportDir = PropertyReader.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
 
-        String deletePreviousResults = RESTestUtil.readProperty(propertyFilePath, "deletepreviousresults");
+        String deletePreviousResults = PropertyReader.readProperty(propertyFilePath, "deletepreviousresults");
         if (deletePreviousResults != null && Boolean.parseBoolean(deletePreviousResults)) {
             deleteDir(testDataDir);
             deleteDir(coverageDataDir);
@@ -59,8 +59,8 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
     }
 
     private void auxBotAction(RESTestExecutor executor) {
-        String allureResultsDirPath = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir");
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, "experiment.name");
+        String allureResultsDirPath = PropertyReader.readProperty(propertyFilePath, "allure.results.dir");
+        String experimentName = PropertyReader.readProperty(propertyFilePath, "experiment.name");
         System.setProperty("allure.results.directory", allureResultsDirPath + "/" + experimentName);
         executor.execute();
     }

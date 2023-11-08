@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import com.botica.utils.RESTestUtil;
+import com.botica.utils.property.PropertyReader;
 
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
@@ -54,7 +54,7 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
         
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
+        String experimentName = PropertyReader.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
         RESTestLoader loader = new RESTestLoader(propertyFilePath);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
@@ -100,13 +100,13 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
     //TODO: Change (Own definition of createStatsReportManager)
     private static StatsReportManager createStatsReportManager(String propertyFilePath) {
 
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
-        String testDataDir = RESTestUtil.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
-        String coverageDataDir = RESTestUtil.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
-        boolean enableCSVStats = Boolean.parseBoolean(RESTestUtil.readProperty(propertyFilePath, "stats.csv"));
-        boolean enableInputCoverage = Boolean.parseBoolean(RESTestUtil.readProperty(propertyFilePath, "coverage.input"));
-        boolean enableOutputCoverage = Boolean.parseBoolean(RESTestUtil.readProperty(propertyFilePath, "coverage.output"));
-        String OAISpecPath = RESTestUtil.readProperty(propertyFilePath, "oas.path");
+        String experimentName = PropertyReader.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
+        String testDataDir = PropertyReader.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
+        String coverageDataDir = PropertyReader.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
+        boolean enableCSVStats = Boolean.parseBoolean(PropertyReader.readProperty(propertyFilePath, "stats.csv"));
+        boolean enableInputCoverage = Boolean.parseBoolean(PropertyReader.readProperty(propertyFilePath, "coverage.input"));
+        boolean enableOutputCoverage = Boolean.parseBoolean(PropertyReader.readProperty(propertyFilePath, "coverage.output"));
+        String OAISpecPath = PropertyReader.readProperty(propertyFilePath, "oas.path");
 
         OpenAPISpecification spec = new OpenAPISpecification(OAISpecPath);
 
@@ -119,11 +119,11 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
     //TODO: Change (Own definition of createAllureReportManager)
     private static AllureReportManager createAllureReportManager(String propertyFilePath) {
 		AllureReportManager arm = null;
-        String experimentName = RESTestUtil.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
-        String allureResultsDir = RESTestUtil.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
-        String allureReportDir = RESTestUtil.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
-        String confPath = RESTestUtil.readProperty(propertyFilePath, "conf.path");
-        String OAISpecPath = RESTestUtil.readProperty(propertyFilePath, "oas.path");
+        String experimentName = PropertyReader.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
+        String allureResultsDir = PropertyReader.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
+        String allureReportDir = PropertyReader.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
+        String confPath = PropertyReader.readProperty(propertyFilePath, "conf.path");
+        String OAISpecPath = PropertyReader.readProperty(propertyFilePath, "oas.path");
 		
         //Find auth property names (if any)
         List<String> authProperties = AllureAuthManager.findAuthProperties(new OpenAPISpecification(OAISpecPath), confPath);
