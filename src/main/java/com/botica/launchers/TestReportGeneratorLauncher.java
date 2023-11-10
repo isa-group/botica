@@ -47,23 +47,26 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
     protected void botAction() {
         Collection<TestCase> testCases = new ArrayList<>();
 
-        try (FileInputStream fis = new FileInputStream(testCasesPath);
+        try (FileInputStream fis = new FileInputStream(this.testCasesPath);
                 ObjectInputStream ois = new ObjectInputStream(fis)) {
             readTestCasesFromObjectStream(ois, testCases);
         } catch (IOException e) {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
         
-        String experimentName = PropertyReader.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
-        RESTestLoader loader = new RESTestLoader(propertyFilePath);
+        RESTestLoader loader = new RESTestLoader(this.propertyFilePath);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
         }catch(RESTestException e){
             logger.error("Error creating generator: {}", e.getMessage());
         }
 
-        AllureReportManager allureReportManager = createAllureReportManager(propertyFilePath);
-        StatsReportManager statsReportManager = createStatsReportManager(propertyFilePath);
+        //TODO: REVIEW/FIX. It is necessary create the loader to reset the experiment name property
+        //PropertyManager.setUserPropertiesFilePath(null);
+        String experimentName = PropertyReader.readProperty(this.propertyFilePath, EXPERIMENT_NAME_PROPERTY);
+
+        AllureReportManager allureReportManager = createAllureReportManager(this.propertyFilePath);
+        StatsReportManager statsReportManager = createStatsReportManager(this.propertyFilePath);
         
         allureReportManager.generateReport();
         statsReportManager.setTestCases(testCases);

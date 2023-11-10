@@ -45,8 +45,8 @@ public abstract class AbstractLauncher {
 
         try {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
-            messageSender.connect(queueName, bindingKeys, queueOptions, botId);
-            messageSender.receiveMessage(queueName, botData, botConfig);
+            this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
+            this.messageSender.receiveMessage(queueName, botData, botConfig);
         } catch (Exception e) {
             logger.error("Error launching bot: {}", botId, e);
         }
@@ -59,7 +59,7 @@ public abstract class AbstractLauncher {
     public void executeBotActionAndSendMessage() {
         botAction();
         try{
-            messageSender.sendMessageToExchange(this.keyToPublish, createMessage().toString());
+            this.messageSender.sendMessageToExchange(this.keyToPublish, createMessage().toString());
         } catch (Exception e) {
             ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }

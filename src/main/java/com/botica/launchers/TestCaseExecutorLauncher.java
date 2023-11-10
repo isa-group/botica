@@ -32,18 +32,18 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
      */
     @Override
     protected void botAction() {
-        RESTestExecutor executor = new RESTestExecutor(propertyFilePath);
+        RESTestExecutor executor = new RESTestExecutor(this.propertyFilePath);
 
         // TODO: Check if is correct
         // Create directories to store test data extracted from the execution
-        String experimentName = PropertyReader.readProperty(propertyFilePath, "experiment.name");
+        String experimentName = PropertyReader.readProperty(this.propertyFilePath, "experiment.name");
 
-        String testDataDir = PropertyReader.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
-        String coverageDataDir = PropertyReader.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
-        String allureResultsDir = PropertyReader.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
-        String allureReportDir = PropertyReader.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
+        String testDataDir = PropertyReader.readProperty(this.propertyFilePath, "data.tests.dir") + "/" + experimentName;
+        String coverageDataDir = PropertyReader.readProperty(this.propertyFilePath, "data.coverage.dir") + "/" + experimentName;
+        String allureResultsDir = PropertyReader.readProperty(this.propertyFilePath, "allure.results.dir") + "/" + experimentName;
+        String allureReportDir = PropertyReader.readProperty(this.propertyFilePath, "allure.report.dir") + "/" + experimentName;
 
-        String deletePreviousResults = PropertyReader.readProperty(propertyFilePath, "deletepreviousresults");
+        String deletePreviousResults = PropertyReader.readProperty(this.propertyFilePath, "deletepreviousresults");
         if (deletePreviousResults != null && Boolean.parseBoolean(deletePreviousResults)) {
             deleteDir(testDataDir);
             deleteDir(coverageDataDir);
@@ -59,8 +59,8 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
     }
 
     private void auxBotAction(RESTestExecutor executor) {
-        String allureResultsDirPath = PropertyReader.readProperty(propertyFilePath, "allure.results.dir");
-        String experimentName = PropertyReader.readProperty(propertyFilePath, "experiment.name");
+        String allureResultsDirPath = PropertyReader.readProperty(this.propertyFilePath, "allure.results.dir");
+        String experimentName = PropertyReader.readProperty(this.propertyFilePath, "experiment.name");
         System.setProperty("allure.results.directory", allureResultsDirPath + "/" + experimentName);
         executor.execute();
     }
@@ -68,9 +68,9 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
     @Override
     protected JSONObject createMessage() {
         JSONObject message = new JSONObject();
-        message.put("order", orderToPublish);
-        message.put("propertyFilePath", propertyFilePath);
-        message.put("testCasesPath", testCasesPath);
+        message.put("order", this.orderToPublish);
+        message.put("propertyFilePath", this.propertyFilePath);
+        message.put("testCasesPath", this.testCasesPath);
 
         return message;
     }

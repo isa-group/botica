@@ -5,6 +5,8 @@ import static es.us.isa.restest.util.FileManager.createDir;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 import org.json.JSONObject;
@@ -58,10 +60,10 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
             String botGeneratorType = PropertyReader.readProperty(this.propertyFilePath, "generator");
             this.generatorType = botGeneratorType;
 
-            AbstractTestCaseGenerator generator = getGenerator(loader, generatorType);
+            AbstractTestCaseGenerator generator = getGenerator(this.loader, this.generatorType);
             this.absractTestCaseGenerator = generator;
 
-            auxBotAction(loader, generator);
+            auxBotAction(this.loader, this.absractTestCaseGenerator);
         
         }catch (RESTestException e){
             logger.error("Error launching test generator: {}", this.botId, e);
@@ -71,16 +73,16 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
     @Override
     protected JSONObject createMessage() {
         JSONObject message = new JSONObject();
-        message.put("order", orderToPublish);
+        message.put("order", this.orderToPublish);
         message.put(BOT_ID_JSON_KEY, this.botId);
-        message.put("generatorType", generatorType);
-        message.put("faultyRatio", absractTestCaseGenerator.getFaultyRatio());
-        message.put("nTotalFaulty", absractTestCaseGenerator.getnFaulty());
-        message.put("nTotalNominal", absractTestCaseGenerator.getnNominal());
-        message.put("maxTriesPerTestCase", absractTestCaseGenerator.getMaxTriesPerTestCase());
-        message.put("targetDirJava", loader.getTargetDirJava());
-        message.put("allureReportsPath", loader.getAllureReportsPath());
-        message.put("experimentName", loader.getExperimentName());
+        message.put("generatorType", this.generatorType);
+        message.put("faultyRatio", this.absractTestCaseGenerator.getFaultyRatio());
+        message.put("nTotalFaulty", this.absractTestCaseGenerator.getnFaulty());
+        message.put("nTotalNominal", this.absractTestCaseGenerator.getnNominal());
+        message.put("maxTriesPerTestCase", this.absractTestCaseGenerator.getMaxTriesPerTestCase());
+        message.put("targetDirJava", this.loader.getTargetDirJava());
+        message.put("allureReportsPath", this.loader.getAllureReportsPath());
+        message.put("experimentName", this.loader.getExperimentName());
         message.put("propertyFilePath", this.propertyFilePath);
         message.put("testCasesPath", this.testCasesPath);
 
@@ -95,7 +97,13 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
             logger.error("Error generating test cases: {}", e.getMessage());
         }
 
-        this.testCasesPath = loader.getTargetDirJava() + "/t.tmp";
+        String targetDir = loader.getTargetDirJava();
+        try {
+            Files.createDirectories(Paths.get(targetDir));
+        } catch (Exception e) {
+            logger.error("Error creating directory: {}", e.getMessage());
+        }
+        this.testCasesPath = targetDir + "/t.tmp";
         try (FileOutputStream fos = new FileOutputStream(this.testCasesPath);
                 ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(testCases);
