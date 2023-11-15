@@ -1,48 +1,42 @@
 package com.botica.utils.bot;
 
-public class BotConfig {
-    private String botId;
-    private String order;
-    private String keyToPublish;
-    private String orderToPublish;
-    private String botType;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-    /**
-     * Constructor for the BotConfig class.
-     *
-     * @param botId          The identifier of the bot.
-     * @param order          The order associated with the bot.
-     * @param keyToPublish   The binding key for publishing messages.
-     * @param orderToPublish The order to be sent in the message.
-     * @param botType        The type of the bot.
-     */
-    public BotConfig(String botId, String order, String keyToPublish, String orderToPublish, String botType) {
-        this.botId = botId;
-        this.order = order;
-        this.keyToPublish = keyToPublish;
-        this.orderToPublish = orderToPublish;
-        this.botType = botType;
+import com.botica.utils.property.PropertyManager;
+
+public class BotConfig {
+
+    private static final Logger logger = LogManager.getLogger(BotConfig.class);
+
+    private String botId;
+    private String propertyFilePath;
+    private Boolean isPersistent;
+
+    public BotConfig(String botPropertyFilePath) {
+
+        this.botId = PropertyManager.readProperty(botPropertyFilePath, "bot.botId");
+        logger.info("Bot id: {}", botId);
+
+        this.propertyFilePath = PropertyManager.readProperty(botPropertyFilePath, "bot.propertyFilePath");
+        logger.info("Bot property file path: {}", propertyFilePath);
+        
+        if (PropertyManager.readProperty(botPropertyFilePath, "bot.isPersistent") != null) {
+            this.isPersistent = Boolean.parseBoolean(PropertyManager.readProperty(botPropertyFilePath, "bot.isPersistent"));
+        }
+        logger.info("Is persistent: {}", isPersistent);
     }
 
-    // Getters
+    //Getters
     public String getBotId() {
         return botId;
     }
 
-    public String getOrder() {
-        return order;
+    public String getPropertyFilePath() {
+        return propertyFilePath;
     }
 
-    public String getKeyToPublish() {
-        return keyToPublish;
-    }
-
-    public String getOrderToPublish() {
-        return orderToPublish;
-    }
-
-    public String getBotType() {
-        return botType;
+    public Boolean getIsPersistent() {
+        return isPersistent;
     }
 }
-

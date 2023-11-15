@@ -53,7 +53,6 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
     @Override
     protected void botAction() {
         try {
-            //PROBLEM HERE
             RESTestLoader botLoader = new RESTestLoader(this.propertyFilePath);
             this.loader = botLoader;
 

@@ -53,16 +53,14 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
         } catch (IOException e) {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
-        
-        RESTestLoader loader = new RESTestLoader(this.propertyFilePath);
+
+        RESTestLoader loader = new RESTestLoader(this.propertyFilePath, true);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
         }catch(RESTestException e){
             logger.error("Error creating generator: {}", e.getMessage());
         }
 
-        //TODO: REVIEW/FIX. It is necessary create the loader to reset the experiment name property
-        //PropertyManager.setUserPropertiesFilePath(null);
         String experimentName = PropertyReader.readProperty(this.propertyFilePath, EXPERIMENT_NAME_PROPERTY);
 
         AllureReportManager allureReportManager = createAllureReportManager(this.propertyFilePath);

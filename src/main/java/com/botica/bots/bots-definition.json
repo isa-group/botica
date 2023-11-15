@@ -1,5 +1,6 @@
-{
-    "testCaseGenerators": {
+[
+    {
+        "botType": "TestCaseGenerator",
         "order": "generateTestCases",
         "keyToPublish": "testCasesGenerated",
         "orderToPublish": "executeTestCases",
@@ -38,7 +39,8 @@
             }
         ]
     },
-    "testCaseExecutors": {
+    {
+        "botType": "TestCaseExecutor",
         "order": "executeTestCases",
         "keyToPublish": "testCasesExecuted",
         "orderToPublish": "generateTestReport",
@@ -60,7 +62,8 @@
             }
         ]
     },
-    "testReporters": {
+    {
+        "botType": "TestReporter",
         "order": "generateTestReport",
         "keyToPublish": "testReportGenerated",
         "orderToPublish": "",
@@ -82,4 +85,4 @@
             }
         ]
     }
-}
+]

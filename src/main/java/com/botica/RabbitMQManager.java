@@ -7,6 +7,7 @@ import com.rabbitmq.client.DeliverCallback;
 import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 
 import com.botica.utils.logging.ExceptionUtils;
+import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.bot.BotConfig;
 import com.botica.utils.bot.BotHandler;
 import com.botica.utils.json.JSONUtils;
@@ -46,8 +47,6 @@ public class RabbitMQManager {
     private static final String CONFIG_FILE_NAME = "server-config.json";
     private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
-
-    private static final String IS_PERSISTENT_JSON_KEY = "isPersistent";
 
     public RabbitMQManager(){
         this(null, null, null, null, 0);
@@ -162,15 +161,15 @@ public class RabbitMQManager {
     /**
      * Receive and process messages from the specified queue.
      *
-     * @param queueName    The name of the queue to receive messages from.
-     * @param botData      A JSON object containing bot-specific data.
-     * @param botConfig    A BotConfig object containing bot-specific configuration.
+     * @param queueName         The name of the queue to receive messages from.
+     * @param botConfig         A JSON object containing bot-specific data.
+     * @param botRabbitConfig   A BotRabbitConfig object containing bot-specific configuration.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, JSONObject botData, BotConfig botConfig) throws IOException {
+    public void receiveMessage(String queueName, BotConfig botConfig, BotRabbitConfig botRabbitConfig) throws IOException {
 
-        boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
-        String order = botConfig.getOrder();
+        boolean isPersistent = botConfig.getIsPersistent();
+        String order = botRabbitConfig.getOrder();
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -180,7 +179,7 @@ public class RabbitMQManager {
 
             if (messageOrder.contains(order)){
                 JSONObject messageData = new JSONObject(message);
-                BotHandler.handleBotMessage(botConfig, botData, messageData);
+                BotHandler.handleBotMessage(botRabbitConfig, botConfig, messageData);
                 disconnectBot(isPersistent);
             }
         };

@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import com.botica.RabbitMQManager;
 import com.botica.utils.bot.BotConfig;
+import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
 
 /**
@@ -23,7 +24,6 @@ public abstract class AbstractLauncher {
     protected final RabbitMQManager messageSender = new RabbitMQManager();
 
     protected static final Logger logger = LogManager.getLogger(AbstractLauncher.class);
-    private static final String BOT_ID_JSON_KEY = "botId";
 
     protected AbstractLauncher(String keyToPublish, String orderToPublish) {
         this.keyToPublish = keyToPublish;
@@ -33,20 +33,20 @@ public abstract class AbstractLauncher {
     /**
      * Launches a bot with the provided configuration and parameters.
      * 
-     * @param botData    The JSON object containing bot data.
-     * @param botConfig  The BotConfig instance with bot configuration.
-     * @param queueName  The name of the RabbitMQ queue.
-     * @param bindingKey The binding key for the RabbitMQ queue.
-     * @param autoDelete Whether the RabbitMQ queue should be auto-deleted.
+     * @param botConfig         The JSON object containing bot data.
+     * @param botRabbitConfig   The BotRabbitConfig instance with bot configuration.
+     * @param queueName         The name of the RabbitMQ queue.
+     * @param bindingKey        The binding key for the RabbitMQ queue.
+     * @param autoDelete        Whether the RabbitMQ queue should be auto-deleted.
      */
-    public void launchBot(JSONObject botData, BotConfig botConfig, String queueName, List<String> bindingKeys, boolean autoDelete) {
+    public void launchBot(BotConfig botConfig, BotRabbitConfig botRabbitConfig, String queueName, List<String> bindingKeys, boolean autoDelete) {
         
-        String botId = botData.getString(BOT_ID_JSON_KEY);
+        String botId = botConfig.getBotId();
 
         try {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
-            this.messageSender.receiveMessage(queueName, botData, botConfig);
+            this.messageSender.receiveMessage(queueName, botConfig, botRabbitConfig);
         } catch (Exception e) {
             logger.error("Error launching bot: {}", botId, e);
         }

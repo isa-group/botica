@@ -6,7 +6,7 @@
 /src/main/resources/Examples/*/test_cases/
 /src/main/resources/Examples/*/allure_report/
 
-/src/main/java/com/botica/temp/
+/src/main/resources/ConfigurationFiles
 
 /allure-results
 

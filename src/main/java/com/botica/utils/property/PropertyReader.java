@@ -2,13 +2,15 @@ package com.botica.utils.property;
 
 import es.us.isa.restest.util.PropertyManager;
 
-public class PropertyReader {
+/**
+ * 
+ * @author Sergio Segura
+ */
+public class PropertyReader { //TODO: Delete this class (It is only necessary for RESTest)
 
     private PropertyReader() {
-        throw new IllegalStateException("Utility class");
     }
 
-    // TODO: Check if is correct
     public static String readProperty(String userPropertiesFilePath, String propertyName) {
 
         // Read property from user property file (if provided)
