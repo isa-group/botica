@@ -11,8 +11,6 @@ import java.util.Collection;
 
 import org.json.JSONObject;
 
-import com.botica.utils.property.PropertyReader;
-
 import es.us.isa.restest.generators.*;
 import es.us.isa.restest.runners.RESTestLoader;
 import es.us.isa.restest.testcases.TestCase;

@@ -1,4 +1,4 @@
-package com.botica.utils.property;
+package com.botica.launchers;
 
 import es.us.isa.restest.util.PropertyManager;
 
@@ -6,7 +6,7 @@ import es.us.isa.restest.util.PropertyManager;
  * 
  * @author Sergio Segura
  */
-public class PropertyReader { //TODO: Delete this class (It is only necessary for RESTest)
+public class PropertyReader {
 
     private PropertyReader() {
     }

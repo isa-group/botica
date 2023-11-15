@@ -9,8 +9,6 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import com.botica.utils.property.PropertyReader;
-
 import es.us.isa.restest.coverage.CoverageGatherer;
 import es.us.isa.restest.coverage.CoverageMeter;
 import es.us.isa.restest.reporting.AllureReportManager;

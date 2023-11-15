@@ -5,8 +5,6 @@ import static es.us.isa.restest.util.FileManager.deleteDir;
 
 import org.json.JSONObject;
 
-import com.botica.utils.property.PropertyReader;
-
 import es.us.isa.restest.runners.RESTestExecutor;
 
 /**
