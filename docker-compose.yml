@@ -1,4 +1,9 @@
 version: '3'
+
+networks:
+  rabbitmq-network:
+    driver: bridge
+
 services:
   rabbitmq:
     image: "rabbitmq:3.12-management"
@@ -9,7 +14,14 @@ services:
       - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions "/run/secrets/rabbit_config"
     secrets:
       - rabbit_config
+    networks:
+      - rabbitmq-network
+  bot-ica:
+    image: bot-ica:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
 
 secrets:
   rabbit_config:
-    file: ./conf/definitions.json
+    file: ./rabbitmq/definitions.json

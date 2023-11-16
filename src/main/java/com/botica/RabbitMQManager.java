@@ -45,7 +45,7 @@ public class RabbitMQManager {
 
     private static final Logger logger = LogManager.getLogger(RabbitMQManager.class);
     private static final String CONFIG_FILE_NAME = "server-config.json";
-    private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
+    private static final String DEFAULT_CONFIG_PATH = "rabbitmq/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
 
     public RabbitMQManager(){
