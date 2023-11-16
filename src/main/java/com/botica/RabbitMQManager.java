@@ -32,21 +32,22 @@ import org.json.JSONObject;
  * dynamic configuration for specific connections.
  */
 public class RabbitMQManager {
-    private final ConnectionFactory factory;
-    private Connection connection;
-    private Channel channel;
-
-    private String serverUsername;
-    private String serverPassword;
-    private String serverVirtualHost;
-    private String serverHost;
-    private int serverPort;
-    private String serverExchange;
 
     private static final Logger logger = LogManager.getLogger(RabbitMQManager.class);
     private static final String CONFIG_FILE_NAME = "server-config.json";
     private static final String DEFAULT_CONFIG_PATH = "rabbitmq/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
+
+    private final ConnectionFactory factory;    // The ConnectionFactory instance.
+    private Connection connection;              // The Connection instance.
+    private Channel channel;                    // The Channel instance.
+
+    private String serverUsername;              // The username for RabbitMQ connection.
+    private String serverPassword;              // The password for RabbitMQ connection.
+    private String serverVirtualHost;           // The virtual host for RabbitMQ connection.
+    private String serverHost;                  // The host (server) for RabbitMQ connection.
+    private int serverPort;                     // The port for RabbitMQ connection.
+    private String serverExchange;              // The exchange for RabbitMQ connection.
 
     public RabbitMQManager(){
         this(null, null, null, null, 0);
@@ -162,8 +163,8 @@ public class RabbitMQManager {
      * Receive and process messages from the specified queue.
      *
      * @param queueName         The name of the queue to receive messages from.
-     * @param botConfig         A JSON object containing bot-specific data.
-     * @param botRabbitConfig   A BotRabbitConfig object containing bot-specific configuration.
+     * @param botConfig         A BotConfig object containing bot-specific configuration.
+     * @param botRabbitConfig   A BotRabbitConfig object containing RabbitMQ bot-specific configuration.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
     public void receiveMessage(String queueName, BotConfig botConfig, BotRabbitConfig botRabbitConfig) throws IOException {

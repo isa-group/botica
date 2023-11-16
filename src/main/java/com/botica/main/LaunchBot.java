@@ -4,7 +4,7 @@ import com.botica.runners.BOTICALoader;
 
 public class LaunchBot {
 
-    private static String botPropertiesFilePath = System.getenv("BOT_PROPERTY_FILE_PATH");
+    private static String botPropertiesFilePath = System.getenv("BOT_PROPERTY_FILE_PATH");  // The path to the bot's properties file.
 
     public static void main(String[] args) {
 

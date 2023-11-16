@@ -13,11 +13,11 @@ import java.util.Properties;
  */
 public class PropertyManager {
 
-	static String globalPropertyFilePath = "src/main/resources/ConfigurationFiles/config.properties";
-	static Properties globalProperties = null;
-	static Properties userProperties = null;
-
 	private static Logger logger = LogManager.getLogger(PropertyManager.class.getName());
+
+	static String globalPropertyFilePath = "src/main/resources/ConfigurationFiles/config.properties";	//Path to the global properties file
+	static Properties globalProperties = null;															//Global properties
+	static Properties userProperties = null;															//User properties
 
 	/**
 	 * Reads a property from the global properties file

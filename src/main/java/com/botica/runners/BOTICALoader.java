@@ -12,21 +12,24 @@ import com.botica.utils.bot.BotConfig;
 import com.botica.utils.bot.BotHandler;
 import com.botica.utils.property.PropertyManager;
 
+
+/**
+ * This class loads the properties files and connects the bot to RabbitMQ.
+ */
 public class BOTICALoader {
 
     private static final Logger logger = LogManager.getLogger(BOTICALoader.class);
 
-    
-    String botPropertiesFilePath;
+    String botPropertiesFilePath;   // The path to the bot's property file.
 
-    String botType;
-    String order;
-    String keyToPublish;
-    String orderToPublish;
-    String mainQueue;
-    List<String> bindings;
-    boolean queueByBot;
-    BotConfig botConfig;
+    String botType;                 // The type of bot.
+    String order;                   // The order associated with the bot.
+    String keyToPublish;            // The binding key for publishing messages.
+    String orderToPublish;          // The order to be sent in the message.
+    String mainQueue;               // The name of the RabbitMQ queue.
+    List<String> bindings;          // The list of bindings for the RabbitMQ queue.
+    boolean queueByBot;             // Whether create a queue by bot.
+    BotConfig botConfig;            // The bot-specific configuration.
 
     public BOTICALoader (String botPropertiesFilePath, boolean reloadBotProperties) {
         if(reloadBotProperties){
@@ -63,6 +66,7 @@ public class BOTICALoader {
         // The list of bindings is a comma-separated list of strings
         String bindingsString = readProperty("rabbitOptions.bindings");
         logger.info("Bindings: {}", bindingsString);
+        
         // Convert the string into a list of strings
         bindings = new ArrayList<>();
         if (bindingsString != null) {
@@ -95,6 +99,9 @@ public class BOTICALoader {
         return value;
     }
 
+    /**
+     * Connects the bot to RabbitMQ.
+     */
     public void connectBotToRabbit() {
 
         AbstractLauncher launcher = BotHandler.handleLauncherType(botType, keyToPublish, orderToPublish);

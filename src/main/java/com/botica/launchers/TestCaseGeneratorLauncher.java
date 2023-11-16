@@ -18,10 +18,7 @@ import es.us.isa.restest.util.RESTestException;
 import es.us.isa.restest.writers.restassured.RESTAssuredWriter;
 
 /**
- * The TestCaseGeneratorLauncher class serves as a utility for launching test
- * case generation processes and interacting with RabbitMQ. It connects to
- * RabbitMQ, receives and sends messages, and generates test cases based on the
- * specified generator type.
+ * This class is a launcher for generating test cases.
  */
 public class TestCaseGeneratorLauncher extends AbstractLauncher {
 

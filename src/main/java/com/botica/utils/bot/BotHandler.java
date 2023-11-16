@@ -6,6 +6,9 @@ import com.botica.launchers.AbstractLauncher;
 import com.botica.launchers.TestCaseExecutorLauncher;
 import com.botica.launchers.TestReportGeneratorLauncher;
 
+/**
+ * This class handles bot messages and creates bot launchers.
+ */
 public class BotHandler {
 
     private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
@@ -14,6 +17,13 @@ public class BotHandler {
     private BotHandler() {
     }
 
+    /**
+     * Handles a bot message.
+     *
+     * @param botRabbitConfig The bot's RabbitMQ configuration.
+     * @param botConfig       The bot-specific configuration.
+     * @param messageData     The message data.
+     */
     public static void handleBotMessage(BotRabbitConfig botRabbitConfig, BotConfig botConfig, JSONObject messageData) {
         
         String botId = botConfig.getBotId();
@@ -38,6 +48,13 @@ public class BotHandler {
         }
     }
 
+    /**
+     * Handles a bot data to create a specific launcher.
+     *
+     * @param botRabbitConfig The bot's RabbitMQ configuration.
+     * @param botConfig       The bot-specific configuration.
+     * @param messageData     The message data.
+     */
     public static AbstractLauncher handleLauncherType(String botType, String keyToPublish, String orderToPublish) {
         
         if (botType.equals("TestCaseGenerator")) {

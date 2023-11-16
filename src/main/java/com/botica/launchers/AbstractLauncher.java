@@ -19,12 +19,18 @@ import com.botica.utils.logging.ExceptionUtils;
  */
 public abstract class AbstractLauncher {
 
-    protected String keyToPublish;
-    protected String orderToPublish;
-    protected final RabbitMQManager messageSender = new RabbitMQManager();
-
     protected static final Logger logger = LogManager.getLogger(AbstractLauncher.class);
 
+    protected String keyToPublish;                                          // The key to publish to RabbitMQ.
+    protected String orderToPublish;                                        // The order to publish to RabbitMQ.
+    protected final RabbitMQManager messageSender = new RabbitMQManager();  // The RabbitMQManager instance.
+
+    /**
+     * Constructor for AbstractLauncher.
+     * 
+     * @param keyToPublish
+     * @param orderToPublish
+     */
     protected AbstractLauncher(String keyToPublish, String orderToPublish) {
         this.keyToPublish = keyToPublish;
         this.orderToPublish = orderToPublish;
@@ -33,8 +39,8 @@ public abstract class AbstractLauncher {
     /**
      * Launches a bot with the provided configuration and parameters.
      * 
-     * @param botConfig         The JSON object containing bot data.
-     * @param botRabbitConfig   The BotRabbitConfig instance with bot configuration.
+     * @param botConfig         The BotConfig instance that contains the bot-specific configuration.
+     * @param botRabbitConfig   The BotRabbitConfig instance that contains the bot's RabbitMQ configuration.
      * @param queueName         The name of the RabbitMQ queue.
      * @param bindingKey        The binding key for the RabbitMQ queue.
      * @param autoDelete        Whether the RabbitMQ queue should be auto-deleted.
@@ -52,10 +58,13 @@ public abstract class AbstractLauncher {
         }
     }
     
+    // Executes bot action.
     protected abstract void botAction();
 
+    // Creates message to send to RabbitMQ.
     protected abstract JSONObject createMessage();
 
+    // Executes bot action and sends message to RabbitMQ.
     public void executeBotActionAndSendMessage() {
         botAction();
         try{
