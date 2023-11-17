@@ -1,0 +1,88 @@
+[
+    {
+        "botType": "TestCaseGenerator",
+        "order": "generateTestCases",
+        "keyToPublish": "testCasesGenerated",
+        "orderToPublish": "executeTestCases",
+        "rabbitOptions": {
+            "mainQueue": "testCaseGenerator",
+            "bindings": [
+                "testOraclesGenerated"
+            ],
+            "queueByBot": true
+        },
+        "bots": [
+            {
+                "botId": "gen_1",
+                "propertyFilePath": "src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties",
+                "isPersistent": false
+            },
+            {
+                "botId": "gen_2",
+                "propertyFilePath": "src/main/resources/Examples/Ex2_FuzzingGeneration/user_config.properties",
+                "isPersistent": false
+            },
+            {
+                "botId": "gen_3",
+                "propertyFilePath": "src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties",
+                "isPersistent": false
+            },
+            {
+                "botId": "gen_4",
+                "propertyFilePath": "src/main/resources/Examples/Ex4_CBTGeneration/user_config.properties",
+                "isPersistent": true
+            },
+            {
+                "botId": "gen_5",
+                "propertyFilePath": "src/main/resources/Examples/Ex5_CBTGeneration/user_config.properties",
+                "isPersistent": true
+            }
+        ]
+    },
+    {
+        "botType": "TestCaseExecutor",
+        "order": "executeTestCases",
+        "keyToPublish": "testCasesExecuted",
+        "orderToPublish": "generateTestReport",
+        "rabbitOptions": {
+            "mainQueue": "testCaseExecutor",
+            "bindings": [
+                "testCasesGenerated"
+            ],
+            "queueByBot": false
+        },
+        "bots": [
+            {
+                "botId": "ex_1",
+                "isPersistent": true
+            },
+            {
+                "botId": "ex_2",
+                "isPersistent": true
+            }
+        ]
+    },
+    {
+        "botType": "TestReporter",
+        "order": "generateTestReport",
+        "keyToPublish": "testReportGenerated",
+        "orderToPublish": "",
+        "rabbitOptions": {
+            "mainQueue": "testReporter",
+            "bindings": [
+                "testCasesExecuted"
+            ],
+            "queueByBot": false
+        },
+        "bots": [
+            {
+                "botId": "re_1",
+                "isPersistent": true
+            },
+            {
+                "botId": "re_2",
+                "isPersistent": true
+            }
+        ]
+    }
+]
