@@ -1,5 +1,7 @@
 package com.botica.utils.bot;
 
+import java.util.Properties;
+
 import org.json.JSONObject;
 import com.botica.launchers.TestCaseGeneratorLauncher;
 import com.botica.launchers.AbstractLauncher;
@@ -32,7 +34,8 @@ public class BotHandler {
         String orderToPublish = botRabbitConfig.getOrderToPublish();
         
         if (botType.equals("TestCaseGenerator")) {
-            String propertyFilePath = botConfig.getPropertyFilePath();
+            Properties botProperties = botConfig.getBotProperties();
+            String propertyFilePath = botProperties.getProperty("bot.propertyFilePath");
             TestCaseGeneratorLauncher testCaseGeneratorLauncher = new TestCaseGeneratorLauncher(propertyFilePath, botId, keyToPublish, orderToPublish);
             testCaseGeneratorLauncher.executeBotActionAndSendMessage();
         } else if (botType.equals("TestCaseExecutor")) {
