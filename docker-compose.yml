@@ -16,12 +16,57 @@ services:
       - rabbit_config
     networks:
       - rabbitmq-network
-  bot-ica:
+
+  gen_4:
     image: bot-ica:latest
     build: 
       context: .
       dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/volume/src/main/resources/ConfigurationFiles/gen_4.properties
+    networks:
+      - rabbitmq-network
+    volumes:
+      - botica-volume:/app/volume
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
 
+
+  ex_1:
+    image: bot-ica:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/volume/src/main/resources/ConfigurationFiles/ex_1.properties
+    networks:
+      - rabbitmq-network
+    volumes:
+      - botica-volume:/app/volume
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+
+  re_1:
+    image: bot-ica:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/volume/src/main/resources/ConfigurationFiles/re_1.properties
+    networks:
+      - rabbitmq-network
+    volumes:
+      - botica-volume:/app/volume
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
+volumes:
+  botica-volume:
+  
 secrets:
   rabbit_config:
     file: ./rabbitmq/definitions.json

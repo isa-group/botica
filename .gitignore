@@ -11,8 +11,6 @@
 /src/main/resources/ConfigurationFiles
 /allure-results
 
-bots.txt
-
 # JAR Dependencies
 restest.jar
 
