@@ -52,7 +52,7 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
 
-        RESTestLoader loader = new RESTestLoader(this.propertyFilePath, true);
+        RESTestLoader loader = new RESTestLoader(this.propertyFilePath);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
         }catch(RESTestException e){

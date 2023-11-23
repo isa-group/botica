@@ -16,12 +16,96 @@ services:
       - rabbit_config
     networks:
       - rabbitmq-network
-  bot-ica:
-    image: bot-ica:latest
-    build: 
+  gen_1:
+    depends_on:
+      - rabbitmq
+    build:
       context: .
       dockerfile: ./Dockerfile
-
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/gen_1
+    networks:
+      - rabbitmq-network
+  gen_2:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/gen_2
+    networks:
+      - rabbitmq-network
+  gen_3:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/gen_3
+    networks:
+      - rabbitmq-network
+  gen_4:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/gen_4
+    networks:
+      - rabbitmq-network
+  gen_5:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/gen_5
+    networks:
+      - rabbitmq-network
+  ex_1:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/ex_1
+    networks:
+      - rabbitmq-network
+  ex_2:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/ex_2
+    networks:
+      - rabbitmq-network
+  re_1:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/re_1
+    networks:
+      - rabbitmq-network
+  re_2:
+    depends_on:
+      - rabbitmq
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      - BOT_PROPERTY_FILE_PATH=/app/src/main/resources/ConfigurationFiles/re_2
+    networks:
+      - rabbitmq-network
 secrets:
   rabbit_config:
     file: ./rabbitmq/definitions.json

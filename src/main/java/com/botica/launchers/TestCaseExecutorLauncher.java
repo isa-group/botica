@@ -30,7 +30,7 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
      */
     @Override
     protected void botAction() {
-        RESTestExecutor executor = new RESTestExecutor(this.propertyFilePath, true);
+        RESTestExecutor executor = new RESTestExecutor(this.propertyFilePath);
 
         // TODO: Check if is correct
         // Create directories to store test data extracted from the execution
