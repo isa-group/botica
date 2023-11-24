@@ -11,6 +11,8 @@
 /src/main/resources/ConfigurationFiles
 /allure-results
 
+docker-compose.yml
+
 # JAR Dependencies
 restest.jar
 

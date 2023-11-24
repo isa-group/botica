@@ -1,7 +1,7 @@
 [
     {
         "botType": "TestCaseGenerator",
-        "imageDocker":"./Dockerfile",
+        "dockerImage":"./Dockerfile",
         "order": "generateTestCases",
         "keyToPublish": "testCasesGenerated",
         "orderToPublish": "executeTestCases",
@@ -13,21 +13,6 @@
             "queueByBot": true
         },
         "bots": [
-            {
-                "botId": "gen_1",
-                "propertyFilePath": "src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties",
-                "isPersistent": false
-            },
-            {
-                "botId": "gen_2",
-                "propertyFilePath": "src/main/resources/Examples/Ex2_FuzzingGeneration/user_config.properties",
-                "isPersistent": false
-            },
-            {
-                "botId": "gen_3",
-                "propertyFilePath": "src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties",
-                "isPersistent": false
-            },
             {
                 "botId": "gen_4",
                 "propertyFilePath": "src/main/resources/Examples/Ex4_CBTGeneration/user_config.properties",
@@ -42,7 +27,7 @@
     },
     {
         "botType": "TestCaseExecutor",
-        "imageDocker":"./Dockerfile",
+        "dockerImage":"./Dockerfile",
         "order": "executeTestCases",
         "keyToPublish": "testCasesExecuted",
         "orderToPublish": "generateTestReport",
@@ -66,10 +51,10 @@
     },
     {
         "botType": "TestReporter",
-        "imageDocker":"./Dockerfile",
+        "dockerImage":"./Dockerfile",
         "order": "generateTestReport",
         "keyToPublish": "testReportGenerated",
-        "orderToPublish": "",
+        "orderToPublish": "test",
         "rabbitOptions": {
             "mainQueue": "testReporter",
             "bindings": [
