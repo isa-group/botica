@@ -11,7 +11,7 @@
 /src/main/resources/ConfigurationFiles
 /allure-results
 
-./docker
+/docker
 docker-compose.yml
 
 # JAR Dependencies
