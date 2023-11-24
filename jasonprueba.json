@@ -1,7 +1,6 @@
 [
     {
         "botType": "TestCaseGenerator",
-        "imageDocker":"./Dockerfile",
         "order": "generateTestCases",
         "keyToPublish": "testCasesGenerated",
         "orderToPublish": "executeTestCases",
@@ -42,7 +41,6 @@
     },
     {
         "botType": "TestCaseExecutor",
-        "imageDocker":"./Dockerfile",
         "order": "executeTestCases",
         "keyToPublish": "testCasesExecuted",
         "orderToPublish": "generateTestReport",
@@ -66,7 +64,6 @@
     },
     {
         "botType": "TestReporter",
-        "imageDocker":"./Dockerfile",
         "order": "generateTestReport",
         "keyToPublish": "testReportGenerated",
         "orderToPublish": "",

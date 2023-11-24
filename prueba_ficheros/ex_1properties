@@ -1,0 +1,10 @@
+botType=TestCaseExecutor
+order=executeTestCases
+KeyToPublish=testCasesExecuted
+orderToPublish=generateTestReport
+rabbitOptions.mainQueue=testCaseExecutor
+rabbitOptions.bindings=testCasesGenerated
+rabbitOptions.queueByBot=False
+bot.botId=ex_1
+bot.propertyFilePath=None
+bot.isPersistent=True

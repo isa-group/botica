@@ -16,6 +16,11 @@ services:
       - rabbit_config
     networks:
       - rabbitmq-network
+  bot-ica:
+    image: bot-ica:latest
+    build: 
+      context: .
+      dockerfile: ./Dockerfile
 
 secrets:
   rabbit_config:
