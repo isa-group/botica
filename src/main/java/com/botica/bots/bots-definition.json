@@ -1,7 +1,7 @@
 [
     {
         "botType": "TestCaseGenerator",
-        "dockerImage":"./Dockerfile",
+        "dockerImage":"bot-ica",
         "order": "generateTestCases",
         "keyToPublish": "testCasesGenerated",
         "orderToPublish": "executeTestCases",
@@ -12,6 +12,12 @@
             ],
             "queueByBot": true
         },
+        "requiredPaths":[
+            "./src/main/resources/Examples",
+            "./src/main/resources/config.properties",
+            "./src/main/resources/fuzzing-dictionary.json",
+            "./target"
+        ],
         "bots": [
             {
                 "botId": "gen_4",
@@ -27,7 +33,7 @@
     },
     {
         "botType": "TestCaseExecutor",
-        "dockerImage":"./Dockerfile",
+        "dockerImage":"bot-ica",
         "order": "executeTestCases",
         "keyToPublish": "testCasesExecuted",
         "orderToPublish": "generateTestReport",
@@ -38,6 +44,9 @@
             ],
             "queueByBot": false
         },
+        "requiredPaths": [
+            "./target"
+        ],
         "bots": [
             {
                 "botId": "ex_1",
@@ -51,7 +60,7 @@
     },
     {
         "botType": "TestReporter",
-        "dockerImage":"./Dockerfile",
+        "dockerImage":"bot-ica",
         "order": "generateTestReport",
         "keyToPublish": "testReportGenerated",
         "orderToPublish": "test",
@@ -62,6 +71,11 @@
             ],
             "queueByBot": false
         },
+        "requiredPaths": [
+            "./allure",
+            "./src/main/resources/allure-categories.json",
+            "./target"
+        ],
         "bots": [
             {
                 "botId": "re_1",

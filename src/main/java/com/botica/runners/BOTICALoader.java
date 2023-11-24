@@ -75,8 +75,8 @@ public class BOTICALoader {
                 bindings.add(binding.trim());
             }
         }
-        if (readProperty("queueByBot") != null) {
-            queueByBot = Boolean.parseBoolean(readProperty("queueByBot"));
+        if (readProperty("rabbitOptions.queueByBot") != null) {
+            queueByBot = Boolean.parseBoolean(readProperty("rabbitOptions.queueByBot"));
         }
         logger.info("Queue by bot: {}", queueByBot);        
 
