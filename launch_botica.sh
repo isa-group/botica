@@ -10,6 +10,7 @@ docker build -t bot-ica .
 
 # 3. Start the data volume by executing ./docker/init_volume.sh
 echo "Starting the data volume..."
+chmod +x ./docker/init_volume.sh
 ./docker/init_volume.sh
 
 # 4. Execute the docker-compose file located at ./docker-compose.yml
