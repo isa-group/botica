@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Properties;
 
 import org.json.JSONObject;
 
@@ -24,22 +25,19 @@ public class TestCaseGeneratorLauncher extends AbstractLauncher {
 
     private static final String BOT_ID_JSON_KEY = "botId";
 
-    private String propertyFilePath;
-    private String botId;
-
     private RESTestLoader loader;
     private AbstractTestCaseGenerator absractTestCaseGenerator;
     private String generatorType;
     private String testCasesPath;
 
-    public TestCaseGeneratorLauncher(String keyToPublish, String orderToPublish) {
-        super(keyToPublish, orderToPublish);
-    }
+    private String propertyFilePath;
+    private String botId;
 
-    public TestCaseGeneratorLauncher(String propertyFilePath, String botId, String keyToPublish, String orderToPublish) {
-        super(keyToPublish, orderToPublish);
-        this.propertyFilePath = propertyFilePath;
-        this.botId = botId;
+    public TestCaseGeneratorLauncher(String keyToPublish, String orderToPublish, Properties botProperties) {
+        super(keyToPublish, orderToPublish, botProperties);
+
+        this.propertyFilePath = botProperties.getProperty("bot.propertyFilePath");
+        this.botId = botProperties.getProperty("bot.botId");
     }
 
     /**

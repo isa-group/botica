@@ -2,6 +2,7 @@ package com.botica.launchers;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,7 +10,6 @@ import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
 
 import com.botica.RabbitMQManager;
-import com.botica.utils.bot.BotConfig;
 import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
 
@@ -23,6 +23,8 @@ public abstract class AbstractLauncher {
 
     protected String keyToPublish;                                          // The key to publish to RabbitMQ.
     protected String orderToPublish;                                        // The order to publish to RabbitMQ.
+    protected Properties botProperties;                                     // The bot properties.
+    protected JSONObject messageData;                                       // The message data.
     protected final RabbitMQManager messageSender = new RabbitMQManager();  // The RabbitMQManager instance.
 
     /**
@@ -30,29 +32,31 @@ public abstract class AbstractLauncher {
      * 
      * @param keyToPublish
      * @param orderToPublish
+     * @param botProperties
      */
-    protected AbstractLauncher(String keyToPublish, String orderToPublish) {
+    protected AbstractLauncher(String keyToPublish, String orderToPublish, Properties botProperties) {
         this.keyToPublish = keyToPublish;
         this.orderToPublish = orderToPublish;
+        this.botProperties = botProperties;
     }
 
     /**
      * Launches a bot with the provided configuration and parameters.
      * 
-     * @param botConfig         The BotConfig instance that contains the bot-specific configuration.
+     * @param botProperties     The bot's properties.
      * @param botRabbitConfig   The BotRabbitConfig instance that contains the bot's RabbitMQ configuration.
      * @param queueName         The name of the RabbitMQ queue.
      * @param bindingKey        The binding key for the RabbitMQ queue.
      * @param autoDelete        Whether the RabbitMQ queue should be auto-deleted.
      */
-    public void launchBot(BotConfig botConfig, BotRabbitConfig botRabbitConfig, String queueName, List<String> bindingKeys, boolean autoDelete) {
+    public void launchBot(BotRabbitConfig botRabbitConfig, String queueName, List<String> bindingKeys, boolean autoDelete) {
         
-        String botId = botConfig.getBotId();
+        String botId = botProperties.getProperty("bot.botId");
 
         try {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
-            this.messageSender.receiveMessage(queueName, botConfig, botRabbitConfig);
+            this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig);
         } catch (Exception e) {
             logger.error("Error launching bot: {}", botId, e);
         }
@@ -72,6 +76,12 @@ public abstract class AbstractLauncher {
         } catch (Exception e) {
             ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
+    }
+
+    // Setters
+
+    public void setMessageData(JSONObject messageData) {
+        this.messageData = messageData;
     }
 
 }

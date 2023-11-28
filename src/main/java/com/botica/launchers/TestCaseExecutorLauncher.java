@@ -3,6 +3,8 @@ package com.botica.launchers;
 import static es.us.isa.restest.util.FileManager.createDir;
 import static es.us.isa.restest.util.FileManager.deleteDir;
 
+import java.util.Properties;
+
 import org.json.JSONObject;
 
 import es.us.isa.restest.runners.RESTestExecutor;
@@ -12,17 +14,11 @@ import es.us.isa.restest.runners.RESTestExecutor;
  */
 public class TestCaseExecutorLauncher extends AbstractLauncher{
 
-    private String propertyFilePath;
-    private String testCasesPath;
+    private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
+    private static final String TEST_CASES_PATH = "testCasesPath";
 
-    public TestCaseExecutorLauncher(String keyToPublish, String orderToPublish) {
-        super(keyToPublish, orderToPublish);
-    }
-
-    public TestCaseExecutorLauncher(String propertyFilePath, String testCasesPath, String keyToPublish, String orderToPublish) {
-        super(keyToPublish, orderToPublish);
-        this.propertyFilePath = propertyFilePath;
-        this.testCasesPath = testCasesPath;
+    public TestCaseExecutorLauncher(String keyToPublish, String orderToPublish, Properties botProperties) {
+        super(keyToPublish, orderToPublish, botProperties);
     }
 
     /**
@@ -30,18 +26,21 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
      */
     @Override
     protected void botAction() {
-        RESTestExecutor executor = new RESTestExecutor(this.propertyFilePath, true);
+
+        String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+
+        RESTestExecutor executor = new RESTestExecutor(propertyFilePath, true);
 
         // TODO: Check if is correct
         // Create directories to store test data extracted from the execution
-        String experimentName = PropertyReader.readProperty(this.propertyFilePath, "experiment.name");
+        String experimentName = PropertyReader.readProperty(propertyFilePath, "experiment.name");
 
-        String testDataDir = PropertyReader.readProperty(this.propertyFilePath, "data.tests.dir") + "/" + experimentName;
-        String coverageDataDir = PropertyReader.readProperty(this.propertyFilePath, "data.coverage.dir") + "/" + experimentName;
-        String allureResultsDir = PropertyReader.readProperty(this.propertyFilePath, "allure.results.dir") + "/" + experimentName;
-        String allureReportDir = PropertyReader.readProperty(this.propertyFilePath, "allure.report.dir") + "/" + experimentName;
+        String testDataDir = PropertyReader.readProperty(propertyFilePath, "data.tests.dir") + "/" + experimentName;
+        String coverageDataDir = PropertyReader.readProperty(propertyFilePath, "data.coverage.dir") + "/" + experimentName;
+        String allureResultsDir = PropertyReader.readProperty(propertyFilePath, "allure.results.dir") + "/" + experimentName;
+        String allureReportDir = PropertyReader.readProperty(propertyFilePath, "allure.report.dir") + "/" + experimentName;
 
-        String deletePreviousResults = PropertyReader.readProperty(this.propertyFilePath, "deletepreviousresults");
+        String deletePreviousResults = PropertyReader.readProperty(propertyFilePath, "deletepreviousresults");
         if (deletePreviousResults != null && Boolean.parseBoolean(deletePreviousResults)) {
             deleteDir(testDataDir);
             deleteDir(coverageDataDir);
@@ -53,22 +52,26 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
         createDir(coverageDataDir);
         //
 
-        auxBotAction(executor);
+        auxBotAction(executor, propertyFilePath);
     }
 
-    private void auxBotAction(RESTestExecutor executor) {
-        String allureResultsDirPath = PropertyReader.readProperty(this.propertyFilePath, "allure.results.dir");
-        String experimentName = PropertyReader.readProperty(this.propertyFilePath, "experiment.name");
+    private void auxBotAction(RESTestExecutor executor, String propertyFilePath) {
+        String allureResultsDirPath = PropertyReader.readProperty(propertyFilePath, "allure.results.dir");
+        String experimentName = PropertyReader.readProperty(propertyFilePath, "experiment.name");
         System.setProperty("allure.results.directory", allureResultsDirPath + "/" + experimentName);
         executor.execute();
     }
 
     @Override
     protected JSONObject createMessage() {
+
+        String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+        String testCasesPath = messageData.getString(TEST_CASES_PATH);
+
         JSONObject message = new JSONObject();
         message.put("order", this.orderToPublish);
-        message.put("propertyFilePath", this.propertyFilePath);
-        message.put("testCasesPath", this.testCasesPath);
+        message.put(PROPERTY_FILE_PATH_JSON_KEY, propertyFilePath);
+        message.put(TEST_CASES_PATH, testCasesPath);
 
         return message;
     }

@@ -6,6 +6,7 @@ import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.json.JSONObject;
 
@@ -22,20 +23,13 @@ import es.us.isa.restest.util.RESTestException;
 /**
  * This class is a launcher for generating test reports.
  */
-public class TestReportGeneratorLauncher extends AbstractLauncher {
+public class TestReporterLauncher extends AbstractLauncher {
     private static final String EXPERIMENT_NAME_PROPERTY = "experiment.name";
+    private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
+    private static final String TEST_CASES_PATH = "testCasesPath";
 
-    private String propertyFilePath;
-    private String testCasesPath;
-
-    public TestReportGeneratorLauncher(String keyToPublish, String orderToPublish) {
-        super(keyToPublish, orderToPublish);
-    }
-
-    public TestReportGeneratorLauncher(String propertyFilePath, String testCasesPath, String keyToPublish, String orderToPublish) {
-        super(keyToPublish, orderToPublish);
-        this.propertyFilePath = propertyFilePath;
-        this.testCasesPath = testCasesPath;
+    public TestReporterLauncher(String keyToPublish, String orderToPublish, Properties botProperties) {
+        super(keyToPublish, orderToPublish, botProperties);
     }
 
     /**
@@ -45,24 +39,27 @@ public class TestReportGeneratorLauncher extends AbstractLauncher {
     protected void botAction() {
         Collection<TestCase> testCases = new ArrayList<>();
 
-        try (FileInputStream fis = new FileInputStream(this.testCasesPath);
+        String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
+        String testCasesPath = messageData.getString(TEST_CASES_PATH);
+
+        try (FileInputStream fis = new FileInputStream(testCasesPath);
                 ObjectInputStream ois = new ObjectInputStream(fis)) {
             readTestCasesFromObjectStream(ois, testCases);
         } catch (IOException e) {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
 
-        RESTestLoader loader = new RESTestLoader(this.propertyFilePath, true);
+        RESTestLoader loader = new RESTestLoader(propertyFilePath, true);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
         }catch(RESTestException e){
             logger.error("Error creating generator: {}", e.getMessage());
         }
 
-        String experimentName = PropertyReader.readProperty(this.propertyFilePath, EXPERIMENT_NAME_PROPERTY);
+        String experimentName = PropertyReader.readProperty(propertyFilePath, EXPERIMENT_NAME_PROPERTY);
 
-        AllureReportManager allureReportManager = createAllureReportManager(this.propertyFilePath);
-        StatsReportManager statsReportManager = createStatsReportManager(this.propertyFilePath);
+        AllureReportManager allureReportManager = createAllureReportManager(propertyFilePath);
+        StatsReportManager statsReportManager = createStatsReportManager(propertyFilePath);
         
         allureReportManager.generateReport();
         statsReportManager.setTestCases(testCases);

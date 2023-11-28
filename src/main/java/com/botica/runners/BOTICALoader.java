@@ -1,14 +1,15 @@
 package com.botica.runners;
 
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Properties;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.botica.launchers.AbstractLauncher;
 import com.botica.utils.bot.BotRabbitConfig;
-import com.botica.utils.bot.BotConfig;
 import com.botica.utils.bot.BotHandler;
 import com.botica.utils.property.PropertyManager;
 
@@ -29,7 +30,7 @@ public class BOTICALoader {
     String mainQueue;               // The name of the RabbitMQ queue.
     List<String> bindings;          // The list of bindings for the RabbitMQ queue.
     boolean queueByBot;             // Whether create a queue by bot.
-    BotConfig botConfig;            // The bot-specific configuration.
+    Properties botProperties;       // The bot's properties.
 
     public BOTICALoader (String botPropertiesFilePath, boolean reloadBotProperties) {
         if(reloadBotProperties){
@@ -78,10 +79,16 @@ public class BOTICALoader {
         if (readProperty("rabbitOptions.queueByBot") != null) {
             queueByBot = Boolean.parseBoolean(readProperty("rabbitOptions.queueByBot"));
         }
-        logger.info("Queue by bot: {}", queueByBot);        
+        logger.info("Queue by bot: {}", queueByBot);
 
-        botConfig = new BotConfig(botPropertiesFilePath);
-
+        botProperties = new Properties();
+        try (FileInputStream defaultProperties = new FileInputStream(botPropertiesFilePath)) {
+            botProperties.load(defaultProperties);
+            botProperties.keySet().removeIf(key -> !key.toString().startsWith("bot."));
+        } catch (Exception e) {
+            logger.error("Error reading property file: {}", e.getMessage());
+            logger.error("Exception: ", e);
+        }
     }
 
     // Read the parameter values from the user property file (if provided). If the
@@ -104,9 +111,9 @@ public class BOTICALoader {
      */
     public void connectBotToRabbit() {
 
-        AbstractLauncher launcher = BotHandler.handleLauncherType(botType, keyToPublish, orderToPublish);
+        AbstractLauncher launcher = BotHandler.handleLauncherType(botType, keyToPublish, orderToPublish, botProperties);
         
-        String botId = botConfig.getBotId();
+        String botId = botProperties.getProperty("bot.botId");
 
         BotRabbitConfig botRabbitConfig = new BotRabbitConfig(botType, order, keyToPublish, orderToPublish);
         if (queueByBot) {
@@ -114,9 +121,9 @@ public class BOTICALoader {
             List<String> bindingKeys = new ArrayList<>();
             bindingKeys.add(bindingKey);
             
-            launcher.launchBot(botConfig, botRabbitConfig, botId, bindingKeys, true);
+            launcher.launchBot(botRabbitConfig, botId, bindingKeys, true);
         } else {
-            launcher.launchBot(botConfig, botRabbitConfig, mainQueue, bindings, false);
+            launcher.launchBot(botRabbitConfig, mainQueue, bindings, false);
         }
     }
 

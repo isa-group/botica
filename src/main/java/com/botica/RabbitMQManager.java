@@ -8,7 +8,6 @@ import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 
 import com.botica.utils.logging.ExceptionUtils;
 import com.botica.utils.bot.BotRabbitConfig;
-import com.botica.utils.bot.BotConfig;
 import com.botica.utils.bot.BotHandler;
 import com.botica.utils.json.JSONUtils;
 
@@ -18,6 +17,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
@@ -163,13 +163,13 @@ public class RabbitMQManager {
      * Receive and process messages from the specified queue.
      *
      * @param queueName         The name of the queue to receive messages from.
-     * @param botConfig         A BotConfig object containing bot-specific configuration.
+     * @param botProperties     The bot's properties.
      * @param botRabbitConfig   A BotRabbitConfig object containing RabbitMQ bot-specific configuration.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, BotConfig botConfig, BotRabbitConfig botRabbitConfig) throws IOException {
+    public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig) throws IOException {
 
-        boolean isPersistent = botConfig.getIsPersistent();
+        boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
         String order = botRabbitConfig.getOrder();
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
@@ -180,7 +180,7 @@ public class RabbitMQManager {
 
             if (messageOrder.contains(order)){
                 JSONObject messageData = new JSONObject(message);
-                BotHandler.handleBotMessage(botRabbitConfig, botConfig, messageData);
+                BotHandler.handleBotMessage(botRabbitConfig, botProperties, messageData);
                 disconnectBot(isPersistent);
             }
         };
