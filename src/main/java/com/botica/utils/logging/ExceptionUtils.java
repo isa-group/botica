@@ -1,5 +1,7 @@
 package com.botica.utils.logging;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.logging.log4j.Logger;
 
 public class ExceptionUtils {
@@ -16,7 +18,11 @@ public class ExceptionUtils {
      * @param e       The exception to handle.
      */
     public static void handleException(Logger logger, String message, Exception e) {
-        logger.error(message);
-        e.printStackTrace();
+        logger.error(message, e);
+        throw new RuntimeErrorException(new Error(message, e));
+    }
+
+    public static void throwRuntimeErrorException(String message, Exception e) {
+        throw new RuntimeErrorException(new Error(message, e));
     }
 }

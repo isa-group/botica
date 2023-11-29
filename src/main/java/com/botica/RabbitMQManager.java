@@ -102,7 +102,7 @@ public class RabbitMQManager {
                 }
             }
         } catch (IOException | TimeoutException e) {
-            ExceptionUtils.handleException(logger, "Error connecting to RabbitMQ", e);
+            ExceptionUtils.throwRuntimeErrorException("Error with the connection between the bot and RabbitMQ", e);
         }
         return queue;
     }
@@ -165,12 +165,12 @@ public class RabbitMQManager {
      * @param queueName         The name of the queue to receive messages from.
      * @param botProperties     The bot's properties.
      * @param botRabbitConfig   A BotRabbitConfig object containing RabbitMQ bot-specific configuration.
+     * @param order             The order to process.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig) throws IOException {
+    public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig, String order) throws IOException {
 
         boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
-        String order = botRabbitConfig.getOrder();
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -180,12 +180,25 @@ public class RabbitMQManager {
 
             if (messageOrder.contains(order)){
                 JSONObject messageData = new JSONObject(message);
-                BotHandler.handleBotMessage(botRabbitConfig, botProperties, messageData);
+                BotHandler.handleReactiveBotAction(botRabbitConfig, botProperties, messageData);
                 disconnectBot(isPersistent);
             }
         };
 
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+    }
+
+    /**
+     * Realise an action and send a message without receiving any order.
+     * 
+     * @param botProperties
+     * @param botRabbitConfig
+     * @throws IOException
+     */
+    public void proactiveAction(Properties botProperties, BotRabbitConfig botRabbitConfig) throws IOException {
+        boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
+        BotHandler.handleProactiveBotAction(botRabbitConfig, botProperties);
+        disconnectBot(isPersistent);
     }
 
     /**

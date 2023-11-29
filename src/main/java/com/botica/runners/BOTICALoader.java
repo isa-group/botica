@@ -5,11 +5,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import javax.management.RuntimeErrorException;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.botica.launchers.AbstractLauncher;
 import com.botica.utils.bot.BotRabbitConfig;
+import com.botica.utils.logging.ExceptionUtils;
 import com.botica.utils.bot.BotHandler;
 import com.botica.utils.property.PropertyManager;
 
@@ -24,7 +27,10 @@ public class BOTICALoader {
     String botPropertiesFilePath;   // The path to the bot's property file.
 
     String botType;                 // The type of bot.
-    String order;                   // The order associated with the bot.
+    String autonomyType;            // The autonomy associated with the bot.
+    String order;                   // The order to be sent in the message in case of a reactive bot.
+    Integer initialDelay;           // The initial delay for the scheduler.
+    Integer period;                 // The period for the scheduler.
     String keyToPublish;            // The binding key for publishing messages.
     String orderToPublish;          // The order to be sent in the message.
     String mainQueue;               // The name of the RabbitMQ queue.
@@ -51,8 +57,18 @@ public class BOTICALoader {
         botType = readProperty("botType");
         logger.info("Bot type: {}", botType);
 
-        order = readProperty("order");
-        logger.info("Order: {}", order);
+        autonomyType = readProperty("autonomy.type");
+        logger.info("Autonomy: {}", autonomyType);
+
+        if (autonomyType.equals("proactive")) {
+            initialDelay = Integer.parseInt(readProperty("autonomy.initialDelay"));
+            logger.info("Initial delay: {}", initialDelay);
+            period = Integer.parseInt(readProperty("autonomy.period"));
+            logger.info("Period: {}", period);
+        } else if (autonomyType.equals("reactive")){
+            order = readProperty("autonomy.order");
+            logger.info("Order: {}", order);
+        }
 
         keyToPublish = readProperty("keyToPublish");
         logger.info("Key to publish: {}", keyToPublish);
@@ -115,16 +131,37 @@ public class BOTICALoader {
         
         String botId = botProperties.getProperty("bot.botId");
 
-        BotRabbitConfig botRabbitConfig = new BotRabbitConfig(botType, order, keyToPublish, orderToPublish);
-        if (queueByBot) {
-            String bindingKey = mainQueue + "." + botId;
-            List<String> bindingKeys = new ArrayList<>();
-            bindingKeys.add(bindingKey);
-            
-            launcher.launchBot(botRabbitConfig, botId, bindingKeys, true);
-        } else {
-            launcher.launchBot(botRabbitConfig, mainQueue, bindings, false);
+        BotRabbitConfig botRabbitConfig = new BotRabbitConfig(botType, keyToPublish, orderToPublish);
+        try{
+            if (queueByBot) {
+                String bindingKey = mainQueue + "." + botId;
+                List<String> bindingKeys = new ArrayList<>();
+                bindingKeys.add(bindingKey);
+                launcher.launchBot(botRabbitConfig, botId, bindingKeys, true, autonomyType, autonomyType.equals("proactive") ? null : order);
+            } else {
+                launcher.launchBot(botRabbitConfig, mainQueue, bindings, false, autonomyType, autonomyType.equals("proactive") ? null : order);
+            }
+        } catch (RuntimeErrorException e) {
+            ExceptionUtils.throwRuntimeErrorException("Error when starting and connecting the bot to RabbitMQ: " + botId, e);
         }
+    }
+
+    // Getters
+
+    public String getBotId() {
+        return botProperties.getProperty("bot.botId");
+    }
+
+    public String getAutonomyType() {
+        return autonomyType;
+    }
+
+    public Integer getInitialDelay() {
+        return initialDelay;
+    }
+
+    public Integer getPeriod() {
+        return period;
     }
 
 }

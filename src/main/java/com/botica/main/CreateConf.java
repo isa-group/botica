@@ -76,8 +76,22 @@ public class CreateConf {
 
         botImage = jsonMap.get(property).toString();
 
-        property = "order";
-        configurationPairs.add(property + "=" + jsonMap.get(property).toString());
+        Map<String, Object> autonomy = (Map<String, Object>) jsonMap.get("autonomy");
+        property = "type";
+        String autonomyType = autonomy.get(property).toString();
+        configurationPairs.add("autonomy." + property + "=" + autonomyType);
+        if (autonomyType.equals("proactive")) {
+            property = "initialDelay";
+            configurationPairs.add("autonomy." + property + "=" + autonomy.get(property).toString());
+            property = "period";
+            configurationPairs.add("autonomy." + property + "=" + autonomy.get(property).toString());
+        } else if (autonomyType.equals("reactive")) {
+            property = "order";
+            configurationPairs.add("autonomy." + property + "=" + autonomy.get(property).toString());
+        } else {
+            throw new IllegalArgumentException("Invalid autonomy type!");
+        }
+
         property = "keyToPublish";
         configurationPairs.add(property + "=" + jsonMap.get(property).toString());
         property = "orderToPublish";

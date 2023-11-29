@@ -48,17 +48,23 @@ public abstract class AbstractLauncher {
      * @param queueName         The name of the RabbitMQ queue.
      * @param bindingKey        The binding key for the RabbitMQ queue.
      * @param autoDelete        Whether the RabbitMQ queue should be auto-deleted.
+     * @param autonomyType      The autonomy type associated with the bot.
+     * @param order             The order to process in the message in case of a reactive bot.
      */
-    public void launchBot(BotRabbitConfig botRabbitConfig, String queueName, List<String> bindingKeys, boolean autoDelete) {
+    public void launchBot(BotRabbitConfig botRabbitConfig, String queueName, List<String> bindingKeys, boolean autoDelete, String autonomyType, String order) {
         
         String botId = botProperties.getProperty("bot.botId");
 
         try {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
-            this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig);
+            if (autonomyType.equals("reactive")) {
+                this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig, order);
+            } else if (autonomyType.equals("proactive")) {
+                this.messageSender.proactiveAction(botProperties, botRabbitConfig);
+            }
         } catch (Exception e) {
-            logger.error("Error launching bot: {}", botId, e);
+            ExceptionUtils.throwRuntimeErrorException("Error launching bot: " + botId, e);
         }
     }
     

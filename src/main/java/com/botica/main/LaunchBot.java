@@ -1,5 +1,9 @@
 package com.botica.main;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import com.botica.runners.BOTICALoader;
 
 public class LaunchBot {
@@ -13,9 +17,18 @@ public class LaunchBot {
         }
 
         BOTICALoader loader = new BOTICALoader(botPropertiesFilePath, true);
-        
+        String autonomyType = loader.getAutonomyType();
+
         try {
+
             loader.connectBotToRabbit();
+
+            if (autonomyType.equals("proactive")) {
+                Integer initialDelay = loader.getInitialDelay();
+                Integer period = loader.getPeriod();
+                ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+                scheduler.scheduleAtFixedRate(loader::connectBotToRabbit, initialDelay, period, TimeUnit.SECONDS);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }

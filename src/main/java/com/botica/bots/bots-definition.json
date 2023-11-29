@@ -2,7 +2,11 @@
     {
         "botType": "TestCaseGenerator",
         "dockerImage":"bot-ica",
-        "order": "generateTestCases",
+        "autonomy":{
+            "type": "proactive",
+            "initialDelay": 60,
+            "period": 60
+        },
         "keyToPublish": "testCasesGenerated",
         "orderToPublish": "executeTestCases",
         "rabbitOptions": {
@@ -34,7 +38,10 @@
     {
         "botType": "TestCaseExecutor",
         "dockerImage":"bot-ica",
-        "order": "executeTestCases",
+        "autonomy": {
+            "type": "reactive",
+            "order": "executeTestCases"
+        },
         "keyToPublish": "testCasesExecuted",
         "orderToPublish": "generateTestReport",
         "rabbitOptions": {
@@ -61,7 +68,10 @@
     {
         "botType": "TestReporter",
         "dockerImage":"bot-ica",
-        "order": "generateTestReport",
+        "autonomy": {
+            "type": "reactive",
+            "order": "generateTestReport"
+        },
         "keyToPublish": "testReportGenerated",
         "orderToPublish": "test",
         "rabbitOptions": {
