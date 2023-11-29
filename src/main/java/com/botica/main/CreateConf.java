@@ -5,6 +5,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -54,7 +55,7 @@ public class CreateConf {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 Map<String, Object> jsonmap = jsonObject.toMap();
                
-                List<String> configurationPairs = createConfigurationPairs(jsonmap);
+                Map<String, String> configurationPairs = createConfigurationPairs(jsonmap);
                 List<Map<String,Object>> bots = (List<Map<String,Object>>) jsonmap.get("bots");
 
                 bots.forEach(bot -> createBotPropertiesFile(bot, configurationPairs));                
@@ -65,75 +66,78 @@ public class CreateConf {
         }
     }
 
-    private static List<String> createConfigurationPairs(Map<String, Object> jsonMap) {
-        List<String> configurationPairs = new ArrayList<>();
+    private static Map<String, String> createConfigurationPairs(Map<String, Object> jsonMap) {
+        Map<String, String> configurationPairs = new HashMap<>();
         String property;
 
         property = "botType";
-        configurationPairs.add(property + "=" + jsonMap.get(property).toString());
+        configurationPairs.put(property, jsonMap.get(property).toString());
         property = "dockerImage";
-        configurationPairs.add(property + "=" + jsonMap.get(property).toString());
-
+        configurationPairs.put(property, jsonMap.get(property).toString());
         botImage = jsonMap.get(property).toString();
+        property = "keyToPublish";
+        configurationPairs.put(property, jsonMap.get(property).toString());
+        property = "orderToPublish";
+        configurationPairs.put(property, jsonMap.get(property).toString());
 
-        Map<String, Object> autonomy = (Map<String, Object>) jsonMap.get("autonomy");
-        property = "type";
-        String autonomyType = autonomy.get(property).toString();
-        configurationPairs.add("autonomy." + property + "=" + autonomyType);
+        Map<String, Object> autonomy = getMap(jsonMap, "autonomy");
+        String autonomyType = getString(autonomy, "type");
+        configurationPairs.put("autonomy.type", autonomyType);
+
         if (autonomyType.equals("proactive")) {
-            property = "initialDelay";
-            configurationPairs.add("autonomy." + property + "=" + autonomy.get(property).toString());
-            property = "period";
-            configurationPairs.add("autonomy." + property + "=" + autonomy.get(property).toString());
+            configurationPairs.put("autonomy.initialDelay", getString(autonomy, "initialDelay"));
+            configurationPairs.put("autonomy.period", getString(autonomy, "period"));
         } else if (autonomyType.equals("reactive")) {
-            property = "order";
-            configurationPairs.add("autonomy." + property + "=" + autonomy.get(property).toString());
+            configurationPairs.put("autonomy.order", getString(autonomy, "order"));
         } else {
             throw new IllegalArgumentException("Invalid autonomy type!");
         }
 
-        property = "keyToPublish";
-        configurationPairs.add(property + "=" + jsonMap.get(property).toString());
-        property = "orderToPublish";
-        configurationPairs.add(property + "=" + jsonMap.get(property).toString());
+        Map<String, Object> rabbitOptions = getMap(jsonMap, "rabbitOptions");
+        configurationPairs.put("rabbitOptions.queueByBot", getString(rabbitOptions, "queueByBot"));
+        configurationPairs.put("rabbitOptions.mainQueue", getString(rabbitOptions, "mainQueue"));
 
-        Map<String, Object> rabbitOptions = (Map<String, Object>) jsonMap.get("rabbitOptions");
-        property = "queueByBot";
-        configurationPairs.add("rabbitOptions." + property + "=" + rabbitOptions.get(property).toString());
-        property = "mainQueue";
-        configurationPairs.add("rabbitOptions." + property + "=" + rabbitOptions.get(property).toString());
-        property = "bindings";
-        List<String> bindings = (List<String>) rabbitOptions.get(property);
-        String content = bindings.stream().collect(Collectors.joining(","));
-        configurationPairs.add("rabbitOptions." + property + "=" + content);
+        List<String> bindings = getList(rabbitOptions, "bindings");
+        String content = String.join(",", bindings);
+        configurationPairs.put("rabbitOptions.bindings", content);
         
-        List<String> botrequiredPaths = (List<String>) jsonMap.get("requiredPaths");
-        requiredPaths.addAll(botrequiredPaths);
+        List<String> botRequiredPaths = getList(jsonMap, "requiredPaths");
+        requiredPaths.addAll(botRequiredPaths);
 
         return configurationPairs;
     }
 
-    private static void createBotPropertiesFile(Map<String,Object> bot, List<String> configurationPairs){
+    private static String getString(Map<String, Object> map, String key) {
+        return map.get(key).toString();
+    }
 
-        List<String> botProperties = new ArrayList<>();
-        List<String> botConfigurationPairs = new ArrayList<>(configurationPairs);
+    private static Map<String, Object> getMap(Map<String, Object> map, String key) {
+        return (Map<String, Object>) map.get(key);
+    }
+
+    private static List<String> getList(Map<String, Object> map, String key) {
+        return (List<String>) map.get(key);
+    }
+
+    private static void createBotPropertiesFile(Map<String,Object> bot, Map<String, String> configurationPairs){
+
+        Map<String, String> specificBotProperties = new HashMap<>();
+        Map<String, String> botConfigurationPairs = new HashMap<>(configurationPairs);
         String property;
 
         bot.keySet().stream()
                     .filter(key -> !key.equals("autonomy"))
-                    .forEach(key -> botProperties.add("bot." + key + "=" + bot.get(key)));
+                    .forEach(key -> specificBotProperties.put("bot." + key, bot.get(key).toString()));
 
         if (bot.containsKey("autonomy")) {
             Map<String, Object> autonomy = (Map<String, Object>) bot.get("autonomy");
             property = "initialDelay";
             if (autonomy.containsKey(property)) {
-                botConfigurationPairs.removeIf(pair -> pair.contains("autonomy.initialDelay"));
-                botConfigurationPairs.add("autonomy." + property + "=" + autonomy.get(property));
+                botConfigurationPairs.put("autonomy." + property, autonomy.get(property).toString());
             }
             property = "period";
             if (autonomy.containsKey(property)) {
-                botConfigurationPairs.removeIf(pair -> pair.contains("autonomy.period"));
-                botConfigurationPairs.add("autonomy." + property + "=" + autonomy.get(property));
+                botConfigurationPairs.put("autonomy." + property, autonomy.get(property).toString());
             }
         }
 
@@ -141,13 +145,15 @@ public class CreateConf {
 
         botIds.add(botId);
         botImages.add(botImage);
-        botConfigurationPairs.forEach(pair -> botProperties.add(0,pair));
+        botConfigurationPairs.keySet().forEach(key -> specificBotProperties.put(key, botConfigurationPairs.get(key)));
 
         Path filePath = Path.of(BOTS_PROPERTIES_PATH + botId + ".properties");
 
         try {
-            // Create the file if it doesn't exist, or overwrite it if it does
-            Files.write(filePath, botProperties, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.write(filePath, specificBotProperties.entrySet().stream()
+                                                                    .map(e -> e.getKey() + "=" + e.getValue())
+                                                                    .collect(Collectors.toList()),
+                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             logger.info("Bot properties file created successfully! Bot id: {}", botId);
         } catch (Exception e) {
             e.printStackTrace();
@@ -172,17 +178,19 @@ public class CreateConf {
                 "      - rabbit_config\r\n" +
                 "    networks:\r\n" +
                 "      - rabbitmq-network";
-        String templateIntermediateContent = "  BOT_ID:\r\n" +
+
+        String templateIntermediateContent = "  %s:\r\n" +
                 "    depends_on:\r\n" +
                 "      - rabbitmq\r\n" +
                 "    restart: unless-stopped\r\n" +
-                "    image: BOT_IMAGE\r\n" +
+                "    image: %s\r\n" +
                 "    environment:\r\n" +
-                "      - BOT_PROPERTY_FILE_PATH=/app/volume/src/main/resources/ConfigurationFiles/BOT_ID.properties\r\n" +
+                "      - BOT_PROPERTY_FILE_PATH=/app/volume/src/main/resources/ConfigurationFiles/%s.properties\r\n" +
                 "    networks:\r\n" +
                 "      - rabbitmq-network\r\n" +
                 "    volumes:\r\n" +
                 "      - botica-volume:/app/volume";
+
         String finalContent = "\nvolumes:\r\n" +
                 "  botica-volume:\r\n\n" +
                 "networks:\r\n" +
@@ -193,10 +201,10 @@ public class CreateConf {
                 "    file: ./rabbitmq/definitions.json";
 
         content.add(initialContent);
-        
-        for(int i = 0;i < botIds.size();i++){
-            String intermediateContent = templateIntermediateContent;
-            content.add(intermediateContent.replace("BOT_ID", botIds.get(i)).replace("BOT_IMAGE", botImages.get(i)));
+
+        for (int i = 0; i < botIds.size(); i++) {
+            String intermediateContent = String.format(templateIntermediateContent, botIds.get(i), botImages.get(i), botIds.get(i));
+            content.add(intermediateContent);
         }
 
         content.add(finalContent);
