@@ -116,14 +116,32 @@ public class CreateConf {
     private static void createBotPropertiesFile(Map<String,Object> bot, List<String> configurationPairs){
 
         List<String> botProperties = new ArrayList<>();
+        List<String> botConfigurationPairs = new ArrayList<>(configurationPairs);
+        String property;
 
-        bot.keySet().forEach(key -> botProperties.add("bot." + key + " = " + bot.get(key)));
+        bot.keySet().stream()
+                    .filter(key -> !key.equals("autonomy"))
+                    .forEach(key -> botProperties.add("bot." + key + "=" + bot.get(key)));
+
+        if (bot.containsKey("autonomy")) {
+            Map<String, Object> autonomy = (Map<String, Object>) bot.get("autonomy");
+            property = "initialDelay";
+            if (autonomy.containsKey(property)) {
+                botConfigurationPairs.removeIf(pair -> pair.contains("autonomy.initialDelay"));
+                botConfigurationPairs.add("autonomy." + property + "=" + autonomy.get(property));
+            }
+            property = "period";
+            if (autonomy.containsKey(property)) {
+                botConfigurationPairs.removeIf(pair -> pair.contains("autonomy.period"));
+                botConfigurationPairs.add("autonomy." + property + "=" + autonomy.get(property));
+            }
+        }
 
         String botId = bot.get("botId").toString();
 
         botIds.add(botId);
         botImages.add(botImage);
-        configurationPairs.forEach(pair -> botProperties.add(0,pair));
+        botConfigurationPairs.forEach(pair -> botProperties.add(0,pair));
 
         Path filePath = Path.of(BOTS_PROPERTIES_PATH + botId + ".properties");
 

@@ -26,7 +26,11 @@
             {
                 "botId": "gen_4",
                 "propertyFilePath": "src/main/resources/Examples/Ex4_CBTGeneration/user_config.properties",
-                "isPersistent": true
+                "isPersistent": true,
+                "autonomy": {
+                    "initialDelay": 120,
+                    "period": 120
+                }
             },
             {
                 "botId": "gen_5",
