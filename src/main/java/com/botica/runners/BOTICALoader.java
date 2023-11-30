@@ -13,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import com.botica.launchers.AbstractLauncher;
 import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
-import com.botica.utils.bot.BotHandler;
 import com.botica.utils.property.PropertyManager;
 
 

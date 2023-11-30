@@ -23,11 +23,11 @@ public class CreateConf {
 
     protected static final Logger logger = LogManager.getLogger(CreateConf.class);
 
-    private static final String BOTS_DEFINITION_PATH = "src/main/java/com/botica/bots/bots-definition.json";    // The path to the bots definition file.
-    private static final String BOTS_PROPERTIES_PATH = "src/main/resources/ConfigurationFiles/";                // The path to the bots properties files.
-    private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";                                     // The path to the docker compose file.
-    private static final String DUMMY_DOCKERFILE = "docker/Dockerfile";                                         // The path to the dummy dockerfile.
-    private static final String INIT_VOLUME_SCRIPT_PATH = "docker/init_volume.sh";                              // The path to the init volume script.
+    private static final String BOTS_DEFINITION_PATH = "src/main/java/com/" + getProjectName() + "/bots/bots-definition.json";      // The path to the bots definition file.
+    private static final String BOTS_PROPERTIES_PATH = "src/main/resources/ConfigurationFiles/";                                    // The path to the bots properties files.
+    private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";                                                         // The path to the docker compose file.
+    private static final String DUMMY_DOCKERFILE = "docker/Dockerfile";                                                             // The path to the dummy dockerfile.
+    private static final String INIT_VOLUME_SCRIPT_PATH = "docker/init_volume.sh";                                                  // The path to the init volume script.
     
     public static void main(String[] args) {
         createBotPropertiesFiles(BOTS_DEFINITION_PATH);
@@ -269,8 +269,7 @@ public class CreateConf {
 
     private static void createInitVolumeScript() {
 
-        String baseDir = System.getProperty("user.dir");
-        String projectName = baseDir.substring(baseDir.lastIndexOf("/") + 1);
+        String projectName = getProjectName();
 
         Path scriptPath = Path.of(INIT_VOLUME_SCRIPT_PATH);
         createDir(scriptPath);
@@ -327,6 +326,11 @@ public class CreateConf {
                 e.printStackTrace();
             }
         }
+    }
+
+    private static String getProjectName(){
+        String baseDir = System.getProperty("user.dir");
+        return baseDir.substring(baseDir.lastIndexOf("/") + 1);
     }
 
 }

@@ -1,7 +1,10 @@
 package com.botica.utils.bot;
 
+import java.io.FileReader;
 import java.util.Properties;
 
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.json.JSONObject;
 
 import com.botica.launchers.AbstractLauncher;
@@ -21,7 +24,7 @@ public class BotHandler {
 
         try {
             String launcherName = botType + "Launcher";
-            Class<?> launcherClass = Class.forName("com.botica.launchers." + launcherName);
+            Class<?> launcherClass = Class.forName(getGroupId() + ".launchers." + launcherName);
             AbstractLauncher launcher = (AbstractLauncher) launcherClass
                     .getConstructor(String.class, String.class, Properties.class)
                     .newInstance(keyToPublish, orderToPublish, botProperties);
@@ -55,5 +58,16 @@ public class BotHandler {
      */
     public static void handleProactiveBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties) {
         handleBotAction(botRabbitConfig, botProperties, null);
+    }
+
+    private static String getGroupId(){
+        try{
+            MavenXpp3Reader reader = new MavenXpp3Reader();
+            Model model = reader.read(new FileReader("pom.xml"));
+            return model.getGroupId();
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null; //TODO: Review
     }
 }
