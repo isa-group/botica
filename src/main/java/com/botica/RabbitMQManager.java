@@ -4,16 +4,20 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ConnectionFactory;
 import com.rabbitmq.client.DeliverCallback;
+import com.rabbitmq.client.AMQP.Queue.DeclareOk;
 
-import com.botica.launchers.TestCaseGeneratorLauncher;
-import com.botica.utils.JSON;
-import com.botica.utils.Utils;
+import com.botica.utils.logging.ExceptionUtils;
+import com.botica.utils.bot.BotRabbitConfig;
+import com.botica.utils.bot.BotHandler;
+import com.botica.utils.json.JSONUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
@@ -28,25 +32,22 @@ import org.json.JSONObject;
  * dynamic configuration for specific connections.
  */
 public class RabbitMQManager {
-    private final ConnectionFactory factory;
-    private Connection connection;
-    private Channel channel;
-
-    private String serverUsername;
-    private String serverPassword;
-    private String serverVirtualHost;
-    private String serverHost;
-    private int serverPort;
-    private String serverExchange;
 
     private static final Logger logger = LogManager.getLogger(RabbitMQManager.class);
     private static final String CONFIG_FILE_NAME = "server-config.json";
-    private static final String DEFAULT_CONFIG_PATH = "conf/" + CONFIG_FILE_NAME;
+    private static final String DEFAULT_CONFIG_PATH = "rabbitmq/" + CONFIG_FILE_NAME;
     private static final int MESSAGE_TTL = 3600000;
 
-    private static final String PROPERTY_FILE_PATH_JSON_KEY = "propertyFilePath";
-    private static final String BOT_ID_JSON_KEY = "botId";
-    private static final String IS_PERSISTENT_JSON_KEY = "isPersistent";
+    private final ConnectionFactory factory;    // The ConnectionFactory instance.
+    private Connection connection;              // The Connection instance.
+    private Channel channel;                    // The Channel instance.
+
+    private String serverUsername;              // The username for RabbitMQ connection.
+    private String serverPassword;              // The password for RabbitMQ connection.
+    private String serverVirtualHost;           // The virtual host for RabbitMQ connection.
+    private String serverHost;                  // The host (server) for RabbitMQ connection.
+    private int serverPort;                     // The port for RabbitMQ connection.
+    private String serverExchange;              // The exchange for RabbitMQ connection.
 
     public RabbitMQManager(){
         this(null, null, null, null, 0);
@@ -82,7 +83,7 @@ public class RabbitMQManager {
      * @throws IOException      If an I/O error occurs while connecting.
      * @throws TimeoutException If a timeout occurs while connecting.
      */
-    public String connect(String queueName, String bindingKey, List<Boolean> queueOptions) throws IOException, TimeoutException {
+    public String connect(String queueName, List<String> bindingKeys, List<Boolean> queueOptions) throws IOException, TimeoutException {
         
         String queue = null;
 
@@ -93,15 +94,32 @@ public class RabbitMQManager {
             Map<String, Object> arguments = new HashMap<>();
             arguments.put("x-message-ttl", MESSAGE_TTL);
 
-            channel.queueDeclare(queueName, queueOptions.get(0), queueOptions.get(1), queueOptions.get(2), arguments);
-            queue = channel.queueDeclare().getQueue();
-            if (bindingKey != null){
-                channel.queueBind(queueName, serverExchange, bindingKey);
+            DeclareOk queueDeclared = channel.queueDeclare(queueName, queueOptions.get(0), queueOptions.get(1), queueOptions.get(2), arguments);
+            queue = queueDeclared.getQueue();
+            if (bindingKeys != null){
+                for (String bindingKey : bindingKeys){
+                    channel.queueBind(queueName, serverExchange, bindingKey);
+                }
             }
         } catch (IOException | TimeoutException e) {
-            Utils.handleException(logger, "Error connecting to RabbitMQ", e);
+            ExceptionUtils.throwRuntimeErrorException("Error with the connection between the bot and RabbitMQ", e);
         }
         return queue;
+    }
+
+    /**
+     * Connects to RabbitMQ with the specified parameters.
+     * 
+     * @param queueName  The name of the RabbitMQ queue.
+     * @param bindingKey The binding key for the RabbitMQ queue.
+     * @param botId      The identifier of the bot.
+     * @param autoDelete Whether the RabbitMQ queue should be auto-deleted.
+     * @throws IOException
+     * @throws TimeoutException
+     */
+    public void connect(String queueName, List<String> bindingKeys, List<Boolean> queueOptions, String botId) throws IOException, TimeoutException {
+        connect(queueName, bindingKeys, queueOptions);
+        logger.info("Bot {} connected to RabbitMQ", botId);
     }
 
     /**
@@ -113,9 +131,14 @@ public class RabbitMQManager {
      */
     public void sendMessageToExchange(String routingKey, String message) throws IOException {
         try{
+            List<Boolean> queueOptions = Arrays.asList(true, false, true);
+            String queue = connect("", null, queueOptions);
             channel.basicPublish(serverExchange, routingKey, null, message.getBytes());
+            channel.queueDelete(queue);
+            logger.info("Message sent to RabbitMQ: {}", message);
+            close(); // TODO: Review
         } catch (Exception e) {
-            Utils.handleException(logger, "Error sending message to RabbitMQ", e);
+            ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
     }
 
@@ -139,40 +162,43 @@ public class RabbitMQManager {
     /**
      * Receive and process messages from the specified queue.
      *
-     * @param queueName    The name of the queue to receive messages from.
-     * @param botData      A JSON object containing bot-specific data.
-     * @param botType      The type of the bot (e.g., "testCaseGenerator" or "testExecutor").
-     * @param order        The order (command) to process when received in a message.
-     * @param keyToPublish The binding key to publish  a message to the RabbitMQ broker.
+     * @param queueName         The name of the queue to receive messages from.
+     * @param botProperties     The bot's properties.
+     * @param botRabbitConfig   A BotRabbitConfig object containing RabbitMQ bot-specific configuration.
+     * @param order             The order to process.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, JSONObject botData, String botType, String order, String keyToPublish) throws IOException {
+    public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig, String order) throws IOException {
 
-        String propertyFilePath = botData.getString(PROPERTY_FILE_PATH_JSON_KEY);
-        String botId = botData.getString(BOT_ID_JSON_KEY);
-        boolean isPersistent = botData.getBoolean(IS_PERSISTENT_JSON_KEY);
-
-        //Send the same message to all generators
-        //channel.queueBind(queueName, "restest_exchange", "testCaseGenerator.*");
+        boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
 
-            //If the message is sent to all generators, the message will contain the botId
-            // to identify the bot that should process the message
-            //if (message.contains(order) && message.contains(botId)){
-            if (message.contains(order)){
-                if (botType.equals("testCaseGenerator")) {
-                    TestCaseGeneratorLauncher.generateTestCases(propertyFilePath, botId, keyToPublish);
-                } else if(botType.equals("testExecutor")) {
-                    //TODO: Implement testExecutor
-                }
+            String messageOrder = new JSONObject(message).getString("order");
+
+            if (messageOrder.contains(order)){
+                JSONObject messageData = new JSONObject(message);
+                BotHandler.handleReactiveBotAction(botRabbitConfig, botProperties, messageData);
                 disconnectBot(isPersistent);
             }
         };
 
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
+    }
+
+    /**
+     * Realise an action and send a message without receiving any order.
+     * 
+     * @param botProperties
+     * @param botRabbitConfig
+     * @throws IOException
+     */
+    public void proactiveAction(Properties botProperties, BotRabbitConfig botRabbitConfig) throws IOException {
+        boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
+        BotHandler.handleProactiveBotAction(botRabbitConfig, botProperties);
+        disconnectBot(isPersistent);
     }
 
     /**
@@ -190,7 +216,7 @@ public class RabbitMQManager {
 
     private void loadServerConfig() {
         try {
-            String jsonContent = JSON.readFileAsString(DEFAULT_CONFIG_PATH);
+            String jsonContent = JSONUtils.readFileAsString(DEFAULT_CONFIG_PATH);
             JSONObject obj = new JSONObject(jsonContent);
 
             serverUsername = obj.getString("username");
@@ -201,7 +227,7 @@ public class RabbitMQManager {
             serverExchange = obj.getString("exchange");
 
         } catch (Exception e) {
-            Utils.handleException(logger, "Error reading " + CONFIG_FILE_NAME, e);
+            ExceptionUtils.handleException(logger, "Error reading " + CONFIG_FILE_NAME, e);
         }
     }
 
@@ -210,7 +236,7 @@ public class RabbitMQManager {
             try {
                 close();
             } catch (TimeoutException e) {
-                Utils.handleException(logger, "Error closing channel and connection", e);
+                ExceptionUtils.handleException(logger, "Error closing channel and connection", e);
             }
         }
     }

@@ -1,23 +1,104 @@
-{
-    "testCaseGenerators": {
-        "order": "generateTestCases",
+[
+    {
+        "botType": "TestCaseGenerator",
+        "dockerImage":"bot-ica",
+        "autonomy":{
+            "type": "proactive",
+            "initialDelay": 60,
+            "period": 60
+        },
         "keyToPublish": "testCasesGenerated",
+        "orderToPublish": "executeTestCases",
+        "rabbitOptions": {
+            "mainQueue": "testCaseGenerator",
+            "bindings": [
+                "testOraclesGenerated"
+            ],
+            "queueByBot": true
+        },
+        "requiredPaths":[
+            "./src/main/resources/Examples",
+            "./src/main/resources/config.properties",
+            "./src/main/resources/fuzzing-dictionary.json",
+            "./target"
+        ],
         "bots": [
             {
-                "botId": "bot_1",
-                "propertyFilePath": "src/main/resources/Examples/Ex1_RandomGeneration/user_config.properties",
-                "isPersistent": false
+                "botId": "gen_4",
+                "propertyFilePath": "src/main/resources/Examples/Ex4_CBTGeneration/user_config.properties",
+                "isPersistent": true,
+                "autonomy": {
+                    "initialDelay": 120,
+                    "period": 120
+                }
             },
             {
-                "botId": "bot_2",
-                "propertyFilePath": "src/main/resources/Examples/Ex2_FuzzingGeneration/user_config.properties",
+                "botId": "gen_5",
+                "propertyFilePath": "src/main/resources/Examples/Ex5_CBTGeneration/user_config.properties",
+                "isPersistent": true
+            }
+        ]
+    },
+    {
+        "botType": "TestCaseExecutor",
+        "dockerImage":"bot-ica",
+        "autonomy": {
+            "type": "reactive",
+            "order": "executeTestCases"
+        },
+        "keyToPublish": "testCasesExecuted",
+        "orderToPublish": "generateTestReport",
+        "rabbitOptions": {
+            "mainQueue": "testCaseExecutor",
+            "bindings": [
+                "testCasesGenerated"
+            ],
+            "queueByBot": false
+        },
+        "requiredPaths": [
+            "./target"
+        ],
+        "bots": [
+            {
+                "botId": "ex_1",
                 "isPersistent": true
             },
             {
-                "botId": "bot_3",
-                "propertyFilePath": "src/main/resources/Examples/Ex3_CBTGeneration/user_config.properties",
-                "isPersistent": false
+                "botId": "ex_2",
+                "isPersistent": true
+            }
+        ]
+    },
+    {
+        "botType": "TestReporter",
+        "dockerImage":"bot-ica",
+        "autonomy": {
+            "type": "reactive",
+            "order": "generateTestReport"
+        },
+        "keyToPublish": "testReportGenerated",
+        "orderToPublish": "test",
+        "rabbitOptions": {
+            "mainQueue": "testReporter",
+            "bindings": [
+                "testCasesExecuted"
+            ],
+            "queueByBot": false
+        },
+        "requiredPaths": [
+            "./allure",
+            "./src/main/resources/allure-categories.json",
+            "./target"
+        ],
+        "bots": [
+            {
+                "botId": "re_1",
+                "isPersistent": true
+            },
+            {
+                "botId": "re_2",
+                "isPersistent": true
             }
         ]
     }
-}
+]
