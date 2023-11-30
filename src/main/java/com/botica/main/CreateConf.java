@@ -148,6 +148,7 @@ public class CreateConf {
         botConfigurationPairs.keySet().forEach(key -> specificBotProperties.put(key, botConfigurationPairs.get(key)));
 
         Path filePath = Path.of(BOTS_PROPERTIES_PATH + botId + ".properties");
+        createDir(filePath);
 
         try {
             Files.write(filePath, specificBotProperties.entrySet().stream()
@@ -267,6 +268,10 @@ public class CreateConf {
     }
 
     private static void createInitVolumeScript() {
+
+        String baseDir = System.getProperty("user.dir");
+        String projectName = baseDir.substring(baseDir.lastIndexOf("/") + 1);
+
         Path scriptPath = Path.of(INIT_VOLUME_SCRIPT_PATH);
         createDir(scriptPath);
 
@@ -278,14 +283,15 @@ public class CreateConf {
             Files.writeString(scriptPath, "    docker rm dummy\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "fi\n\n", StandardOpenOption.APPEND);
 
-            Files.writeString(scriptPath, "if docker volume ls | grep -q botica_botica-volume; then\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "if docker volume ls | grep -q " + projectName + "_botica-volume; then\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "    echo \"Removing existing volume...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    docker volume rm botica_botica-volume\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "    docker volume rm " + projectName + "_botica-volume\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "fi\n\n", StandardOpenOption.APPEND);
 
-            Files.writeString(scriptPath, "docker container create --name dummy -v botica_botica-volume:/app dummy\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker volume create --name botica_botica-volume\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker container create --name dummy -v " + projectName + "_botica-volume:/app dummy\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker volume create --name " + projectName + "_botica-volume\n\n", StandardOpenOption.APPEND);
 
+            Files.writeString(scriptPath, "docker cp ./pom.xml dummy:/app/pom.xml\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "docker cp ./rabbitmq/server-config.json dummy:/app/rabbitmq/server-config.json\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "docker cp ./src/main/resources/ConfigurationFiles dummy:/app/src/main/resources/ConfigurationFiles\n\n", StandardOpenOption.APPEND);
 

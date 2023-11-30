@@ -125,9 +125,7 @@ public class BOTICALoader {
     /**
      * Connects the bot to RabbitMQ.
      */
-    public void connectBotToRabbit() {
-
-        AbstractLauncher launcher = BotHandler.handleLauncherType(botType, keyToPublish, orderToPublish, botProperties);
+    public void connectBotToRabbit(AbstractLauncher launcher) {
         
         String botId = botProperties.getProperty("bot.botId");
 
@@ -162,6 +160,22 @@ public class BOTICALoader {
 
     public Integer getPeriod() {
         return period;
+    }
+
+    public String getBotType() {
+        return botType;
+    }
+
+    public String getOrderToPublish() {
+        return orderToPublish;
+    }
+
+    public String getKeyToPublish() {
+        return keyToPublish;
+    }
+
+    public Properties getBotProperties() {
+        return botProperties;
     }
 
 }
