@@ -232,6 +232,7 @@ public class CreateConf {
             Files.writeString(dockerfilePath, "RUN mkdir -p rabbitmq\n", StandardOpenOption.APPEND);
 
             Set<String> directoriesToCreate = createRequiredDirectories();
+            directoriesToCreate.add("src/main/resources");
 
             for (String directory : directoriesToCreate) {
                 String dockerfileCommand = String.format("RUN mkdir -p %s%n", directory);
