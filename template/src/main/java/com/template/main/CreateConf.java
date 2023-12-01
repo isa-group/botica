@@ -26,12 +26,15 @@ public class CreateConf {
     private static final String BOTS_DEFINITION_PATH = "src/main/java/com/" + getProjectName() + "/bots/bots-definition.json";      // The path to the bots definition file.
     private static final String BOTS_PROPERTIES_PATH = "src/main/resources/ConfigurationFiles/";                                    // The path to the bots properties files.
     private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";                                                         // The path to the docker compose file.
+    private static final String RABBITMQ_CONFIGURATION_PATH = "rabbitmq/definitions.json";                                          // The path to the RabbitMQ configuration file.
+    private static final String RABBITMQ_EXCHANGE = "restest_exchange";                                                             // The name of the RabbitMQ exchange.
     private static final String DUMMY_DOCKERFILE = "docker/Dockerfile";                                                             // The path to the dummy dockerfile.
     private static final String INIT_VOLUME_SCRIPT_PATH = "docker/init_volume.sh";                                                  // The path to the init volume script.
     
     public static void main(String[] args) {
         createBotPropertiesFiles(BOTS_DEFINITION_PATH);
         logger.info("Bot properties files created successfully! Bot ids: {}", botIds);
+        createRabbitMQConfigFile();
         createDockerCompose();
         createDummyDockerfile();
         createInitVolumeScript();
@@ -41,6 +44,7 @@ public class CreateConf {
     private static Set<String> requiredPaths = new HashSet<>();
     private static List<String> botImages = new ArrayList<>();
     private static String botImage;
+    private static HashMap<String, List<String>> rabbitQueues = new HashMap<>();
 
     private static void createBotPropertiesFiles(String filePath){
 
@@ -95,11 +99,14 @@ public class CreateConf {
 
         Map<String, Object> rabbitOptions = getMap(jsonMap, "rabbitOptions");
         configurationPairs.put("rabbitOptions.queueByBot", getString(rabbitOptions, "queueByBot"));
-        configurationPairs.put("rabbitOptions.mainQueue", getString(rabbitOptions, "mainQueue"));
+        String mainQueue = getString(rabbitOptions, "mainQueue");
+        configurationPairs.put("rabbitOptions.mainQueue", mainQueue);
 
         List<String> bindings = getList(rabbitOptions, "bindings");
         String content = String.join(",", bindings);
         configurationPairs.put("rabbitOptions.bindings", content);
+
+        rabbitQueues.put(mainQueue, bindings);
         
         List<String> botRequiredPaths = getList(jsonMap, "requiredPaths");
         requiredPaths.addAll(botRequiredPaths);
@@ -332,6 +339,133 @@ public class CreateConf {
     private static String getProjectName(){
         String baseDir = System.getProperty("user.dir");
         return baseDir.substring(baseDir.lastIndexOf("/") + 1);
+    }
+
+    private static void createRabbitMQConfigFile() {
+
+        List<String> content = new ArrayList<>();
+
+        String initialContent = "{\r\n" +
+                "\t\"users\": [\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"name\": \"admin\",\r\n" +
+                "\t\t\t\"password\": \"testing1\",\r\n" +
+                "\t\t\t\"tags\": \"administrator\"\r\n" +
+                "\t\t},\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"name\": \"consumer\",\r\n" +
+                "\t\t\t\"password\": \"testing1\",\r\n" +
+                "\t\t\t\"tags\": \"\"\r\n" +
+                "\t\t},\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"name\": \"sender\",\r\n" +
+                "\t\t\t\"password\": \"testing1\",\r\n" +
+                "\t\t\t\"tags\": \"\"\r\n" +
+                "\t\t}\r\n" +
+                "\t],\r\n" +
+                "\t\"vhosts\": [\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"name\": \"/\"\r\n" +
+                "\t\t}\r\n" +
+                "\t],\r\n" +
+                "\t\"permissions\": [\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"user\": \"admin\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"configure\": \".*\",\r\n" +
+                "\t\t\t\"write\": \".*\",\r\n" +
+                "\t\t\t\"read\": \".*\"\r\n" +
+                "\t\t},\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"user\": \"consumer\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"configure\": \"\",\r\n" +
+                "\t\t\t\"write\": \"\",\r\n" +
+                "\t\t\t\"read\": \".*\"\r\n" +
+                "\t\t},\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"user\": \"sender\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"configure\": \"\",\r\n" +
+                "\t\t\t\"write\": \".*\",\r\n" +
+                "\t\t\t\"read\": \"\"\r\n" +
+                "\t\t}\r\n" +
+                "\t],\r\n" +
+                "\t\"exchanges\": [\r\n" +
+                "\t\t{\r\n" +
+                "\t\t\t\"name\": \"restest_exchange\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"type\": \"topic\",\r\n" +
+                "\t\t\t\"durable\": true,\r\n" +
+                "\t\t\t\"auto_delete\": false,\r\n" +
+                "\t\t\t\"internal\": false,\r\n" +
+                "\t\t\t\"arguments\": {}\r\n" +
+                "\t\t}\r\n" +
+                "\t],\r\n" +
+                "\t\"queues\": [\r\n";
+
+        String queueTemplate = "\t\t{\r\n" +
+                "\t\t\t\"name\": \"%s\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"durable\": true,\r\n" +
+                "\t\t\t\"auto_delete\": false,\r\n" +
+                "\t\t\t\"arguments\": {\r\n" +
+                "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
+                "\t\t\t}\r\n" +
+                "\t\t}";
+
+        String bindingPrefix = "\t\"bindings\": [\r\n";
+
+        String bindingTemplate = "\t\t{\r\n" +
+                "\t\t\t\"source\": \"%s\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"destination\": \"%s\",\r\n" +
+                "\t\t\t\"destination_type\": \"queue\",\r\n" +
+                "\t\t\t\"routing_key\": \"%s\",\r\n" +
+                "\t\t\t\"arguments\": {}\r\n" +
+                "\t\t}";
+
+        content.add(initialContent);
+
+        String lastMapKey = rabbitQueues.keySet().toArray()[rabbitQueues.size() - 1].toString();
+
+        for (String queue : rabbitQueues.keySet()) {
+            String queueContent = String.format(queueTemplate, queue);
+            if (queue.equals(lastMapKey)) {
+                queueContent += "\r\n\t],";
+            } else {
+                queueContent += ",\r\n";
+            }
+            content.add(queueContent);
+        }
+
+        content.add(bindingPrefix);
+
+        for (Map.Entry<String, List<String>> entry : rabbitQueues.entrySet()) {
+            String queue = entry.getKey();
+            List<String> bindings = entry.getValue();
+
+            for (String binding : bindings) {
+                String bindingContent = String.format(bindingTemplate, RABBITMQ_EXCHANGE, queue, binding);
+
+                if (!queue.equals(lastMapKey) || !binding.equals(bindings.get(bindings.size() - 1))) {
+                    bindingContent += ",\r\n";
+                } else {
+                    bindingContent += "\r\n\t]\r\n}";
+                }
+                content.add(bindingContent);
+            }
+        }
+
+        Path filePath = Path.of(RABBITMQ_CONFIGURATION_PATH);
+        try {
+            // Create the file if it doesn't exist, or overwrite it if it does
+            Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            logger.info("RabbitMQ configuration file created successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 }
