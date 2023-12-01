@@ -12,6 +12,8 @@ target
 */src/main/resources/ConfigurationFiles
 */allure-results
 
+*/rabbitmq/definitions.json
+
 */docker
 */docker-compose.yml
 
