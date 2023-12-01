@@ -12,6 +12,7 @@
 /allure-results
 
 /docker
+/rabbitmq/definitions.json
 docker-compose.yml
 
 # JAR Dependencies
