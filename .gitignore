@@ -1,18 +1,19 @@
 # VSCode Settings
-/.vscode/
+*/.vscode/
 
 # DS_Store Files
 **/.DS_Store
 
 # Generated Files
-/target
-/src/main/resources/Examples/*/test_cases/
-/src/main/resources/Examples/*/allure_report/
-/src/main/resources/ConfigurationFiles
-/allure-results
+target
+*/target
+*/src/main/resources/Examples/*/test_cases/
+*/src/main/resources/Examples/*/allure_report/
+*/src/main/resources/ConfigurationFiles
+*/allure-results
 
-/docker
-docker-compose.yml
+*/docker
+*/docker-compose.yml
 
 # JAR Dependencies
 restest.jar

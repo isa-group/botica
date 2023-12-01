@@ -1,0 +1,35 @@
+[
+    {
+        "botType": "Example",
+        "dockerImage":"template",
+        "autonomy":{
+            "type": "proactive",
+            "initialDelay": 60,
+            "period": 60
+        },
+        "keyToPublish": "example",
+        "orderToPublish": "exampleOrder",
+        "rabbitOptions": {
+            "mainQueue": "example",
+            "bindings": [
+            ],
+            "queueByBot": true
+        },
+        "requiredPaths":[
+        ],
+        "bots": [
+            {
+                "botId": "ex_1",
+                "isPersistent": true,
+                "autonomy": {
+                    "initialDelay": 120,
+                    "period": 120
+                }
+            },
+            {
+                "botId": "ex_2",
+                "isPersistent": true
+            }
+        ]
+    }
+]
