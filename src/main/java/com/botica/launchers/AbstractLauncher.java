@@ -84,6 +84,15 @@ public abstract class AbstractLauncher {
         }
     }
 
+    // Checks connection to RabbitMQ broker.
+    public void checkBrokerConnection() {
+        try{
+            this.messageSender.checkRabbitMQConnection();
+        } catch (Exception e) {
+            ExceptionUtils.throwRuntimeErrorException("Error checking connection to RabbitMQ", e);
+        }
+    }
+
     // Setters
 
     public void setMessageData(JSONObject messageData) {

@@ -214,6 +214,21 @@ public class RabbitMQManager {
         connection.close();
     }
 
+    /**
+     * Check the connection with the RabbitMQ broker.
+     *
+     * @throws IOException      If an I/O error occurs while checking the connection.
+     * @throws TimeoutException If a timeout occurs while checking the connection.
+     */
+    public void checkRabbitMQConnection() throws IOException, TimeoutException {
+        try {
+            connection = factory.newConnection();
+            connection.close();
+        } catch (IOException | TimeoutException e) {
+            ExceptionUtils.throwRuntimeErrorException("Error with the connection between the bot and RabbitMQ", e);
+        }
+    }
+
     private void loadServerConfig() {
         try {
             String jsonContent = JSONUtils.readFileAsString(DEFAULT_CONFIG_PATH);

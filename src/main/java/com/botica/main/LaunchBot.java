@@ -30,11 +30,16 @@ public class LaunchBot {
         Properties botProperties = loader.getBotProperties();
         AbstractLauncher launcher = handleLauncherType(botType, keyToPublish, orderToPublish, botProperties);
 
-        try {
-            loader.connectBotToRabbit(launcher);
+        if (launcher == null){
+            throw new NullPointerException("Bot launcher does not exist");
+        }
 
+        try {
             String autonomyType = loader.getAutonomyType();
-            if (autonomyType.equals("proactive")) {
+            if (autonomyType.equals("reactive")){
+                loader.connectBotToRabbit(launcher);
+            }else if (autonomyType.equals("proactive")) {
+                launcher.checkBrokerConnection();
                 Integer initialDelay = loader.getInitialDelay();
                 Integer period = loader.getPeriod();
                 ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
