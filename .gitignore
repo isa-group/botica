@@ -16,6 +16,9 @@ target
 
 */docker
 */docker-compose.yml
+*/rabbitmq/*
+*/Dockerfile
+*/launch_botica.sh
 
 # JAR Dependencies
 restest.jar
