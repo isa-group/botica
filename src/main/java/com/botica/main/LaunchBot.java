@@ -1,13 +1,9 @@
 package com.botica.main;
 
-import java.io.FileReader;
 import java.util.Properties;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 
 import com.botica.launchers.AbstractLauncher;
 import com.botica.runners.BOTICALoader;
@@ -15,6 +11,7 @@ import com.botica.runners.BOTICALoader;
 public class LaunchBot {
 
     private static String botPropertiesFilePath = System.getenv("BOT_PROPERTY_FILE_PATH");  // The path to the bot's properties file.
+    private static String launchersPackage = "com.botica.launchers";                             // The package where the launchers are located.
 
     public static void main(String[] args) {
 
@@ -33,6 +30,8 @@ public class LaunchBot {
         if (launcher == null){
             throw new NullPointerException("Bot launcher does not exist");
         }
+
+        launcher.setLauncherPackage(launchersPackage);
 
         try {
             String autonomyType = loader.getAutonomyType();
@@ -63,23 +62,12 @@ public class LaunchBot {
 
         try{
             String launcherName = botType + "Launcher";
-            Class<?> launcherClass = Class.forName(getGroupId() + ".launchers." + launcherName);
+            Class<?> launcherClass = Class.forName(launchersPackage + "." + launcherName);
             return (AbstractLauncher) launcherClass.getConstructor(String.class, String.class, Properties.class).newInstance(keyToPublish, orderToPublish, botProperties);
         } catch (Exception e) {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private static String getGroupId(){
-        try{
-            MavenXpp3Reader reader = new MavenXpp3Reader();
-            Model model = reader.read(new FileReader("pom.xml"));
-            return model.getGroupId();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return null; //TODO: Review
     }
 
 }

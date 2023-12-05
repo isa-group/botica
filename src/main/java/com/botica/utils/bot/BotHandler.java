@@ -1,10 +1,7 @@
 package com.botica.utils.bot;
 
-import java.io.FileReader;
 import java.util.Properties;
 
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.json.JSONObject;
 
 import com.botica.launchers.AbstractLauncher;
@@ -17,14 +14,14 @@ public class BotHandler {
     private BotHandler() {
     }
 
-    private static void handleBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties, JSONObject messageData) {
+    private static void handleBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties, String launchersPackage, JSONObject messageData) {
         String botType = botRabbitConfig.getBotType();
         String keyToPublish = botRabbitConfig.getKeyToPublish();
         String orderToPublish = botRabbitConfig.getOrderToPublish();
 
         try {
             String launcherName = botType + "Launcher";
-            Class<?> launcherClass = Class.forName(getGroupId() + ".launchers." + launcherName);
+            Class<?> launcherClass = Class.forName(launchersPackage + "." + launcherName);
             AbstractLauncher launcher = (AbstractLauncher) launcherClass
                     .getConstructor(String.class, String.class, Properties.class)
                     .newInstance(keyToPublish, orderToPublish, botProperties);
@@ -46,8 +43,8 @@ public class BotHandler {
      * @param botProperties   The bot's properties.
      * @param messageData     The message data.
      */
-    public static void handleReactiveBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties, JSONObject messageData) {
-        handleBotAction(botRabbitConfig, botProperties, messageData);
+    public static void handleReactiveBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties, String launchersPackage, JSONObject messageData) {
+        handleBotAction(botRabbitConfig, botProperties, launchersPackage, messageData);
     }
 
     /**
@@ -56,18 +53,8 @@ public class BotHandler {
      * @param botRabbitConfig The bot's RabbitMQ configuration.
      * @param botProperties   The bot's properties.
      */
-    public static void handleProactiveBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties) {
-        handleBotAction(botRabbitConfig, botProperties, null);
+    public static void handleProactiveBotAction(BotRabbitConfig botRabbitConfig, Properties botProperties, String launchersPackage) {
+        handleBotAction(botRabbitConfig, botProperties, launchersPackage, null);
     }
 
-    private static String getGroupId(){
-        try{
-            MavenXpp3Reader reader = new MavenXpp3Reader();
-            Model model = reader.read(new FileReader("pom.xml"));
-            return model.getGroupId();
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-        return null; //TODO: Review
-    }
 }

@@ -27,6 +27,8 @@ public abstract class AbstractLauncher {
     protected JSONObject messageData;                                       // The message data.
     protected final RabbitMQManager messageSender = new RabbitMQManager();  // The RabbitMQManager instance.
 
+    protected String launcherPackage;                                       // The launcher package name.
+
     /**
      * Constructor for AbstractLauncher.
      * 
@@ -59,9 +61,9 @@ public abstract class AbstractLauncher {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
             if (autonomyType.equals("reactive")) {
-                this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig, order);
+                this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig, order, this.launcherPackage);
             } else if (autonomyType.equals("proactive")) {
-                this.messageSender.proactiveAction(botProperties, botRabbitConfig);
+                this.messageSender.proactiveAction(botProperties, botRabbitConfig, this.launcherPackage);
             }
         } catch (Exception e) {
             ExceptionUtils.throwRuntimeErrorException("Error launching bot: " + botId, e);
@@ -97,6 +99,10 @@ public abstract class AbstractLauncher {
 
     public void setMessageData(JSONObject messageData) {
         this.messageData = messageData;
+    }
+
+    public void setLauncherPackage(String launcherPackage){
+        this.launcherPackage = launcherPackage;
     }
 
 }

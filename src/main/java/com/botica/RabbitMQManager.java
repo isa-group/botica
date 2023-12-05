@@ -168,7 +168,7 @@ public class RabbitMQManager {
      * @param order             The order to process.
      * @throws IOException If an I/O error occurs while receiving messages.
      */
-    public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig, String order) throws IOException {
+    public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig, String order, String launchersPackage) throws IOException {
 
         boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
 
@@ -180,7 +180,7 @@ public class RabbitMQManager {
 
             if (messageOrder.contains(order)){
                 JSONObject messageData = new JSONObject(message);
-                BotHandler.handleReactiveBotAction(botRabbitConfig, botProperties, messageData);
+                BotHandler.handleReactiveBotAction(botRabbitConfig, botProperties, launchersPackage, messageData);
                 disconnectBot(isPersistent);
             }
         };
@@ -195,9 +195,9 @@ public class RabbitMQManager {
      * @param botRabbitConfig
      * @throws IOException
      */
-    public void proactiveAction(Properties botProperties, BotRabbitConfig botRabbitConfig) throws IOException {
+    public void proactiveAction(Properties botProperties, BotRabbitConfig botRabbitConfig, String launchersPackage) throws IOException {
         boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
-        BotHandler.handleProactiveBotAction(botRabbitConfig, botProperties);
+        BotHandler.handleProactiveBotAction(botRabbitConfig, botProperties, launchersPackage);
         disconnectBot(isPersistent);
     }
 
