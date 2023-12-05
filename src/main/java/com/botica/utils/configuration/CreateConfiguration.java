@@ -271,10 +271,30 @@ public class CreateConfiguration {
         }
 
         Path filePath = Path.of(rabbitConfigurationPath);
+        createDir(filePath);
         try {
             // Create the file if it doesn't exist, or overwrite it if it does
             Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             logger.info("RabbitMQ configuration file created successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void createRabbitMQConnectionFile(String rabbitConnectionPath, String rabbitmqUsername, String rabbitmqPassword, String rabbitmqHost, Integer rabbitmqPort, String rabbitmqExchange) {
+        Path filePath = Path.of(rabbitConnectionPath);
+        createDir(filePath);
+
+        try {
+            Files.writeString(filePath, "{\n\t\"username\": \"" + rabbitmqUsername + "\",\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(filePath, "\t\"password\": \"" + rabbitmqPassword + "\",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"virtualHost\": \"/\",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"host\": \"" + rabbitmqHost + "\",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"port\": " + rabbitmqPort + ",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"exchange\": \"" + rabbitmqExchange + "\"\n}", StandardOpenOption.APPEND);
+
+            logger.info("RabbitMQ connection file created successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }

@@ -12,7 +12,7 @@
 /allure-results
 
 /docker
-/rabbitmq/definitions.json
+/rabbitmq/*
 docker-compose.yml
 Dockerfile
 launch_botica.sh
