@@ -57,4 +57,25 @@ public class BotHandler {
         handleBotAction(botRabbitConfig, botProperties, launchersPackage, null);
     }
 
+    /**
+     * Handles a bot data to create a specific launcher.
+     *
+     * @param botType        The bot's type.
+     * @param keyToPublish   The key to publish.
+     * @param orderToPublish The order to publish.
+     * @param botProperties  The bot's properties.
+     */
+    public static AbstractLauncher handleLauncherType(String botType, String keyToPublish, String orderToPublish, Properties botProperties, String launchersPackage) {
+
+        try {
+            String launcherName = botType + "Launcher";
+            Class<?> launcherClass = Class.forName(launchersPackage + "." + launcherName);
+            return (AbstractLauncher) launcherClass.getConstructor(String.class, String.class, Properties.class)
+                    .newInstance(keyToPublish, orderToPublish, botProperties);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
 }

@@ -206,7 +206,7 @@ public class CreateConfiguration {
                 "\t],\r\n" +
                 "\t\"exchanges\": [\r\n" +
                 "\t\t{\r\n" +
-                "\t\t\t\"name\": \"restest_exchange\",\r\n" +
+                "\t\t\t\"name\": \"" + rabbitExchange + "\",\r\n" +
                 "\t\t\t\"vhost\": \"/\",\r\n" +
                 "\t\t\t\"type\": \"topic\",\r\n" +
                 "\t\t\t\"durable\": true,\r\n" +
@@ -245,12 +245,14 @@ public class CreateConfiguration {
         for (String queue : rabbitQueues.keySet()) {
             String queueContent = String.format(queueTemplate, queue);
             if (queue.equals(lastMapKey)) {
-                queueContent += "\r\n\t],";
+                queueContent += "\r\n";
             } else {
                 queueContent += ",\r\n";
             }
             content.add(queueContent);
         }
+
+        content.add("\t],");
 
         content.add(bindingPrefix);
 
@@ -264,11 +266,13 @@ public class CreateConfiguration {
                 if (!queue.equals(lastMapKey) || !binding.equals(bindings.get(bindings.size() - 1))) {
                     bindingContent += ",\r\n";
                 } else {
-                    bindingContent += "\r\n\t]\r\n}";
+                    bindingContent += "\r\n";
                 }
                 content.add(bindingContent);
             }
         }
+
+        content.add("\t]\r\n}");
 
         Path filePath = Path.of(rabbitConfigurationPath);
         createDir(filePath);

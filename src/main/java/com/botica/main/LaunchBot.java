@@ -7,6 +7,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.botica.launchers.AbstractLauncher;
 import com.botica.runners.BOTICALoader;
+import com.botica.utils.bot.BotHandler;
 
 public class LaunchBot {
 
@@ -25,7 +26,7 @@ public class LaunchBot {
         String keyToPublish = loader.getKeyToPublish();
         String orderToPublish = loader.getOrderToPublish();
         Properties botProperties = loader.getBotProperties();
-        AbstractLauncher launcher = handleLauncherType(botType, keyToPublish, orderToPublish, botProperties);
+        AbstractLauncher launcher = BotHandler.handleLauncherType(botType, keyToPublish, orderToPublish, botProperties, launchersPackage);
 
         if (launcher == null){
             throw new NullPointerException("Bot launcher does not exist");
@@ -47,26 +48,6 @@ public class LaunchBot {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    /**
-     * Handles a bot data to create a specific launcher.
-     *
-     * @param botType           The bot's type.
-     * @param keyToPublish      The key to publish.
-     * @param orderToPublish    The order to publish.
-     * @param botProperties     The bot's properties.
-     */
-    private static AbstractLauncher handleLauncherType(String botType, String keyToPublish, String orderToPublish, Properties botProperties) {
-
-        try{
-            String launcherName = botType + "Launcher";
-            Class<?> launcherClass = Class.forName(launchersPackage + "." + launcherName);
-            return (AbstractLauncher) launcherClass.getConstructor(String.class, String.class, Properties.class).newInstance(keyToPublish, orderToPublish, botProperties);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
         }
     }
 
