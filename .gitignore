@@ -16,6 +16,7 @@
 docker-compose.yml
 Dockerfile
 launch_botica.sh
+/tmp
 
 # JAR Dependencies
 restest.jar
