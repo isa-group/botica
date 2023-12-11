@@ -2,14 +2,19 @@ package com.botica.utils.collector;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import com.botica.rabbitmq.CollectorMessageProcessor;
+import com.botica.rabbitmq.RabbitMQManager;
 import com.botica.utils.directory.DirectoryOperations;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -22,15 +27,15 @@ import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
-public class InitCollector {
+public class CollectorUtils {
     
-    private static final Logger logger = LogManager.getLogger(InitCollector.class);
+    private static final Logger logger = LogManager.getLogger(CollectorUtils.class);
     private static final String BASE_CONTAINER_PATH = "/app/volume";
 
     private static String containerId;
     private static boolean isWindows;
 
-    private InitCollector(){
+    private CollectorUtils(){
     }
 
     public static DockerClient launchContainerToCollect(String imageName, String containerName, String defaultWindowsHost){
@@ -57,8 +62,7 @@ public class InitCollector {
 
         CreateContainerCmd container = dockerClient.createContainerCmd(imageName)
                 .withName(containerName)
-                .withBinds(new Bind(volumeName, new Volume(
-                        BASE_CONTAINER_PATH)))
+                .withBinds(new Bind(volumeName, new Volume(BASE_CONTAINER_PATH)))
                 .withCmd("tail", "-f", "/dev/null");
 
         CreateContainerResponse containerResponse = container.exec();
@@ -77,15 +81,30 @@ public class InitCollector {
             DirectoryOperations.createDir(directoryPath);
         }
 
+        //RabbitMQ connection
+        CollectorMessageProcessor messageProcessor = new CollectorMessageProcessor(pathsToObserve, BASE_CONTAINER_PATH, localPathToCopy);
+        RabbitMQManager messageSender = new RabbitMQManager(messageProcessor, null, null, null, "localhost", 0);
+
+        List<String> bindingKeys = new ArrayList<>();
+        bindingKeys.add("requestToCollector");
+        List<Boolean> queueOptions = Arrays.asList(true, false, false);
+        try{
+            String queueName = messageSender.connect("collector", bindingKeys, queueOptions);
+            messageSender.receiveMessage(queueName);
+        }catch(IOException | TimeoutException e){
+            e.printStackTrace();
+        }
+        //
+
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
         Runnable runnable = () -> collectFromRabbit(pathsToObserve, BASE_CONTAINER_PATH, localPathToCopy);
         scheduler.scheduleAtFixedRate(runnable, initialDelay, period, TimeUnit.SECONDS);
     }
 
-    private static void collectFromRabbit(List<String> pathsToObserve, String baseContainerPath, String localPathToCopy){
+    public static void collectFromRabbit(List<String> pathsToObserve, String baseContainerPath, String localPathToCopy){
         logger.info("Collecting data ...");
         for (String path : pathsToObserve) {
-            InitCollector.executeDockerCp(containerId, path, baseContainerPath, localPathToCopy + path);
+            CollectorUtils.executeDockerCp(containerId, path, baseContainerPath, localPathToCopy + path);
         }
     }
 

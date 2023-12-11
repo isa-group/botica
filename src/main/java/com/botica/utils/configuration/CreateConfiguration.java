@@ -240,21 +240,35 @@ public class CreateConfiguration {
                 "\t\t\t\"arguments\": {}\r\n" +
                 "\t\t}";
 
-        content.add(initialContent);
+        String collectorQueue = "\t\t{\r\n" +
+                "\t\t\t\"name\": \"collector\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"durable\": true,\r\n" +
+                "\t\t\t\"auto_delete\": false,\r\n" +
+                "\t\t\t\"arguments\": {\r\n" +
+                "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
+                "\t\t\t}\r\n" +
+                "\t\t}";
 
-        String lastMapKey = rabbitQueues.keySet().toArray()[rabbitQueues.size() - 1].toString();
+        String collectorBinding = "\t\t{\r\n" +
+                "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"destination\": \"collector\",\r\n" +
+                "\t\t\t\"destination_type\": \"queue\",\r\n" +
+                "\t\t\t\"routing_key\": \"requestToCollector\",\r\n" +
+                "\t\t\t\"arguments\": {}\r\n" +
+                "\t\t}";
+
+        content.add(initialContent);
 
         for (String queue : rabbitQueues.keySet()) {
             String queueContent = String.format(queueTemplate, queue);
-            if (queue.equals(lastMapKey)) {
-                queueContent += "\r\n";
-            } else {
-                queueContent += ",\r\n";
-            }
+            queueContent += ",\r\n";
             content.add(queueContent);
         }
 
-        content.add("\t],");
+        content.add(collectorQueue);
+        content.add("\r\n\t],");
 
         content.add(bindingPrefix);
 
@@ -264,17 +278,13 @@ public class CreateConfiguration {
 
             for (String binding : bindings) {
                 String bindingContent = String.format(bindingTemplate, rabbitExchange, queue, binding);
-
-                if (!queue.equals(lastMapKey) || !binding.equals(bindings.get(bindings.size() - 1))) {
-                    bindingContent += ",\r\n";
-                } else {
-                    bindingContent += "\r\n";
-                }
+                bindingContent += ",\r\n";
                 content.add(bindingContent);
             }
         }
 
-        content.add("\t]\r\n}");
+        content.add(collectorBinding);
+        content.add("\r\n\t]\r\n}");
 
         Path filePath = Path.of(rabbitConfigurationPath);
         DirectoryOperations.createDir(filePath);

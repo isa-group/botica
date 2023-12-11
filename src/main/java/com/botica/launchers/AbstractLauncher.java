@@ -9,7 +9,7 @@ import org.apache.logging.log4j.Logger;
 
 import org.json.JSONObject;
 
-import com.botica.RabbitMQManager;
+import com.botica.rabbitmq.RabbitMQManager;
 import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
 
