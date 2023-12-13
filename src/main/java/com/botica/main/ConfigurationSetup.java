@@ -2,7 +2,7 @@ package com.botica.main;
 
 import com.botica.utils.configuration.CreateConfiguration;
 
-public class InitConfiguration {
+public class ConfigurationSetup {
 
     private static final String BOTS_DEFINITION_PATH = "src/main/java/com/botica/bots/bots-definition.json";    // The path to read the bots definition file.
     
