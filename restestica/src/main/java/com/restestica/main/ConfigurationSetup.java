@@ -1,10 +1,10 @@
-package com.template.main;
+package com.restestica.main;
 
 import com.botica.utils.configuration.CreateConfiguration;
 
-public class InitConfiguration {
+public class ConfigurationSetup {
 
-    private static final String BOTS_DEFINITION_PATH = "src/main/java/com/template/bots/bots-definition.json";  // The path to read the bots definition file.
+    private static final String BOTS_DEFINITION_PATH = "src/main/java/com/restestica/bots/bots-definition.json";    // The path to read the bots definition file.
     
     private static final String BOTS_PROPERTIES_PATH = "src/main/resources/ConfigurationFiles/";                // The path to store the bots properties files generated.
 
@@ -13,7 +13,7 @@ public class InitConfiguration {
     private static final String RABBITMQ_PASSWORD = "testing1";                                                 // The RabbitMQ password.
     private static final String RABBITMQ_HOST = "rabbitmq";                                                     // The RabbitMQ host.
     private static final Integer RABBITMQ_PORT = 5672;                                                          // The RabbitMQ port.
-    private static final String RABBITMQ_EXCHANGE = "template_exchange";                                         // The name of the RabbitMQ exchange.
+    private static final String RABBITMQ_EXCHANGE = "restest_exchange";                                         // The name of the RabbitMQ exchange.
 
 
     private static final String RABBITMQ_CONFIGURATION_PATH = "rabbitmq/definitions.json";                      // The path to store the configuration file of the RabbitMQ broker.
@@ -23,10 +23,10 @@ public class InitConfiguration {
 
     private static final String DUMMY_DOCKERFILE_PATH = "docker/Dockerfile";                                    // The path to store the dummy dockerfile used to create the volume.
     private static final String BOTICA_DOCKERFILE_PATH = "Dockerfile";                                          // The path to store the Dockerfile used to create the BOTICA image.
-    private static final String JAR_FILE_NAME = "template";                                                     // The name of the jar file generated, used to launch the BOTICA bots.
+    private static final String JAR_FILE_NAME = "restestica";                                                   // The name of the jar file generated, used to launch the BOTICA bots.
 
     private static final String INIT_VOLUME_SCRIPT_PATH = "docker/init_volume.sh";                              // The path to store the script used to init volume with the necessary data.
-    private static final String BOTICA_IMAGE_NAME = "template";                                                  // The name to use for the BOTICA image.
+    private static final String BOTICA_IMAGE_NAME = "bot-ica";                                                  // The name to use for the BOTICA image.
     private static final String MAIN_LAUNCH_SCRIPT = "launch_botica.sh";                                        // The path to store the script used to launch the BOTICA bots.
 
     public static void main(String[] args) {

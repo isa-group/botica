@@ -1,8 +1,8 @@
 [
     {
         "botType": "TestCaseGenerator",
-        "dockerImage":"bot-ica",
-        "autonomy":{
+        "dockerImage": "bot-ica",
+        "autonomy": {
             "type": "proactive",
             "initialDelay": 60,
             "period": 60
@@ -16,7 +16,7 @@
             ],
             "queueByBot": true
         },
-        "requiredPaths":[
+        "requiredPaths": [
             "./src/main/resources/Examples",
             "./src/main/resources/config.properties",
             "./src/main/resources/fuzzing-dictionary.json",
@@ -41,7 +41,7 @@
     },
     {
         "botType": "TestCaseExecutor",
-        "dockerImage":"bot-ica",
+        "dockerImage": "bot-ica",
         "autonomy": {
             "type": "reactive",
             "order": "executeTestCases"
@@ -71,7 +71,7 @@
     },
     {
         "botType": "TestReporter",
-        "dockerImage":"bot-ica",
+        "dockerImage": "bot-ica",
         "autonomy": {
             "type": "reactive",
             "order": "generateTestReport"

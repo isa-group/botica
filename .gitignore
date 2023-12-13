@@ -19,6 +19,7 @@ target
 */rabbitmq/*
 */Dockerfile
 */launch_botica.sh
+*/tmp
 
 # JAR Dependencies
 restest.jar

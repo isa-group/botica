@@ -19,6 +19,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+import com.botica.utils.directory.DirectoryOperations;
+
 public class CreateConfiguration {
 
     protected static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
@@ -141,7 +143,7 @@ public class CreateConfiguration {
         botConfigurationPairs.keySet().forEach(key -> specificBotProperties.put(key, botConfigurationPairs.get(key)));
 
         Path filePath = Path.of(botPropertiesPath + botId + ".properties");
-        createDir(filePath);
+        DirectoryOperations.createDir(filePath);
 
         try {
             Files.write(filePath, specificBotProperties.entrySet().stream()
@@ -238,21 +240,35 @@ public class CreateConfiguration {
                 "\t\t\t\"arguments\": {}\r\n" +
                 "\t\t}";
 
-        content.add(initialContent);
+        String collectorQueue = "\t\t{\r\n" +
+                "\t\t\t\"name\": \"collector\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"durable\": true,\r\n" +
+                "\t\t\t\"auto_delete\": false,\r\n" +
+                "\t\t\t\"arguments\": {\r\n" +
+                "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
+                "\t\t\t}\r\n" +
+                "\t\t}";
 
-        String lastMapKey = rabbitQueues.keySet().toArray()[rabbitQueues.size() - 1].toString();
+        String collectorBinding = "\t\t{\r\n" +
+                "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"destination\": \"collector\",\r\n" +
+                "\t\t\t\"destination_type\": \"queue\",\r\n" +
+                "\t\t\t\"routing_key\": \"requestToCollector\",\r\n" +
+                "\t\t\t\"arguments\": {}\r\n" +
+                "\t\t}";
+
+        content.add(initialContent);
 
         for (String queue : rabbitQueues.keySet()) {
             String queueContent = String.format(queueTemplate, queue);
-            if (queue.equals(lastMapKey)) {
-                queueContent += "\r\n";
-            } else {
-                queueContent += ",\r\n";
-            }
+            queueContent += ",\r\n";
             content.add(queueContent);
         }
 
-        content.add("\t],");
+        content.add(collectorQueue);
+        content.add("\r\n\t],");
 
         content.add(bindingPrefix);
 
@@ -262,20 +278,16 @@ public class CreateConfiguration {
 
             for (String binding : bindings) {
                 String bindingContent = String.format(bindingTemplate, rabbitExchange, queue, binding);
-
-                if (!queue.equals(lastMapKey) || !binding.equals(bindings.get(bindings.size() - 1))) {
-                    bindingContent += ",\r\n";
-                } else {
-                    bindingContent += "\r\n";
-                }
+                bindingContent += ",\r\n";
                 content.add(bindingContent);
             }
         }
 
-        content.add("\t]\r\n}");
+        content.add(collectorBinding);
+        content.add("\r\n\t]\r\n}");
 
         Path filePath = Path.of(rabbitConfigurationPath);
-        createDir(filePath);
+        DirectoryOperations.createDir(filePath);
         try {
             // Create the file if it doesn't exist, or overwrite it if it does
             Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -288,7 +300,7 @@ public class CreateConfiguration {
 
     public static void createRabbitMQConnectionFile(String rabbitConnectionPath, String rabbitmqUsername, String rabbitmqPassword, String rabbitmqHost, Integer rabbitmqPort, String rabbitmqExchange) {
         Path filePath = Path.of(rabbitConnectionPath);
-        createDir(filePath);
+        DirectoryOperations.createDir(filePath);
 
         try {
             Files.writeString(filePath, "{\n\t\"username\": \"" + rabbitmqUsername + "\",\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -366,7 +378,7 @@ public class CreateConfiguration {
 
     public static void createDummyDockerfile(String dummyDockerfilePath) {
         Path dockerfilePath = Path.of(dummyDockerfilePath);
-        createDir(dockerfilePath);
+        DirectoryOperations.createDir(dockerfilePath);
 
         try {
             Files.writeString(dockerfilePath, "FROM alpine:3.18.4\n\n", StandardOpenOption.CREATE,
@@ -414,7 +426,7 @@ public class CreateConfiguration {
     public static void createBoticaDockerfile(String boticaDockerfilePath, String jarFileName) {
         
         Path scriptPath = Path.of(boticaDockerfilePath);
-        createDir(scriptPath);
+        DirectoryOperations.createDir(scriptPath);
 
         String auxJarFileName = jarFileName.contains(".jar") ? jarFileName : jarFileName + ".jar";
 
@@ -436,10 +448,10 @@ public class CreateConfiguration {
 
     public static void createInitVolumeScript(String initVolumeScriptPath) {
 
-        String projectName = getProjectName();
+        String projectName = DirectoryOperations.getProjectName();
 
         Path scriptPath = Path.of(initVolumeScriptPath);
-        createDir(scriptPath);
+        DirectoryOperations.createDir(scriptPath);
 
         try {
             Files.writeString(scriptPath, "#!/bin/bash\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -485,7 +497,7 @@ public class CreateConfiguration {
     public static void createMainScript(String mainScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
         
         Path scriptPath = Path.of(mainScriptPath);
-        createDir(scriptPath);
+        DirectoryOperations.createDir(scriptPath);
 
         String dummyDirectory = dummyDockerfilePath.contains("/") ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/")) : ".";
         String boticaDirectory = boticaDockerfilePath.contains("/") ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/")) : ".";
@@ -514,23 +526,4 @@ public class CreateConfiguration {
             e.printStackTrace();
         }
     }
-
-    private static void createDir(Path filePath) {
-
-        Path parent = filePath.getParent();
-
-        if (parent != null && !Files.exists(parent)) {
-            try {
-                Files.createDirectories(parent);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static String getProjectName(){
-        String baseDir = System.getProperty("user.dir");
-        return baseDir.substring(baseDir.lastIndexOf("/") + 1);
-    }
-
 }

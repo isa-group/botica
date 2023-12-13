@@ -1,4 +1,4 @@
-package com.botica;
+package com.botica.rabbitmq;
 
 import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.Channel;
@@ -39,6 +39,7 @@ public class RabbitMQManager {
     private static final int MESSAGE_TTL = 3600000;
 
     private final ConnectionFactory factory;    // The ConnectionFactory instance.
+    private final MessageProcessor messageProcessor;
     private Connection connection;              // The Connection instance.
     private Channel channel;                    // The Channel instance.
 
@@ -50,7 +51,7 @@ public class RabbitMQManager {
     private String serverExchange;              // The exchange for RabbitMQ connection.
 
     public RabbitMQManager(){
-        this(null, null, null, null, 0);
+        this(null, null, null, null, null, 0);
     }
 
     /**
@@ -62,8 +63,10 @@ public class RabbitMQManager {
      * @param host        The host (server) for RabbitMQ connection.
      * @param port        The port for RabbitMQ connection.
      */
-    public RabbitMQManager(String username, String password, String virtualHost, String host, int port) {
+    public RabbitMQManager(MessageProcessor messageProcessor, String username, String password, String virtualHost, String host, int port){
         factory = new ConnectionFactory();
+
+        this.messageProcessor = messageProcessor;
 
         loadServerConfig();
 
@@ -155,6 +158,7 @@ public class RabbitMQManager {
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
             logger.info(" [x] Received '{}':'{}'", delivery.getEnvelope().getRoutingKey(), message);
+            messageProcessor.processMessage(message);
         };
         channel.basicConsume(queueName, true, deliverCallback, consumerTag -> { });
     }
