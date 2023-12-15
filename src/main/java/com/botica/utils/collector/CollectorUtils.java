@@ -60,6 +60,17 @@ public class CollectorUtils {
 
         String volumeName = DirectoryOperations.getProjectName() + "_botica-volume";
 
+        try{
+            dockerClient.inspectVolumeCmd(volumeName).exec();
+        } catch (Exception e){
+            throw new RuntimeException("The volume " + volumeName + " does not exist. Please, create it before launch the container.");
+        }
+
+        if (!dockerClient.listContainersCmd().withShowAll(true).withNameFilter(List.of(containerName)).exec().isEmpty()){
+            dockerClient.killContainerCmd(containerName).exec();
+            dockerClient.removeContainerCmd(containerName).exec();
+        }
+
         CreateContainerCmd container = dockerClient.createContainerCmd(imageName)
                 .withName(containerName)
                 .withBinds(new Bind(volumeName, new Volume(BASE_CONTAINER_PATH)))
