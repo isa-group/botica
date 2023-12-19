@@ -12,7 +12,7 @@ public class ConfigurationLoader {
 
     private static final Logger logger = LogManager.getLogger(ConfigurationLoader.class);
 
-    String configurationPropertiesFilePath; // The path to the bot's property file.
+    String configurationPropertiesFilePath; // The path to the configuration's property file.
 
     String botsDefinitionPath;          // The path to read the bots definition file.
     String botsPropertiesPath;          // The path to store the bots properties files generated.

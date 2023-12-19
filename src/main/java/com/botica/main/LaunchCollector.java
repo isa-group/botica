@@ -1,33 +1,32 @@
 package com.botica.main;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import com.botica.runners.CollectorLoader;
 import com.botica.utils.collector.CollectorUtils;
+
 import com.github.dockerjava.api.DockerClient;
 
 public class LaunchCollector {
 
-    private static final List<String> PATHS_TO_OBSERVE = new ArrayList<>(
-        List.of(
-                "/target/allure-results",
-                "/target/coverage-data",
-                "/target/test-data",
-                "/src/main/resources/Examples/Ex4_CBTGeneration/allure_report",
-                "/src/main/resources/Examples/Ex5_CBTGeneration/allure_report"
-                ));
-
-    private static final String LOCAL_PATH_TO_COPY = "tmp/collector";
-    private static final String CONTAINER_NAME = "collector";
-    private static final String IMAGE_NAME = "dummy";
-    private static final String DEFAULT_WINDOWS_HOST = "tcp://127.0.0.1:2375";
-
-    private static final Integer INITIAL_DELAY_TO_COLLECT = 10;
-    private static final Integer PERIOD_TO_COLLECT = 60;
+    private static final String CONFIGURATION_PROPERTIES_FILE_PATH = "src/main/resources/BOTICAConfig/collector.properties";
 
     public static void main(String[] args) {
-        DockerClient dockerClient = CollectorUtils.launchContainerToCollect(IMAGE_NAME, CONTAINER_NAME, DEFAULT_WINDOWS_HOST);
-        CollectorUtils.executeCollectorAction(INITIAL_DELAY_TO_COLLECT, PERIOD_TO_COLLECT, PATHS_TO_OBSERVE, LOCAL_PATH_TO_COPY);
-        CollectorUtils.stopAndRemoveContainer(dockerClient, CONTAINER_NAME);
+
+        CollectorLoader collectorLoader = new CollectorLoader(CONFIGURATION_PROPERTIES_FILE_PATH, true);
+
+        List<String> pathsToObserve = collectorLoader.getPathsToObserve();
+        
+        String localPathToCopy = collectorLoader.getLocalPathToCopy();
+        String containerName = collectorLoader.getContainerName();
+        String imageName = collectorLoader.getImageName();
+        String windowsDockerHost = collectorLoader.getWindowsDockerHost();
+        
+        Integer initialDelayToCollect = collectorLoader.getInitialDelayToCollect();
+        Integer periodToCollect = collectorLoader.getPeriodToCollect();
+        
+        DockerClient dockerClient = CollectorUtils.launchContainerToCollect(imageName, containerName, windowsDockerHost);
+        CollectorUtils.executeCollectorAction(initialDelayToCollect, periodToCollect, pathsToObserve, localPathToCopy);
+        CollectorUtils.stopAndRemoveContainer(dockerClient, containerName);
     }
 }
