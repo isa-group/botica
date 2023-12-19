@@ -11,7 +11,7 @@ import com.botica.utils.property.PropertyManager;
 import lombok.Getter;
 
 @Getter
-public class CollectorLoader {
+public class CollectorLoader extends AbstractLoader {
 
     private static final Logger logger = LogManager.getLogger(CollectorLoader.class);
 
@@ -26,16 +26,20 @@ public class CollectorLoader {
     Integer initialDelayToCollect;  // The initial delay to start collecting data.
     Integer periodToCollect;        // The period to collect data.
 
-    public CollectorLoader (String configurationPropertiesFilePath, boolean reloadBotProperties) {
+    public CollectorLoader (String collectorPropertiesFilePath, boolean reloadBotProperties) {
         if(reloadBotProperties){
             PropertyManager.setUserPropertiesFilePath(null);
         }
-        this.collectorPropertiesFilePath = configurationPropertiesFilePath;
+        this.collectorPropertiesFilePath = collectorPropertiesFilePath;
+
+        this.propertiesFilePath = collectorPropertiesFilePath;
+        this.hasGlobalPropertiesPath = false;
 
         readProperties();
     }
 
-    private void readProperties() {
+    @Override
+    protected void readProperties() {
 
         logger.info("Loading configuration parameter values");
 
@@ -71,17 +75,4 @@ public class CollectorLoader {
         periodToCollect = Integer.parseInt(readProperty("period.to.collect"));
         logger.info("Period to collect: {}", periodToCollect);
     }
-
-    private String readProperty(String propertyName) {
-
-        // Read property from user property file (if provided)
-        String value = PropertyManager.readProperty(collectorPropertiesFilePath, propertyName);
-
-        // If null, read property from global property file (config.properties)
-        if (value == null)
-            value = PropertyManager.readProperty(propertyName);
-
-        return value;
-    }
-
 }

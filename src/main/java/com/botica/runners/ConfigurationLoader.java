@@ -8,7 +8,7 @@ import com.botica.utils.property.PropertyManager;
 import lombok.Getter;
 
 @Getter
-public class ConfigurationLoader {
+public class ConfigurationLoader extends AbstractLoader {
 
     private static final Logger logger = LogManager.getLogger(ConfigurationLoader.class);
 
@@ -42,11 +42,15 @@ public class ConfigurationLoader {
             PropertyManager.setUserPropertiesFilePath(null);
         }
 		this.configurationPropertiesFilePath = configurationPropertiesFilePath;
+
+        this.propertiesFilePath = configurationPropertiesFilePath;
+        this.hasGlobalPropertiesPath = false;
 		
 		readProperties();
 	}
 
-    private void readProperties() {
+    @Override
+    protected void readProperties() {
 
         logger.info("Loading configuration parameter values");
 
@@ -97,17 +101,5 @@ public class ConfigurationLoader {
 
         mainLaunchScript = readProperty("main.launch.script");
         logger.info("Main launch script: {}", mainLaunchScript);
-    }
-
-    private String readProperty(String propertyName) {
-
-        // Read property from user property file (if provided)
-        String value = PropertyManager.readProperty(configurationPropertiesFilePath, propertyName);
-
-        // If null, read property from global property file (config.properties)
-        if (value == null)
-            value = PropertyManager.readProperty(propertyName);
-
-        return value;
     }
 }

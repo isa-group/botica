@@ -1,8 +1,11 @@
 package com.botica.utils.bot;
 
+import lombok.Getter;
+
 /**
  * This class contains the RabbitMq configuration for a bot.
  */
+@Getter
 public class BotRabbitConfig {
 
     private String botType;         // The type of the bot.
@@ -21,20 +24,6 @@ public class BotRabbitConfig {
         this.botType = botType;
         this.keyToPublish = keyToPublish;
         this.orderToPublish = orderToPublish;
-    }
-
-    // Getters
-
-    public String getBotType() {
-        return botType;
-    }
-    
-    public String getKeyToPublish() {
-        return keyToPublish;
-    }
-
-    public String getOrderToPublish() {
-        return orderToPublish;
     }
 }
 

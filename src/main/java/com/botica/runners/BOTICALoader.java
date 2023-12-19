@@ -15,11 +15,13 @@ import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
 import com.botica.utils.property.PropertyManager;
 
+import lombok.Getter;
 
 /**
  * This class loads the properties files and connects the bot to RabbitMQ.
  */
-public class BOTICALoader {
+@Getter
+public class BOTICALoader extends AbstractLoader {
 
     private static final Logger logger = LogManager.getLogger(BOTICALoader.class);
 
@@ -42,14 +44,15 @@ public class BOTICALoader {
             PropertyManager.setUserPropertiesFilePath(null);
         }
 		this.botPropertiesFilePath = botPropertiesFilePath;
+
+        this.propertiesFilePath = botPropertiesFilePath;
+        this.hasGlobalPropertiesPath = true;
 		
 		readProperties();
 	}
-
-    // Read the parameter values from the .properties file. If the value is not
-    // found, the system looks for it in the global .properties file
-    // (config.properties)
-    private void readProperties() {
+    
+    @Override
+    protected void readProperties() {
 
         logger.info("Loading configuration parameter values");
 
@@ -106,21 +109,6 @@ public class BOTICALoader {
         }
     }
 
-    // Read the parameter values from the user property file (if provided). If the
-    // value is not found, look for it in the global .properties file
-    // (config.properties)
-    private String readProperty(String propertyName) {
-
-        // Read property from user property file (if provided)
-        String value = PropertyManager.readProperty(botPropertiesFilePath, propertyName);
-
-        // If null, read property from global property file (config.properties)
-        if (value == null)
-            value = PropertyManager.readProperty(propertyName);
-
-        return value;
-    }
-
     /**
      * Connects the bot to RabbitMQ.
      */
@@ -142,39 +130,4 @@ public class BOTICALoader {
             ExceptionUtils.throwRuntimeErrorException("Error when starting and connecting the bot to RabbitMQ: " + botId, e);
         }
     }
-
-    // Getters
-
-    public String getBotId() {
-        return botProperties.getProperty("bot.botId");
-    }
-
-    public String getAutonomyType() {
-        return autonomyType;
-    }
-
-    public Integer getInitialDelay() {
-        return initialDelay;
-    }
-
-    public Integer getPeriod() {
-        return period;
-    }
-
-    public String getBotType() {
-        return botType;
-    }
-
-    public String getOrderToPublish() {
-        return orderToPublish;
-    }
-
-    public String getKeyToPublish() {
-        return keyToPublish;
-    }
-
-    public Properties getBotProperties() {
-        return botProperties;
-    }
-
 }
