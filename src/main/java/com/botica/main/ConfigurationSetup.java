@@ -1,42 +1,40 @@
 package com.botica.main;
 
+import com.botica.runners.ConfigurationLoader;
 import com.botica.utils.configuration.CreateConfiguration;
 
 public class ConfigurationSetup {
 
-    private static final String BOTS_DEFINITION_PATH = "src/main/java/com/botica/bots/bots-definition.json";    // The path to read the bots definition file.
-    
-    private static final String BOTS_PROPERTIES_PATH = "src/main/resources/ConfigurationFiles/";                // The path to store the bots properties files generated.
-
-    // Settings for connection between bots and RabbitMQ.
-    private static final String RABBITMQ_USERNAME = "admin";                                                    // The RabbitMQ username.
-    private static final String RABBITMQ_PASSWORD = "testing1";                                                 // The RabbitMQ password.
-    private static final String RABBITMQ_HOST = "rabbitmq";                                                     // The RabbitMQ host.
-    private static final Integer RABBITMQ_PORT = 5672;                                                          // The RabbitMQ port.
-    private static final String RABBITMQ_EXCHANGE = "restest_exchange";                                         // The name of the RabbitMQ exchange.
-
-
-    private static final String RABBITMQ_CONFIGURATION_PATH = "rabbitmq/definitions.json";                      // The path to store the configuration file of the RabbitMQ broker.
-    private static final String RABBITMQ_CONNECTION_PATH = "rabbitmq/server-config.json";                       // The path to store the connection file of the RabbitMQ broker.
-
-    private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";                                     // The path to store the docker compose file generated to deploy the bots.
-
-    private static final String DUMMY_DOCKERFILE_PATH = "docker/Dockerfile";                                    // The path to store the dummy dockerfile used to create the volume.
-    private static final String BOTICA_DOCKERFILE_PATH = "Dockerfile";                                          // The path to store the Dockerfile used to create the BOTICA image.
-    private static final String JAR_FILE_NAME = "botica";                                                       // The name of the jar file generated, used to launch the BOTICA bots.
-
-    private static final String INIT_VOLUME_SCRIPT_PATH = "docker/init_volume.sh";                              // The path to store the script used to init volume with the necessary data.
-    private static final String BOTICA_IMAGE_NAME = "bot-ica";                                                  // The name to use for the BOTICA image.
-    private static final String MAIN_LAUNCH_SCRIPT = "launch_botica.sh";                                        // The path to store the script used to launch the BOTICA bots.
+    private static final String CONFIGURATION_PROPERTIES_FILE_PATH = "src/main/resources/BOTICAConfig/configuration-setup.properties";
 
     public static void main(String[] args) {
-        CreateConfiguration.createBotPropertiesFiles(BOTS_DEFINITION_PATH, BOTS_PROPERTIES_PATH);
-        CreateConfiguration.createRabbitMQConfigFile(RABBITMQ_EXCHANGE, RABBITMQ_CONFIGURATION_PATH);
-        CreateConfiguration.createRabbitMQConnectionFile(RABBITMQ_CONNECTION_PATH, RABBITMQ_USERNAME, RABBITMQ_PASSWORD, RABBITMQ_HOST, RABBITMQ_PORT, RABBITMQ_EXCHANGE);
-        CreateConfiguration.createDockerCompose(DOCKER_COMPOSE_PATH);
-        CreateConfiguration.createDummyDockerfile(DUMMY_DOCKERFILE_PATH);
-        CreateConfiguration.createBoticaDockerfile(BOTICA_DOCKERFILE_PATH, JAR_FILE_NAME);
-        CreateConfiguration.createInitVolumeScript(INIT_VOLUME_SCRIPT_PATH);
-        CreateConfiguration.createMainScript(MAIN_LAUNCH_SCRIPT, DUMMY_DOCKERFILE_PATH, INIT_VOLUME_SCRIPT_PATH, DOCKER_COMPOSE_PATH, BOTICA_DOCKERFILE_PATH, BOTICA_IMAGE_NAME);
+
+        ConfigurationLoader configurationLoader = new ConfigurationLoader(CONFIGURATION_PROPERTIES_FILE_PATH, true);
+
+        String botsDefinitionPath = configurationLoader.getBotsDefinitionPath();
+        String botsPropertiesPath = configurationLoader.getBotsPropertiesPath();
+        String rabbitMQExchange = configurationLoader.getRabbitMQExchange();
+        String rabbitMQConfigurationPath = configurationLoader.getRabbitMQConfigurationPath();
+        String rabbitMQConnectionPath = configurationLoader.getRabbitMQConnectionPath();
+        String rabbitMQUsername = configurationLoader.getRabbitMQUsername();
+        String rabbitMQPassword = configurationLoader.getRabbitMQPassword();
+        String rabbitMQHost = configurationLoader.getRabbitMQHost();
+        Integer rabbitMQPort = configurationLoader.getRabbitMQPort();
+        String dockerComposePath = configurationLoader.getDockerComposePath();
+        String dummyDockerfilePath = configurationLoader.getDummyDockerfilePath();
+        String boticaDockerfilePath = configurationLoader.getBoticaDockerfilePath();
+        String jarFileName = configurationLoader.getJarFileName();
+        String initVolumeScriptPath = configurationLoader.getInitVolumeScriptPath();
+        String mainLaunchScript = configurationLoader.getMainLaunchScript();
+        String boticaImageName = configurationLoader.getBoticaImageName();
+
+        CreateConfiguration.createBotPropertiesFiles(botsDefinitionPath, botsPropertiesPath);
+        CreateConfiguration.createRabbitMQConfigFile(rabbitMQExchange, rabbitMQConfigurationPath);
+        CreateConfiguration.createRabbitMQConnectionFile(rabbitMQConnectionPath, rabbitMQUsername, rabbitMQPassword, rabbitMQHost, rabbitMQPort, rabbitMQExchange);
+        CreateConfiguration.createDockerCompose(dockerComposePath);
+        CreateConfiguration.createDummyDockerfile(dummyDockerfilePath);
+        CreateConfiguration.createBoticaDockerfile(boticaDockerfilePath, jarFileName);
+        CreateConfiguration.createInitVolumeScript(initVolumeScriptPath);
+        CreateConfiguration.createMainScript(mainLaunchScript, dummyDockerfilePath, initVolumeScriptPath, dockerComposePath, boticaDockerfilePath, boticaImageName);
     }
 }
