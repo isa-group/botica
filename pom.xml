@@ -55,13 +55,6 @@
             <version>2.13.3</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.apache.maven/maven-model -->
-        <dependency>
-            <groupId>org.apache.maven</groupId>
-            <artifactId>maven-model</artifactId>
-            <version>3.3.9</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
         <dependency>
             <groupId>com.github.docker-java</groupId>
@@ -110,6 +103,43 @@
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.1</version>
+                <executions>
+                    <!-- Create configuration files -->
+                    <execution>
+                        <id>configuration-setup</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.botica.main.ConfigurationSetup</mainClass>
+                        </configuration>
+                    </execution>
+                    <!-- Launch BOTICA -->
+                    <execution>
+                        <id>launch-botica</id>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>launch_botica.sh</executable>
+                        </configuration>
+                    </execution>
+                    <!-- Launch collector -->
+                    <execution>
+                        <id>launch-collector</id>
+                        <goals>
+                            <goal>java</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>com.botica.main.LaunchCollector</mainClass>
                         </configuration>
                     </execution>
                 </executions>

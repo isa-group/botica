@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -520,6 +521,8 @@ public class CreateConfiguration {
             Files.writeString(scriptPath, "docker-compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo \"Script completed successfully.\"", StandardOpenOption.APPEND);
+
+            Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
 
             logger.info("BOTICA main script created successfully!");
         } catch (Exception e) {
