@@ -2,6 +2,8 @@ package com.botica.rabbitmq;
 
 import java.util.List;
 
+import org.json.JSONObject;
+
 import com.botica.utils.collector.CollectorUtils;
 
 public class CollectorMessageProcessor implements MessageProcessor {
@@ -18,6 +20,12 @@ public class CollectorMessageProcessor implements MessageProcessor {
 
     @Override
     public void processMessage(String message) {
-        CollectorUtils.collectFromRabbit(pathsToObserve, baseContainerPath, localPathToCopy);
+        JSONObject messageData = new JSONObject(message);
+        if(messageData.has("order")){
+            String order = messageData.getString("order");
+            if(order.equals("collect")){
+                CollectorUtils.collectFromRabbit(pathsToObserve, baseContainerPath, localPathToCopy);
+            }
+        }
     }
 }
