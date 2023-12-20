@@ -6,18 +6,3 @@
 
 # Generated Files
 /target
-/src/main/resources/Examples/*/test_cases/
-/src/main/resources/Examples/*/allure_report/
-/src/main/resources/ConfigurationFiles
-/allure-results
-
-/docker
-/rabbitmq/*
-docker-compose.yml
-Dockerfile
-launch_botica.sh
-/tmp
-
-# JAR Dependencies
-restest.jar
-
