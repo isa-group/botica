@@ -26,6 +26,6 @@ public class DirectoryOperations {
     public static String getProjectName(){
         String baseDir = System.getProperty("user.dir");
         File file = new File(baseDir);
-        return file.getName();
+        return file.getName().toLowerCase();
     }
 }
