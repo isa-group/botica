@@ -5,11 +5,15 @@ import com.botica.utils.configuration.CreateConfiguration;
 
 public class ConfigurationSetup {
 
-    private static final String CONFIGURATION_PROPERTIES_FILE_PATH = "src/main/resources/BOTICAConfig/configuration-setup.properties";
+    private static String configurationPropertiesFilePath = "src/main/resources/BOTICAConfig/configuration-setup.properties";
 
     public static void main(String[] args) {
 
-        ConfigurationLoader configurationLoader = new ConfigurationLoader(CONFIGURATION_PROPERTIES_FILE_PATH, true);
+        if (args.length == 1) {
+            configurationPropertiesFilePath = args[0];
+        }
+
+        ConfigurationLoader configurationLoader = new ConfigurationLoader(configurationPropertiesFilePath, true);
 
         String botsDefinitionPath = configurationLoader.getBotsDefinitionPath();
         String botsPropertiesPath = configurationLoader.getBotsPropertiesPath();

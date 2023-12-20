@@ -9,11 +9,15 @@ import com.github.dockerjava.api.DockerClient;
 
 public class LaunchCollector {
 
-    private static final String CONFIGURATION_PROPERTIES_FILE_PATH = "src/main/resources/BOTICAConfig/collector.properties";
+    private static String configurationPropertiesFilePath = "src/main/resources/BOTICAConfig/collector.properties";
 
     public static void main(String[] args) {
 
-        CollectorLoader collectorLoader = new CollectorLoader(CONFIGURATION_PROPERTIES_FILE_PATH, true);
+        if (args.length == 1) {
+            configurationPropertiesFilePath = args[0];
+        }
+
+        CollectorLoader collectorLoader = new CollectorLoader(configurationPropertiesFilePath, true);
 
         List<String> pathsToObserve = collectorLoader.getPathsToObserve();
         
