@@ -28,23 +28,22 @@ import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
 import com.github.dockerjava.transport.DockerHttpClient;
 
 public class CollectorUtils {
-
+    
     private static final Logger logger = LogManager.getLogger(CollectorUtils.class);
     private static final String BASE_CONTAINER_PATH = "/app/volume";
 
     private static String containerId;
     private static boolean isWindows;
 
-    private CollectorUtils() {
+    private CollectorUtils(){
     }
 
-    public static DockerClient launchContainerToCollect(String imageName, String containerName,
-            String defaultWindowsHost) {
+    public static DockerClient launchContainerToCollect(String imageName, String containerName, String defaultWindowsHost){
 
         isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
 
         DockerClient dockerClient;
-        if (isWindows) {
+        if (isWindows){
             DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
                     .withDockerHost(defaultWindowsHost)
                     .withDockerTlsVerify(false)
@@ -55,21 +54,19 @@ public class CollectorUtils {
                     .build();
 
             dockerClient = DockerClientImpl.getInstance(config, dockerHttpClient);
-        } else {
+        }else{
             dockerClient = DockerClientBuilder.getInstance().build();
         }
 
         String volumeName = DirectoryOperations.getProjectName() + "_botica-volume";
 
-        try {
+        try{
             dockerClient.inspectVolumeCmd(volumeName).exec();
-        } catch (Exception e) {
-            throw new RuntimeException(
-                    "The volume " + volumeName + " does not exist. Please, create it before launch the container.");
+        } catch (Exception e){
+            throw new RuntimeException("The volume " + volumeName + " does not exist. Please, create it before launch the container.");
         }
 
-        if (!dockerClient.listContainersCmd().withShowAll(true).withNameFilter(List.of(containerName)).exec()
-                .isEmpty()) {
+        if (!dockerClient.listContainersCmd().withShowAll(true).withNameFilter(List.of(containerName)).exec().isEmpty()){
             dockerClient.killContainerCmd(containerName).exec();
             dockerClient.removeContainerCmd(containerName).exec();
         }
@@ -88,25 +85,24 @@ public class CollectorUtils {
     }
 
     public static void executeCollectorAction(Integer initialDelay, Integer period, List<String> pathsToObserve,
-            String localPathToCopy) {
+                                                String localPathToCopy){
 
         for (String path : pathsToObserve) {
             Path directoryPath = Path.of(localPathToCopy + path);
             DirectoryOperations.createDir(directoryPath);
         }
 
-        // RabbitMQ connection
-        CollectorMessageProcessor messageProcessor = new CollectorMessageProcessor(pathsToObserve, BASE_CONTAINER_PATH,
-                localPathToCopy);
+        //RabbitMQ connection
+        CollectorMessageProcessor messageProcessor = new CollectorMessageProcessor(pathsToObserve, BASE_CONTAINER_PATH, localPathToCopy);
         RabbitMQManager messageSender = new RabbitMQManager(messageProcessor, null, null, null, "localhost", 0);
 
         List<String> bindingKeys = new ArrayList<>();
         bindingKeys.add("requestToCollector");
         List<Boolean> queueOptions = Arrays.asList(true, false, false);
-        try {
+        try{
             String queueName = messageSender.connect("collector", bindingKeys, queueOptions);
             messageSender.receiveMessage(queueName);
-        } catch (IOException | TimeoutException e) {
+        }catch(IOException | TimeoutException e){
             e.printStackTrace();
         }
         //
@@ -116,22 +112,19 @@ public class CollectorUtils {
         scheduler.scheduleAtFixedRate(runnable, initialDelay, period, TimeUnit.SECONDS);
     }
 
-    public static void collectFromRabbit(List<String> pathsToObserve, String baseContainerPath,
-            String localPathToCopy) {
+    public static void collectFromRabbit(List<String> pathsToObserve, String baseContainerPath, String localPathToCopy){
         logger.info("Collecting data ...");
         for (String path : pathsToObserve) {
             CollectorUtils.executeDockerCp(containerId, path, baseContainerPath, localPathToCopy + path);
         }
     }
 
-    private static void executeDockerCp(String containerId, String sourcePath, String baseContainerPath,
-            String destinationPath) {
-
-        String command = "docker cp " + containerId + ":" + baseContainerPath + sourcePath + " "
-                + destinationPath.substring(0, destinationPath.lastIndexOf("/"));
+    private static void executeDockerCp(String containerId, String sourcePath, String baseContainerPath, String destinationPath) {
+        
+        String command = "docker cp " + containerId + ":" + baseContainerPath + sourcePath + " " + destinationPath.substring(0, destinationPath.lastIndexOf("/"));
 
         Process process = null;
-
+        
         try {
             if (isWindows) {
                 process = Runtime.getRuntime().exec("cmd /c " + command);
