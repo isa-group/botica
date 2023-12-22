@@ -2,32 +2,32 @@
 
 ## Installing BOTICA as a local dependency
 
-1. Clone or download the project from the repository.
+1. **Clone or download the project from the repository.**
 
-2. Compiling the project
+2. **Compiling the project.**
 
-    Open a terminal at the root of the project and run the following Maven command to compile and package the project.
+    Open a terminal at the project's root and run the following Maven command to compile and package the project.
     ```
     mvn clean install
     ```
 
-3. Installing the project in your Local Maven Repository
+3. **Generate the necessary files to launch the BOTICA environment.**
 
-    Run the following maven command in the `target` folder of your project:
+    Run the following maven command at the root of the project:
     ```
-    mvn install:install-file -Dfile=botica.jar -DgroupId=com.botica -DartifactId=botica -Dversion=0.1.0 -Dpackaging=jar
+    mvn exec:java@configuration-setup
     ```
 
-4. Adding dependency to your project
+4. **Launch the BOTICA environment.**
 
-    1. Open the `pom.xml` file of your project.
+    Run the following maven command at the root of the project:
+    ```
+    mvn exec:exec@launch-botica
+    ```
 
-    2. Inside the <dependencies> section, add the following entry:
+5. **Launch the data collector bot.**
 
-        ```xml
-        <dependency>
-          <groupId>com.botica</groupId>
-          <artifactId>botica</artifactId>
-          <version>0.1.0</version>
-        </dependency>
-        ```
+   Run the following maven command at the root of the project:
+   ```
+   mvn exec:java@launch-collector
+   ```
