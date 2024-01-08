@@ -31,3 +31,9 @@
           <version>0.1.0</version>
         </dependency>
         ```
+## Uninstalling BOTICA as a local dependency
+
+Run the following maven command:
+```
+mvn dependency:purge-local-repository -DmanualInclude=com.botica:botica:0.1.0
+```
