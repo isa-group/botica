@@ -44,19 +44,18 @@ public class TemplateGenerator {
     }
 
     private static void generateRESTestTemplate(TemplateType templateType, String outpoutPath) {
-        
-        Path filePath = Path.of(outpoutPath);
-        DirectoryOperations.createDir(filePath);
 
         try {
             if (templateType.equals(TemplateType.BOTS_DEFINITION)) {
                 String botsDefinitionTemplate = getRESTestBotsDefinitionTemplate();
                 Path botsDefinitionPath = Path.of(outpoutPath, "bots-definition.json");
+                DirectoryOperations.createDir(botsDefinitionPath);
                 Files.writeString(botsDefinitionPath, botsDefinitionTemplate, StandardOpenOption.CREATE);
                 logger.info("RESTest bots definition template generated successfully!");
             } else if (templateType.equals(TemplateType.PROPERTIES)) {
                 String configurationPropertiesTemplate = getRESTestConfigurationPropertiesTemplate();
                 Path configurationPropertiesPath = Path.of(outpoutPath, "configuration-setup.properties");
+                DirectoryOperations.createDir(configurationPropertiesPath);
                 Files.writeString(configurationPropertiesPath, configurationPropertiesTemplate, StandardOpenOption.CREATE);
                 logger.info("RESTest configuration properties template generated successfully!");
 
