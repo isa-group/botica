@@ -13,10 +13,15 @@ import com.botica.rabbitmq.RabbitMQManager;
 import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
 
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * This class serves as the base launcher for bots and provides methods for
  * connecting to RabbitMQ and launching bot-related tasks.
  */
+@Getter
+@Setter
 public abstract class AbstractLauncher {
 
     protected static final Logger logger = LogManager.getLogger(AbstractLauncher.class);
@@ -94,15 +99,4 @@ public abstract class AbstractLauncher {
             ExceptionUtils.throwRuntimeErrorException("Error checking connection to RabbitMQ", e);
         }
     }
-
-    // Setters
-
-    public void setMessageData(JSONObject messageData) {
-        this.messageData = messageData;
-    }
-
-    public void setLauncherPackage(String launcherPackage){
-        this.launcherPackage = launcherPackage;
-    }
-
 }
