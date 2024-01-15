@@ -76,10 +76,12 @@ public class TemplateGenerator {
                 "rabbitmq.username=admin\n" +
                 "rabbitmq.password=testing1\n" +
                 "rabbitmq.host=rabbitmq\n" +
-                "rabbitmq.port=5672\n" +
+                "rabbitmq.amqp.port=5671\n" +
+                "rabbitmq.ui.port=15671\n" +
                 "rabbitmq.exchange=restest_exchange\n" +
                 "\n" +
                 "rabbitmq.configuration.path=rabbitmq/definitions.json\n" +
+                "rabbitmq.ports.configuration.path=rabbitmq/rabbitmq.conf\n" +
                 "rabbitmq.connection.path=rabbitmq/server-config.json\n" +
                 "\n" +
                 "docker.compose.path=docker-compose.yml\n" +

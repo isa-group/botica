@@ -14,28 +14,30 @@ public class ConfigurationLoader extends AbstractLoader {
 
     String configurationPropertiesFilePath; // The path to the configuration's property file.
 
-    String botsDefinitionPath;          // The path to read the bots definition file.
-    String botsPropertiesPath;          // The path to store the bots properties files generated.
+    String botsDefinitionPath;              // The path to read the bots definition file.
+    String botsPropertiesPath;              // The path to store the bots properties files generated.
 
     // Settings for connection between bots and RabbitMQ.
-    String rabbitMQUsername;            // The RabbitMQ username.
-    String rabbitMQPassword;            // The RabbitMQ password.
-    String rabbitMQHost;                // The RabbitMQ host.
-    Integer rabbitMQPort;               // The RabbitMQ port.
-    String rabbitMQExchange;            // The name of the RabbitMQ exchange.
+    String rabbitMQUsername;                // The RabbitMQ username.
+    String rabbitMQPassword;                // The RabbitMQ password.
+    String rabbitMQHost;                    // The RabbitMQ host.
+    Integer rabbitMQAMQPPort;               // The RabbitMQ AMQP port.
+    Integer rabbitMQUIPort;                 // The RabbitMQ UI port.
+    String rabbitMQExchange;                // The name of the RabbitMQ exchange.
 
-    String rabbitMQConfigurationPath;   // The path to store the configuration file of the RabbitMQ broker.
-    String rabbitMQConnectionPath;      // The path to store the connection file of the RabbitMQ broker.
+    String rabbitMQConfigurationPath;       // The path to store the configuration file of the RabbitMQ broker.
+    String rabbitMQPortsConfigurationPath;  // The path to store the ports configuration file of the RabbitMQ broker.
+    String rabbitMQConnectionPath;          // The path to store the connection file of the RabbitMQ broker.
 
-    String dockerComposePath;           // The path to store the docker compose file generated to deploy the bots.
+    String dockerComposePath;               // The path to store the docker compose file generated to deploy the bots.
 
-    String dummyDockerfilePath;         // The path to store the dummy dockerfile used to create the volume.
-    String boticaDockerfilePath;        // The path to store the Dockerfile used to create the BOTICA image.
-    String jarFileName;                 // The name of the jar file generated, used to launch the BOTICA bots.
+    String dummyDockerfilePath;             // The path to store the dummy dockerfile used to create the volume.
+    String boticaDockerfilePath;            // The path to store the Dockerfile used to create the BOTICA image.
+    String jarFileName;                     // The name of the jar file generated, used to launch the BOTICA bots.
 
-    String initVolumeScriptPath;        // The path to store the script used to init volume with the necessary data.
-    String boticaImageName;             // The name to use for the BOTICA image.
-    String mainLaunchScript;            // The path to store the script used to launch the BOTICA bots.
+    String initVolumeScriptPath;            // The path to store the script used to init volume with the necessary data.
+    String boticaImageName;                 // The name to use for the BOTICA image.
+    String mainLaunchScript;                // The path to store the script used to launch the BOTICA bots.
 
     public ConfigurationLoader (String configurationPropertiesFilePath, boolean reloadBotProperties) {
         if(reloadBotProperties){
@@ -69,14 +71,20 @@ public class ConfigurationLoader extends AbstractLoader {
         rabbitMQHost = readProperty("rabbitmq.host");
         logger.info("RabbitMQ host: {}", rabbitMQHost);
 
-        rabbitMQPort = Integer.parseInt(readProperty("rabbitmq.port"));
-        logger.info("RabbitMQ port: {}", rabbitMQPort);
+        rabbitMQAMQPPort = Integer.parseInt(readProperty("rabbitmq.amqp.port"));
+        logger.info("RabbitMQ AMQP port: {}", rabbitMQAMQPPort);
+
+        rabbitMQUIPort = Integer.parseInt(readProperty("rabbitmq.ui.port"));
+        logger.info("RabbitMQ UI port: {}", rabbitMQUIPort);
 
         rabbitMQExchange = readProperty("rabbitmq.exchange");
         logger.info("RabbitMQ exchange: {}", rabbitMQExchange);
 
         rabbitMQConfigurationPath = readProperty("rabbitmq.configuration.path");
-        logger.info("RabbitMQ configuration path: {}", rabbitMQConfigurationPath);
+        logger.info("RabbitMQ broker configuration path: {}", rabbitMQConfigurationPath);
+
+        rabbitMQPortsConfigurationPath = readProperty("rabbitmq.ports.configuration.path");
+        logger.info("RabbitMQ ports configuration path: {}", rabbitMQPortsConfigurationPath);
 
         rabbitMQConnectionPath = readProperty("rabbitmq.connection.path");
         logger.info("RabbitMQ connection path: {}", rabbitMQConnectionPath);

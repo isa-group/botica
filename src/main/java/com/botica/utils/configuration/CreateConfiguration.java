@@ -292,14 +292,31 @@ public class CreateConfiguration {
         try {
             // Create the file if it doesn't exist, or overwrite it if it does
             Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            logger.info("RabbitMQ configuration file created successfully!");
+            logger.info("RabbitMQ broker configuration file created successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }
 
     }
 
-    public static void createRabbitMQConnectionFile(String rabbitConnectionPath, String rabbitmqUsername, String rabbitmqPassword, String rabbitmqHost, Integer rabbitmqPort, String rabbitmqExchange) {
+    public static void createRabbitMQPortsConfigurationFile(String rabbitMQPortsConfigurationPath,  Integer rabbitMQAMQPPort, Integer rabbitMQUIPort){
+
+        Path confPath = Path.of(rabbitMQPortsConfigurationPath);
+        DirectoryOperations.createDir(confPath);
+
+        try {
+            Files.writeString(confPath, "listeners.tcp.default = " + rabbitMQAMQPPort, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            Files.writeString(confPath, "\nmanagement.tcp.port = " + rabbitMQUIPort, StandardOpenOption.APPEND);
+
+            logger.info("RabbitMQ ports configuration file created successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    public static void createRabbitMQConnectionFile(String rabbitConnectionPath, String rabbitmqUsername, String rabbitmqPassword, String rabbitmqHost, Integer rabbitmqAMQPPort, String rabbitmqExchange) {
         Path filePath = Path.of(rabbitConnectionPath);
         DirectoryOperations.createDir(filePath);
 
@@ -308,7 +325,7 @@ public class CreateConfiguration {
             Files.writeString(filePath, "\t\"password\": \"" + rabbitmqPassword + "\",\n", StandardOpenOption.APPEND);
             Files.writeString(filePath, "\t\"virtualHost\": \"/\",\n", StandardOpenOption.APPEND);
             Files.writeString(filePath, "\t\"host\": \"" + rabbitmqHost + "\",\n", StandardOpenOption.APPEND);
-            Files.writeString(filePath, "\t\"port\": " + rabbitmqPort + ",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"port\": " + rabbitmqAMQPPort + ",\n", StandardOpenOption.APPEND);
             Files.writeString(filePath, "\t\"exchange\": \"" + rabbitmqExchange + "\"\n}", StandardOpenOption.APPEND);
 
             logger.info("RabbitMQ connection file created successfully!");
@@ -318,26 +335,28 @@ public class CreateConfiguration {
 
     }
 
-    public static void createDockerCompose(String dockerComposePath){ 
+    public static void createDockerCompose(String dockerComposePath, String rabbitPortsConfigurationPath, String rabbitMQConfigurationPath, Integer rabbitMQAMQPPort, Integer rabbitMQUIPort) {
 
         List<String> content = new ArrayList<>();
 
-        String initialContent = "version: '3'\r\n" +
+        String initialContentTemplate = "version: '3'\r\n" +
                 "\r\n" +
                 "services:\r\n" +
                 "  rabbitmq:\r\n" +
                 "    image: \"rabbitmq:3.12-management\"\r\n" +
                 "    ports:\r\n" +
-                "      - \"5672:5672\"\r\n" +
-                "      - \"15672:15672\"\r\n" +
+                "      - \"%s:%s\"\r\n" +
+                "      - \"%s:%s\"\r\n" +
                 "    environment:\r\n" +
                 "      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions \"/run/secrets/rabbit_config\"\r\n" +
                 "    secrets:\r\n" +
                 "      - rabbit_config\r\n" +
+                "    volumes:\r\n" +
+                "      - ./%s:/etc/rabbitmq/rabbitmq.conf\r\n" +
                 "    networks:\r\n" +
                 "      - rabbitmq-network";
 
-        String templateIntermediateContent = "  %s:\r\n" +
+        String intermediateContentTemplate = "  %s:\r\n" +
                 "    depends_on:\r\n" +
                 "      - rabbitmq\r\n" +
                 "    restart: unless-stopped\r\n" +
@@ -349,22 +368,25 @@ public class CreateConfiguration {
                 "    volumes:\r\n" +
                 "      - botica-volume:/app/volume";
 
-        String finalContent = "\nvolumes:\r\n" +
+        String finalContentTemplate = "\nvolumes:\r\n" +
                 "  botica-volume:\r\n\n" +
                 "networks:\r\n" +
                 "  rabbitmq-network:\r\n" +
                 "    driver: bridge\r\n\n" +
                 "secrets:\r\n" +
                 "  rabbit_config:\r\n" +
-                "    file: ./rabbitmq/definitions.json";
+                "    file: ./%s";
 
+        String initialContent = String.format(initialContentTemplate, rabbitMQAMQPPort, rabbitMQAMQPPort, rabbitMQUIPort, rabbitMQUIPort,
+                rabbitPortsConfigurationPath);
         content.add(initialContent);
 
         for (int i = 0; i < botIds.size(); i++) {
-            String intermediateContent = String.format(templateIntermediateContent, botIds.get(i), botImages.get(i), botIds.get(i));
+            String intermediateContent = String.format(intermediateContentTemplate, botIds.get(i), botImages.get(i), botIds.get(i));
             content.add(intermediateContent);
         }
 
+        String finalContent = String.format(finalContentTemplate, rabbitMQConfigurationPath);
         content.add(finalContent);
 
         Path filePath = Path.of(dockerComposePath);
