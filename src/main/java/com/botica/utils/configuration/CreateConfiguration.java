@@ -517,9 +517,9 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createMainUnixScript(String mainUnixScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    public static void createUnixMainScript(String unixMainScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
         
-        Path scriptPath = Path.of(mainUnixScriptPath);
+        Path scriptPath = Path.of(unixMainScriptPath);
         DirectoryOperations.createDir(scriptPath);
 
         String dummyDirectory = dummyDockerfilePath.contains("/") ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/")) : ".";
@@ -552,9 +552,9 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createMainWindowsScript(String mainWindowsScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    public static void createWindowsMainScript(String windowsMainScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
 
-        Path scriptPath = Path.of(mainWindowsScriptPath);
+        Path scriptPath = Path.of(windowsMainScriptPath);
         DirectoryOperations.createDir(scriptPath);
 
         String dummyDirectory = dummyDockerfilePath.contains("/")
