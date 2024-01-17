@@ -37,7 +37,9 @@ public class ConfigurationLoader extends AbstractLoader {
 
     String initVolumeScriptPath;            // The path to store the script used to init volume with the necessary data.
     String boticaImageName;                 // The name to use for the BOTICA image.
-    String mainLaunchScript;                // The path to store the script used to launch the BOTICA bots.
+    String mainUnixLaunchScript;            // The path to store the script used to launch the BOTICA bots in Unix systems.
+    String mainWindowsLaunchScript;         // The path to store the script used to launch the BOTICA bots in Windows systems.
+
 
     public ConfigurationLoader (String configurationPropertiesFilePath, boolean reloadBotProperties) {
         if(reloadBotProperties){
@@ -107,7 +109,10 @@ public class ConfigurationLoader extends AbstractLoader {
         boticaImageName = readProperty("botica.image.name");
         logger.info("BOTICA image name: {}", boticaImageName);
 
-        mainLaunchScript = readProperty("main.launch.script");
-        logger.info("Main launch script: {}", mainLaunchScript);
+        mainUnixLaunchScript = readProperty("main.unix.launch.script");
+        logger.info("Unix main launch script: {}", mainUnixLaunchScript);
+
+        mainWindowsLaunchScript = readProperty("main.windows.launch.script");
+        logger.info("Windows main launch script: {}", mainWindowsLaunchScript);
     }
 }

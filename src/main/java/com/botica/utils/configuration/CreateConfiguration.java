@@ -517,9 +517,9 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createMainScript(String mainScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    public static void createMainUnixScript(String mainUnixScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
         
-        Path scriptPath = Path.of(mainScriptPath);
+        Path scriptPath = Path.of(mainUnixScriptPath);
         DirectoryOperations.createDir(scriptPath);
 
         String dummyDirectory = dummyDockerfilePath.contains("/") ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/")) : ".";
@@ -546,7 +546,31 @@ public class CreateConfiguration {
 
             Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
 
-            logger.info("BOTICA main script created successfully!");
+            logger.info("BOTICA Unix main script created successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createMainWindowsScript(String mainWindowsScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+
+        Path scriptPath = Path.of(mainWindowsScriptPath);
+        DirectoryOperations.createDir(scriptPath);
+
+        String dummyDirectory = dummyDockerfilePath.contains("/")
+                ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/"))
+                : ".";
+        String boticaDirectory = boticaDockerfilePath.contains("/")
+                ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/"))
+                : ".";
+
+        try {
+            
+            //TODO: COMPLETE
+
+            Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+
+            logger.info("BOTICA Windows main script created successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }

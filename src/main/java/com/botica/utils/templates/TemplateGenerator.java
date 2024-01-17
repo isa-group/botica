@@ -92,7 +92,8 @@ public class TemplateGenerator {
                 "\n" +
                 "init.volume.script.path=docker/init-volume.sh\n" +
                 "botica.image.name=bot-ica\n" +
-                "main.launch.script=launch_botica.sh";
+                "main.unix.launch.script=launch_botica.sh\n" +
+                "main.windows.launch.script=launch_botica.bat\n";
     }
 
     private static String getRESTestCollectorPropertiesTemplate(){
