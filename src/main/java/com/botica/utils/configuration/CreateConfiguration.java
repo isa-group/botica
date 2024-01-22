@@ -469,11 +469,11 @@ public class CreateConfiguration {
 
     }
 
-    public static void createInitVolumeScript(String initVolumeScriptPath) {
+    public static void createUnixInitVolumeScript(String unixInitVolumeScriptPath) {
 
         String projectName = DirectoryOperations.getProjectName();
 
-        Path scriptPath = Path.of(initVolumeScriptPath);
+        Path scriptPath = Path.of(unixInitVolumeScriptPath);
         DirectoryOperations.createDir(scriptPath);
 
         try {
@@ -517,13 +517,66 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createUnixMainScript(String unixMainScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    public static void createWindowsInitVolumeScript(String windowsInitVolumeScriptPath) {
+
+        String projectName = DirectoryOperations.getProjectName();
+
+        Path scriptPath = Path.of(windowsInitVolumeScriptPath);
+        DirectoryOperations.createDir(scriptPath);
+
+        try {
+            Files.writeString(scriptPath, "@echo off\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            Files.writeString(scriptPath, "docker ps -a | find \"dummy\" && (\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "    echo Removing existing container...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "    docker rm dummy\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, ")\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "docker volume ls | find \"" + projectName + "_botica-volume\" && (\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "    echo Removing existing volume...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "    docker volume rm " + projectName + "_botica-volume\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, ")\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "docker container create --name dummy -v " + projectName + "_botica-volume:/app dummy\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker volume create --name " + projectName + "_botica-volume\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "docker cp .\\pom.xml dummy:/app/pom.xml\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker cp .\\rabbitmq\\server-config.json dummy:/app/rabbitmq/server-config.json\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker cp .\\src\\main\\resources\\ConfigurationFiles dummy:/app/src/main/resources/ConfigurationFiles\n\n", StandardOpenOption.APPEND);
+
+            for (String path : requiredPaths) {
+
+                String scriptCommand;
+                String auxPath = path.replace("./", "");
+                String windowsPath = path.replace("/", "\\");
+                if (auxPath.contains("/")) {
+                    String newPath = auxPath.substring(0, auxPath.lastIndexOf("/"));
+                    scriptCommand = String.format("docker cp %s dummy:/app/%s%n", windowsPath, newPath);
+                } else {
+                    scriptCommand = String.format("docker cp %s dummy:/app%n", windowsPath);
+                }
+                Files.writeString(scriptPath, scriptCommand, StandardOpenOption.APPEND);
+            }
+
+            Files.writeString(scriptPath, "\ndocker rm dummy\n", StandardOpenOption.APPEND);
+
+            logger.info("Windows init volume script created successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createUnixMainScript(String unixMainScriptPath, String dummyDockerfilePath, String unixInitVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
         
         Path scriptPath = Path.of(unixMainScriptPath);
         DirectoryOperations.createDir(scriptPath);
 
-        String dummyDirectory = dummyDockerfilePath.contains("/") ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/")) : ".";
-        String boticaDirectory = boticaDockerfilePath.contains("/") ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/")) : ".";
+        String dummyDirectory = dummyDockerfilePath.contains("/") 
+                ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/"))
+                : ".";
+        String boticaDirectory = boticaDockerfilePath.contains("/") 
+                ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/"))
+                : ".";
 
 
         try {
@@ -536,8 +589,8 @@ public class CreateConfiguration {
             Files.writeString(scriptPath, "docker build -t " + boticaImageName + " " + boticaDirectory + "\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo \"Starting the data volume...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "chmod +x " + initVolumeScriptPath + "\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, initVolumeScriptPath + "\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "chmod +x " + unixInitVolumeScriptPath + "\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, unixInitVolumeScriptPath + "\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo \"Running docker-compose...\"\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "docker-compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
@@ -552,7 +605,7 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createWindowsMainScript(String windowsMainScriptPath, String dummyDockerfilePath, String initVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    public static void createWindowsMainScript(String windowsMainScriptPath, String dummyDockerfilePath, String windowsInitVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
 
         Path scriptPath = Path.of(windowsMainScriptPath);
         DirectoryOperations.createDir(scriptPath);
@@ -565,8 +618,21 @@ public class CreateConfiguration {
                 : ".";
 
         try {
-            
-            //TODO: COMPLETE
+            Files.writeString(scriptPath, "@echo off\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+            Files.writeString(scriptPath, "echo Building the image at " + dummyDockerfilePath + "...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker build -t dummy " + dummyDirectory + "\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "echo Building the image at ./Dockerfile...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker build -t " + boticaImageName + " " + boticaDirectory + "\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "echo Starting the data volume...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "call .\\" + windowsInitVolumeScriptPath.replace("/", "\\") + "\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "echo Running docker-compose...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker-compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
+
+            Files.writeString(scriptPath, "echo Script completed successfully.", StandardOpenOption.APPEND);
 
             Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
 

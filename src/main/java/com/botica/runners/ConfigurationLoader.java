@@ -35,7 +35,8 @@ public class ConfigurationLoader extends AbstractLoader {
     String boticaDockerfilePath;            // The path to store the Dockerfile used to create the BOTICA image.
     String jarFileName;                     // The name of the jar file generated, used to launch the BOTICA bots.
 
-    String initVolumeScriptPath;            // The path to store the script used to init volume with the necessary data.
+    String unixInitVolumeScriptPath;        // The path to store the script used to initialize the volume in Unix systems.
+    String windowsInitVolumeScriptPath;     // The path to store the script used to initialize the volume in Windows systems.
     String boticaImageName;                 // The name to use for the BOTICA image.
     String unixMainLaunchScript;            // The path to store the script used to launch the BOTICA bots in Unix systems.
     String windowsMainLaunchScript;         // The path to store the script used to launch the BOTICA bots in Windows systems.
@@ -103,8 +104,11 @@ public class ConfigurationLoader extends AbstractLoader {
         jarFileName = readProperty("jar.file.name");
         logger.info("Jar file name: {}", jarFileName);
 
-        initVolumeScriptPath = readProperty("init.volume.script.path");
-        logger.info("Init volume script path: {}", initVolumeScriptPath);
+        unixInitVolumeScriptPath = readProperty("unix.init.volume.script.path");
+        logger.info("Unix init volume script path: {}", unixInitVolumeScriptPath);
+
+        windowsInitVolumeScriptPath = readProperty("windows.init.volume.script.path");
+        logger.info("Windows init volume script path: {}", windowsInitVolumeScriptPath);
 
         boticaImageName = readProperty("botica.image.name");
         logger.info("BOTICA image name: {}", boticaImageName);
