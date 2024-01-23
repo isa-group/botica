@@ -1,8 +1,14 @@
 package com.botica.launchers;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
+import com.rabbitmq.client.*;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +32,8 @@ public abstract class AbstractLauncher {
     protected Properties botProperties;                                     // The bot properties.
     protected JSONObject messageData;                                       // The message data.
     protected final RabbitMQManager messageSender = new RabbitMQManager();  // The RabbitMQManager instance.
+
+    //protected final RabbitMQManager closerManager = new RabbitMQManager();
 
     protected String launcherPackage;                                       // The launcher package name.
 
@@ -58,6 +66,7 @@ public abstract class AbstractLauncher {
         String botId = botProperties.getProperty("bot.botId");
 
         try {
+            pruebaCierreAsyncorno();
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
             if (autonomyType.equals("reactive")) {
@@ -69,9 +78,54 @@ public abstract class AbstractLauncher {
             ExceptionUtils.throwRuntimeErrorException("Error launching bot: " + botId, e);
         }
     }
+
+    public void pruebaCierreAsyncorno(){
+        String botId = botProperties.getProperty("bot.botId");
+        String QUEUE_NAME= botId+"Closing";
+        String EXCHANGE_NAME="closingExchange";
+        ConnectionFactory factory = new ConnectionFactory();
+            factory.setHost("rabbitmq"); // Replace with the IP or hostname of your RabbitMQ container
+            factory.setPort(5674);
+            factory.setVirtualHost("/");
+            factory.setUsername("admin");
+            factory.setPassword("testing1");
+            try {
+                Connection connection = factory.newConnection();
+                Channel channel = connection.createChannel();
+                channel.queueDeclare(QUEUE_NAME, false, false, false, null);
+                channel.exchangeDeclare(EXCHANGE_NAME, BuiltinExchangeType.FANOUT);
+                channel.queueBind(QUEUE_NAME, EXCHANGE_NAME, "");
+                DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+                    try{
+                    String mensaje = new String(delivery.getBody(), "UTF-8");
+                    System.out.println("Mensaje recibido: " + mensaje);
+                    closingAction();} finally{
+                        try {
+                            connection.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+    
+                };
+                CompletableFuture.runAsync(() -> {
+                    try {
+                        channel.basicConsume(QUEUE_NAME, true, deliverCallback, consumerTag -> {
+                        });
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+            } catch (IOException | TimeoutException e) {
+                e.printStackTrace();
+            }        
+    }
     
     // Executes bot action.
     protected abstract void botAction();
+
+    //Condition of closing
+    protected abstract Boolean closeCondition();
 
     // Creates message to send to RabbitMQ.
     protected abstract JSONObject createMessage();
@@ -84,6 +138,30 @@ public abstract class AbstractLauncher {
         } catch (Exception e) {
             ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
+    }
+
+    //Executes the closing procedure
+    public void closingAction() {
+        System.out.println("Making Close action");
+        Boolean closeCond= closeCondition();
+        while(!closeCond){
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+                closeCond= closeCondition();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (closeCond==true){
+            try{
+            this.messageSender.sendMessageToExchange("closerManager", "ready "+botProperties.getProperty("bot.botId"));
+            this.messageSender.close();
+            System.out.println("Close action Completed");
+        } catch (Exception e) {
+            ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
+        }
+        } 
+
     }
 
     // Checks connection to RabbitMQ broker.

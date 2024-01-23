@@ -49,7 +49,7 @@ public class TestReporterLauncher extends AbstractLauncher {
             logger.error("Error writing test cases to file: {}", e.getMessage());
         }
 
-        RESTestLoader loader = new RESTestLoader(propertyFilePath, true);
+        RESTestLoader loader = new RESTestLoader(propertyFilePath);
         try{
             loader.createGenerator(); //TODO: FIX (It is necessary to assign value to spec property in the Loader class)
         }catch(RESTestException e){
@@ -130,4 +130,9 @@ public class TestReporterLauncher extends AbstractLauncher {
 		
 		return arm;
 	}
+
+    @Override
+    protected Boolean closeCondition(){
+        return true;
+    }
 }

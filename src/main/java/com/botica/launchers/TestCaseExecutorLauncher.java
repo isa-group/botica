@@ -29,7 +29,7 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
 
         String propertyFilePath = messageData.getString(PROPERTY_FILE_PATH_JSON_KEY);
 
-        RESTestExecutor executor = new RESTestExecutor(propertyFilePath, true);
+        RESTestExecutor executor = new RESTestExecutor(propertyFilePath);
 
         // TODO: Check if is correct
         // Create directories to store test data extracted from the execution
@@ -74,5 +74,10 @@ public class TestCaseExecutorLauncher extends AbstractLauncher{
         message.put(TEST_CASES_PATH, testCasesPath);
 
         return message;
+    }
+
+    @Override
+    protected Boolean closeCondition(){
+        return true;
     }
 }
