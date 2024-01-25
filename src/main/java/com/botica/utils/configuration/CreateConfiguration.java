@@ -251,6 +251,16 @@ public class CreateConfiguration {
                 "\t\t\t}\r\n" +
                 "\t\t}";
 
+        String shutdownQueue = "\t\t{\r\n" +
+                "\t\t\t\"name\": \"shutdown\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"durable\": true,\r\n" +
+                "\t\t\t\"auto_delete\": false,\r\n" +
+                "\t\t\t\"arguments\": {\r\n" +
+                "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
+                "\t\t\t}\r\n" +
+                "\t\t}";
+
         String collectorBinding = "\t\t{\r\n" +
                 "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
                 "\t\t\t\"vhost\": \"/\",\r\n" +
