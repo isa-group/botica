@@ -17,8 +17,8 @@ public class ShutdownUtils {
 
     private static Boolean alreadyStopping = false;
 
-    public static void closing(){
-        sendMessage("{\"BoticaCloseAction\": \"true\",\"order\": \"SystemClosing\"}\"");
+    public static void shutdown(){
+        sendMessage("{\"BoticaShutdownAction\": \"true\",\"order\": \"SystemShutdown\"}\"");
         receiveMessage();
     }
 
@@ -29,11 +29,9 @@ public class ShutdownUtils {
     private static String password = "testing1";
     private static String exchangeName = "shutdownExchange";
     private static String closingCommandType = "stop";
-    private static String timeToWait = "60";
-    private static String shutdownQueue = "closerManagerQ";
+    private static String timeToWait = "10";
+    private static String shutdownQueue = "shutdown";
     private static List<String> botsOfTheSystem = List.of("ex1","ex2","gen4","gen5","re1","re2");
-    
-
 
     private static void sendMessage(String message) {
         try {
@@ -72,7 +70,7 @@ public class ShutdownUtils {
                 };
                 //channel.queueBind(shutdownQueue, "shutdownExchange", "");
                 channel.basicConsume(shutdownQueue, true, deliverCallback, consumerTag -> {});
-                espera();
+                _wait();
                 Thread.sleep(Long.MAX_VALUE);
         } catch (Exception e) {
             e.printStackTrace();
@@ -89,42 +87,44 @@ public class ShutdownUtils {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            closingCommand();
+            shutdownCommand();
         }
     }
 
-    private static void espera(){
+    private static void _wait(){
         if(!alreadyStopping){
         CompletableFuture.runAsync(() -> {
             try {
-                Thread.sleep(TimeUnit.SECONDS.toMillis(Integer.parseInt(timeToWait))); // Esperar un minuto
-                preguntarApagado();
+                Thread.sleep(TimeUnit.SECONDS.toMillis(Integer.parseInt(timeToWait)));
+                shutdownQuestion();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }).join();}
     }
 
-    private static void preguntarApagado() {
+    private static void shutdownQuestion() {
         try {
             botsOfTheSystem.forEach(x->System.out.println("The bot " + x + " is not responding"));
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            System.out.println("Do you wish to close the system? (yes/no)");
+            System.out.println("Do you wish to shutdown the system? (yes/no)");
 
-            String respuesta = reader.readLine().trim().toLowerCase();
+            String response = reader.readLine().trim().toLowerCase();
 
-            if (respuesta.startsWith("y")) {
-                closingCommand();
+            if (response.equals("y")) {
+                shutdownCommand();
+            } else if (response.equals("n")) {
+                _wait();
             } else {
-                // Reiniciar el proceso de espera
-                espera();
+                System.out.println("Invalid answer. Please try again with a valid answer (yes/no)");
+                shutdownQuestion();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private static void closingCommand() {
+    private static void shutdownCommand() {
         alreadyStopping=true;
         try {
             switch (closingCommandType) {                    
@@ -146,16 +146,11 @@ public class ShutdownUtils {
                     Process stopProcess = stopBuilder.start();
                     stopProcess.waitFor(); // Wait for the process to finish
                     printProcessOutput(stopProcess);
-                    if (closingCommandType.equals("stop")) {
-                        System.out.println("docker-compose stop command executed successfully.");
-                    } else {
-                        System.out.println("docker-compose stop command executed successfully.");
-                    }  
+                    System.out.println("docker-compose stop command executed successfully.");
                     stopProcess.destroy();
                     System.exit(0);
                     break;
             }
-            
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }

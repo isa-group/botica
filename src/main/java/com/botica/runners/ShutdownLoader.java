@@ -16,14 +16,14 @@ public class ShutdownLoader extends AbstractLoader {
 
     String collectorPropertiesFilePath;
 
-    List<String> botsToShutdown;
-
+    List<String> botsToShutDown;
     String host;
-    // TODO: REVIEW IN NEXT MEEETING
-    //String exchangeName;
     String shutdownCommandType;
     Integer timeToWait;
     String shutdownQueue;
+
+    // TODO: REVIEW IN NEXT MEEETING
+    // String exchangeName;
 
     public ShutdownLoader(String collectorPropertiesFilePath, boolean reloadBotProperties) {
         if (reloadBotProperties) {
@@ -42,15 +42,15 @@ public class ShutdownLoader extends AbstractLoader {
 
         logger.info("Loading shutdown parameter values");
 
-        String botsToShutdownString = readProperty("botsOfTheSystem");
-        logger.info("Bots of the system: {}", botsToShutdown);
+        String botsToShutDownString = readProperty("bots.of.the.system");
+        logger.info("Bots to shut down: {}", botsToShutDown);
 
         // Convert the string into a list of strings
-        botsToShutdown = new ArrayList<>();
-        if (botsToShutdownString != null) {
-            String[] bindingsArray = botsToShutdownString.split(",");
+        botsToShutDown = new ArrayList<>();
+        if (botsToShutDownString != null) {
+            String[] bindingsArray = botsToShutDownString.split(",");
             for (String binding : bindingsArray) {
-                botsToShutdown.add(binding.trim());
+                botsToShutDown.add(binding.trim());
             }
         }
 
@@ -58,16 +58,16 @@ public class ShutdownLoader extends AbstractLoader {
         logger.info("Host: {}", host);
 
         // TODO: REVIEW IN NEXT MEEETING
-        //exchangeName = readProperty("exchangeName");
+        //exchangeName = readProperty("exchange.name");
         //logger.info("Exchange name: {}", exchangeName);
 
-        shutdownCommandType = readProperty("shutdownCommandType");
+        shutdownCommandType = readProperty("shutdown.command.type");
         logger.info("Shutdown command type: {}", shutdownCommandType);
 
-        timeToWait = Integer.parseInt(readProperty("timeToWait"));
+        timeToWait = Integer.parseInt(readProperty("time.to.wait"));
         logger.info("Time to wait: {}", timeToWait);
 
-        shutdownQueue = readProperty("shutdownQueue");
+        shutdownQueue = readProperty("shutdown.queue");
         logger.info("Shutdown queue: {}", shutdownQueue);
 
     }

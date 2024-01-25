@@ -270,6 +270,15 @@ public class CreateConfiguration {
                 "\t\t\t\"arguments\": {}\r\n" +
                 "\t\t}";
 
+        String shutdownBinding = "\t\t{\r\n" +
+                "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"destination\": \"shutdown\",\r\n" +
+                "\t\t\t\"destination_type\": \"queue\",\r\n" +
+                "\t\t\t\"routing_key\": \"shutdownManager\",\r\n" +
+                "\t\t\t\"arguments\": {}\r\n" +
+                "\t\t}";
+
         content.add(initialContent);
 
         for (String queue : rabbitQueues.keySet()) {
@@ -278,7 +287,8 @@ public class CreateConfiguration {
             content.add(queueContent);
         }
 
-        content.add(collectorQueue);
+        content.add(collectorQueue + ",\r\n");
+        content.add(shutdownQueue);
         content.add("\r\n\t],");
 
         content.add(bindingPrefix);
@@ -294,7 +304,8 @@ public class CreateConfiguration {
             }
         }
 
-        content.add(collectorBinding);
+        content.add(collectorBinding + ",\r\n");
+        content.add(shutdownBinding);
         content.add("\r\n\t]\r\n}");
 
         Path filePath = Path.of(rabbitConfigurationPath);

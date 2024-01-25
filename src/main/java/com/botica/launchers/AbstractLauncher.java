@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -16,7 +15,7 @@ import org.json.JSONObject;
 import com.botica.rabbitmq.RabbitMQManager;
 import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
-import com.rabbitmq.client.*;
+import com.rabbitmq.client.DeliverCallback;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -114,7 +113,7 @@ public abstract class AbstractLauncher {
     public void asyncShutdownConnection(){
 
         String botId = botProperties.getProperty("bot.botId");
-        String queueName = botId + "Closing";
+        String queueName = botId + ".shudown.queue";
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             try{
@@ -129,31 +128,27 @@ public abstract class AbstractLauncher {
                 }
             }
         };
-
         shutdownMessageSender.prepareShutdownConnection(queueName, SHUTDOWN_EXCHANGE_NAME, deliverCallback);
-
     }
 
     public void shutdownAction() {
-        logger.info("Making Close action");
-        Boolean closeCond= shutdownCondition();
-        while(!closeCond){
+        Boolean shutdownCond = shutdownCondition();
+        while(!shutdownCond){
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(5));
-                closeCond= shutdownCondition();
+                shutdownCond = shutdownCondition();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
-        if (closeCond==true){
+        if (shutdownCond){
             try{
-            this.messageSender.sendMessageToExchange("closerManager", "ready "+botProperties.getProperty("bot.botId")); // TODO: REVIEW ROUTING KEY
-            this.messageSender.close();
-            logger.info("Close action Completed");
-        } catch (Exception e) {
-            ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
-        }
+                this.messageSender.sendMessageToExchange("shutdownManager", "ready " + botProperties.getProperty("bot.botId")); // TODO: REVIEW ROUTING KEY
+                this.messageSender.close();
+                logger.info("Shutdown action completed");
+            } catch (Exception e) {
+                ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
+            }
         } 
     }
-
 }
