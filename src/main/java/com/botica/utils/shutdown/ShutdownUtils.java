@@ -12,6 +12,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import com.botica.rabbitmq.RabbitMQManager;
+import com.botica.runners.CollectorLoader;
+import com.botica.utils.collector.CollectorUtils;
 import com.rabbitmq.client.*;
 
 public class ShutdownUtils {
@@ -22,12 +24,12 @@ public class ShutdownUtils {
 
     private static Boolean alreadyStopped = false;
 
-    public static void shutdown(List<String> botsOfTheSystem, String shutdownCommandType, Integer timeToWait, String shutdownQueue, String host) {
+    public static void shutdown(List<String> botsOfTheSystem, String shutdownCommandType, Integer timeToWait, String shutdownQueue, String host, CollectorLoader collectorLoader) {
 
         String message = "{\"BoticaShutdownAction\": \"true\",\"order\": \"SystemShutdown\"}\"";
 
         sendMessage(message);
-        receiveMessage(shutdownQueue, botsOfTheSystem, timeToWait, shutdownCommandType);
+        receiveMessage(shutdownQueue, botsOfTheSystem, timeToWait, shutdownCommandType, collectorLoader);
     }
 
     public static void sendMessage(String message) {
@@ -45,7 +47,7 @@ public class ShutdownUtils {
         }
     }
 
-    private static void receiveMessage(String shutdownQueue, List<String> botsOfTheSystem, Integer timeToWait, String shutdownCommandType) {
+    private static void receiveMessage(String shutdownQueue, List<String> botsOfTheSystem, Integer timeToWait, String shutdownCommandType, CollectorLoader collectorLoader) {
         
         RabbitMQManager messageSender = new RabbitMQManager("localhost");
 
@@ -62,7 +64,7 @@ public class ShutdownUtils {
                 performAction(connection, botId, botsOfTheSystem, shutdownCommandType);
             };
             messageSender.consumeChannel(shutdownQueue, deliverCallback);
-            _wait(botsOfTheSystem, timeToWait, shutdownCommandType);
+            _wait(botsOfTheSystem, timeToWait, shutdownCommandType, collectorLoader);
             Thread.sleep(Long.MAX_VALUE);
         } catch (Exception e) {
             e.printStackTrace();
@@ -83,12 +85,12 @@ public class ShutdownUtils {
         }
     }
 
-    private static void _wait(List<String> botsOfTheSystem, Integer timeToWait, String shutdownCommandType) {
+    private static void _wait(List<String> botsOfTheSystem, Integer timeToWait, String shutdownCommandType, CollectorLoader collectorLoader) {
         if(!alreadyStopped){
             CompletableFuture.runAsync(() -> {
                 try {
                     Thread.sleep(TimeUnit.SECONDS.toMillis(timeToWait));
-                    shutdownQuestion(botsOfTheSystem, timeToWait, shutdownCommandType);
+                    shutdownQuestion(botsOfTheSystem, timeToWait, shutdownCommandType, collectorLoader);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -96,7 +98,7 @@ public class ShutdownUtils {
         }
     }
 
-    private static void shutdownQuestion(List<String> botsOfTheSystem, Integer timeToWait, String shutdownCommandType) {
+    private static void shutdownQuestion(List<String> botsOfTheSystem, Integer timeToWait, String shutdownCommandType, CollectorLoader collectorLoader) {
         try {
             botsOfTheSystem.forEach(x -> logger.info("The bot " + x + " is not responding"));
             BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
@@ -105,12 +107,13 @@ public class ShutdownUtils {
             String response = reader.readLine().trim().toLowerCase();
 
             if (response.equals("yes")) {
+                CollectorUtils.collectData(collectorLoader);
                 shutdownCommand(shutdownCommandType);
             } else if (response.equals("no")) {
-                _wait(botsOfTheSystem, timeToWait, shutdownCommandType);
+                _wait(botsOfTheSystem, timeToWait, shutdownCommandType, collectorLoader);
             } else {
                 System.out.println("Invalid answer. Please try again with a valid answer (yes/no)");
-                shutdownQuestion(botsOfTheSystem, timeToWait, shutdownCommandType);
+                shutdownQuestion(botsOfTheSystem, timeToWait, shutdownCommandType, collectorLoader);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -120,37 +123,25 @@ public class ShutdownUtils {
     private static void shutdownCommand(String shutdownCommandType) {
         alreadyStopped = true;
         try {
-            switch (shutdownCommandType) {                    
-                case "down":
-                    ProcessBuilder downBuilder = new ProcessBuilder("docker-compose", "down");
-                    downBuilder.directory(new java.io.File(System.getProperty("user.dir")));
-                    // Start the process to run 'docker-compose down'
-                    Process downProcess = downBuilder.start();
-                    downProcess.waitFor(); // Wait for the process to finish
-                    printProcessOutput(downProcess);
-                    logger.info("docker-compose down command executed successfully.");
-                    downProcess.destroy();
-                    System.exit(0);
-                    break;
-                default: // "stop"
-                    ProcessBuilder stopBuilder = new ProcessBuilder("docker-compose", "stop");
-                    stopBuilder.directory(new java.io.File(System.getProperty("user.dir")));
-                    // Start the process to run 'docker-compose stop'
-                    Process stopProcess = stopBuilder.start();
-                    stopProcess.waitFor(); // Wait for the process to finish
-                    printProcessOutput(stopProcess);
-                    logger.info("docker-compose stop command executed successfully.");
-                    stopProcess.destroy();
-                    System.exit(0);
-                    break;
-            }
+            String command = "down".equals(shutdownCommandType) ? "down" : "stop";
+
+            ProcessBuilder processBuilder = new ProcessBuilder("docker-compose", command);
+            processBuilder.directory(new java.io.File(System.getProperty("user.dir")));
+
+            Process process = processBuilder.start();
+            process.waitFor();
+
+            printProcessOutput(process);
+            logger.info("docker-compose {} command executed successfully.", command);
+
+            process.destroy();
+            System.exit(0);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     private static void printProcessOutput(Process process) throws IOException {
-        // Print the result of the command execution
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             String line;
             System.out.println("Command Output:");
