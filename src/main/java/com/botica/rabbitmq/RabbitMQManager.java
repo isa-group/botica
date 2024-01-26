@@ -56,6 +56,10 @@ public class RabbitMQManager {
         this(null, null, null, null, null, 0);
     }
 
+    public RabbitMQManager(String host) {
+        this(null, null, null, null, host, 0);
+    }
+
     /**
      * Constructor for RabbitMQManager.
      *
@@ -142,6 +146,15 @@ public class RabbitMQManager {
             channel.queueDelete(queue);
             logger.info("Message sent to RabbitMQ: {}", message);
             close(); // TODO: Review
+        } catch (Exception e) {
+            ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
+        }
+    }
+
+    public void sendMessageToExchange(String exchangeName, String routingKey, String message) throws IOException {
+        try {
+            channel.basicPublish(exchangeName, routingKey, null, message.getBytes());
+            logger.info("Message sent to RabbitMQ: {}", message);
         } catch (Exception e) {
             ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
@@ -262,25 +275,33 @@ public class RabbitMQManager {
         }
     }
 
-    public void prepareShutdownConnection(String queueName, String exchange, DeliverCallback deliverCallback){
+    public void prepareShutdownConnection(String queueName, String exchangeName, DeliverCallback deliverCallback){
         try {
-            Connection connection = factory.newConnection();
+            Connection connection = this.factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.queueDeclare(queueName, false, false, false, null);
-            channel.exchangeDeclare(exchange, BuiltinExchangeType.FANOUT);
-            channel.queueBind(queueName, exchange, "");
+            channel.exchangeDeclare(exchangeName, "fanout");
+            channel.queueDeclare(queueName, true, false, true, null);
+            channel.queueBind(queueName, exchangeName, "");
+
+            CompletableFuture.runAsync(() -> {
+                try {
+                    channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         } catch (IOException | TimeoutException e) {
             ExceptionUtils.handleException(logger, "Error closing channel and connection", e);
         }
+    }
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
-                });
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+    public void consumeChannel(String shutdownQueue, DeliverCallback deliverCallback) throws IOException {
+        this.channel.basicConsume(shutdownQueue, true, deliverCallback, consumerTag -> {
         });
+    }
 
+    public Connection getConnection(){
+        return this.connection;
     }
 }

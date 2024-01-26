@@ -618,7 +618,12 @@ public class CreateConfiguration {
 
             Files.writeString(scriptPath, "echo \"Script completed successfully.\"", StandardOpenOption.APPEND);
 
-            Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            try{
+                Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            } catch (Exception e) {
+              logger.warn("Couldn't set permissions to the BOTICA Unix main script. Please, set them manually in case you need to execute it.");  
+            }
+            
 
             logger.info("BOTICA Unix main script created successfully!");
         } catch (Exception e) {
@@ -655,7 +660,11 @@ public class CreateConfiguration {
 
             Files.writeString(scriptPath, "echo Script completed successfully.", StandardOpenOption.APPEND);
 
-            Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            try{
+                Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            }catch (Exception e) {
+                logger.warn("Couldn't set permissions to the BOTICA Windows main script. Please, set them manually in case you need to execute it.");  
+            }
 
             logger.info("BOTICA Windows main script created successfully!");
         } catch (Exception e) {

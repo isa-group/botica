@@ -1,11 +1,9 @@
 package com.botica.launchers;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -29,14 +27,13 @@ import lombok.Setter;
 public abstract class AbstractLauncher {
 
     protected static final Logger logger = LogManager.getLogger(AbstractLauncher.class);
-    protected final String SHUTDOWN_EXCHANGE_NAME = "shutdownExchange";
+    protected final String SHUTDOWN_EXCHANGE_NAME = "shutdown_exchange";
 
     protected String keyToPublish;                                          // The key to publish to RabbitMQ.
     protected String orderToPublish;                                        // The order to publish to RabbitMQ.
     protected Properties botProperties;                                     // The bot properties.
     protected JSONObject messageData;                                       // The message data.
     protected final RabbitMQManager messageSender = new RabbitMQManager();  // The RabbitMQManager instance.
-    protected final RabbitMQManager shutdownMessageSender = new RabbitMQManager();
 
     protected String launcherPackage;                                       // The launcher package name.
 
@@ -69,9 +66,9 @@ public abstract class AbstractLauncher {
         String botId = botProperties.getProperty("bot.botId");
 
         try {
-            asyncShutdownConnection();
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
+            asyncShutdownConnection();
             if (autonomyType.equals("reactive")) {
                 this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig, order, this.launcherPackage);
             } else if (autonomyType.equals("proactive")) {
@@ -113,26 +110,23 @@ public abstract class AbstractLauncher {
     public void asyncShutdownConnection(){
 
         String botId = botProperties.getProperty("bot.botId");
-        String queueName = botId + ".shudown.queue";
+        String queueName = botId + ".shutdown.queue";
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             try{
                 String message = new String(delivery.getBody(), "UTF-8");
                 logger.info("Received message: " + message);
                 shutdownAction();
-            } finally{
-                try {
-                    shutdownMessageSender.close();
-                } catch (IOException | TimeoutException e) {
-                    e.printStackTrace();
-                }
+            }  catch (Exception e) {
+                ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
             }
         };
-        shutdownMessageSender.prepareShutdownConnection(queueName, SHUTDOWN_EXCHANGE_NAME, deliverCallback);
+        messageSender.prepareShutdownConnection(queueName, SHUTDOWN_EXCHANGE_NAME, deliverCallback);
     }
 
     public void shutdownAction() {
         Boolean shutdownCond = shutdownCondition();
+
         while(!shutdownCond){
             try {
                 Thread.sleep(TimeUnit.SECONDS.toMillis(5));
