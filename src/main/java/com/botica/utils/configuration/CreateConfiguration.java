@@ -671,4 +671,25 @@ public class CreateConfiguration {
             e.printStackTrace();
         }
     }
+
+    public static void addBotIdsToShutdownProperties(String propertiesFile){
+
+        Path filePath = Path.of(propertiesFile);
+
+        try {
+            List<String> lines = Files.readAllLines(filePath);
+
+            int index = lines.indexOf(lines.stream()
+                                            .filter(line -> line.contains("bots.of.the.system="))
+                                            .findFirst()
+                                            .get());
+
+            String botIdsString = "bots.of.the.system=" + String.join(",", botIds);
+            lines.set(index, botIdsString);
+            Files.write(filePath, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            logger.info("Bot ids added to shutdown properties file successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
