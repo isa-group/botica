@@ -251,12 +251,31 @@ public class CreateConfiguration {
                 "\t\t\t}\r\n" +
                 "\t\t}";
 
+        String shutdownQueue = "\t\t{\r\n" +
+                "\t\t\t\"name\": \"shutdown\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"durable\": true,\r\n" +
+                "\t\t\t\"auto_delete\": false,\r\n" +
+                "\t\t\t\"arguments\": {\r\n" +
+                "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
+                "\t\t\t}\r\n" +
+                "\t\t}";
+
         String collectorBinding = "\t\t{\r\n" +
                 "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
                 "\t\t\t\"vhost\": \"/\",\r\n" +
                 "\t\t\t\"destination\": \"collector\",\r\n" +
                 "\t\t\t\"destination_type\": \"queue\",\r\n" +
                 "\t\t\t\"routing_key\": \"requestToCollector\",\r\n" +
+                "\t\t\t\"arguments\": {}\r\n" +
+                "\t\t}";
+
+        String shutdownBinding = "\t\t{\r\n" +
+                "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
+                "\t\t\t\"vhost\": \"/\",\r\n" +
+                "\t\t\t\"destination\": \"shutdown\",\r\n" +
+                "\t\t\t\"destination_type\": \"queue\",\r\n" +
+                "\t\t\t\"routing_key\": \"shutdownManager\",\r\n" +
                 "\t\t\t\"arguments\": {}\r\n" +
                 "\t\t}";
 
@@ -268,7 +287,8 @@ public class CreateConfiguration {
             content.add(queueContent);
         }
 
-        content.add(collectorQueue);
+        content.add(collectorQueue + ",\r\n");
+        content.add(shutdownQueue);
         content.add("\r\n\t],");
 
         content.add(bindingPrefix);
@@ -284,7 +304,8 @@ public class CreateConfiguration {
             }
         }
 
-        content.add(collectorBinding);
+        content.add(collectorBinding + ",\r\n");
+        content.add(shutdownBinding);
         content.add("\r\n\t]\r\n}");
 
         Path filePath = Path.of(rabbitConfigurationPath);
@@ -597,7 +618,12 @@ public class CreateConfiguration {
 
             Files.writeString(scriptPath, "echo \"Script completed successfully.\"", StandardOpenOption.APPEND);
 
-            Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            try{
+                Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            } catch (Exception e) {
+              logger.warn("Couldn't set permissions to the BOTICA Unix main script. Please, set them manually in case you need to execute it.");  
+            }
+            
 
             logger.info("BOTICA Unix main script created successfully!");
         } catch (Exception e) {
@@ -634,9 +660,34 @@ public class CreateConfiguration {
 
             Files.writeString(scriptPath, "echo Script completed successfully.", StandardOpenOption.APPEND);
 
-            Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            try{
+                Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
+            }catch (Exception e) {
+                logger.warn("Couldn't set permissions to the BOTICA Windows main script. Please, set them manually in case you need to execute it.");  
+            }
 
             logger.info("BOTICA Windows main script created successfully!");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void addBotIdsToShutdownProperties(String propertiesFile){
+
+        Path filePath = Path.of(propertiesFile);
+
+        try {
+            List<String> lines = Files.readAllLines(filePath);
+
+            int index = lines.indexOf(lines.stream()
+                                            .filter(line -> line.contains("bots.of.the.system="))
+                                            .findFirst()
+                                            .get());
+
+            String botIdsString = "bots.of.the.system=" + String.join(",", botIds);
+            lines.set(index, botIdsString);
+            Files.write(filePath, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            logger.info("Bot ids added to shutdown properties file successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }

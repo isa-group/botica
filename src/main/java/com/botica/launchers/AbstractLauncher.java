@@ -3,6 +3,7 @@ package com.botica.launchers;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 import com.botica.rabbitmq.RabbitMQManager;
 import com.botica.utils.bot.BotRabbitConfig;
 import com.botica.utils.logging.ExceptionUtils;
+import com.rabbitmq.client.DeliverCallback;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,6 +27,7 @@ import lombok.Setter;
 public abstract class AbstractLauncher {
 
     protected static final Logger logger = LogManager.getLogger(AbstractLauncher.class);
+    protected final String SHUTDOWN_EXCHANGE_NAME = "shutdown_exchange";
 
     protected String keyToPublish;                                          // The key to publish to RabbitMQ.
     protected String orderToPublish;                                        // The order to publish to RabbitMQ.
@@ -65,6 +68,7 @@ public abstract class AbstractLauncher {
         try {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
             this.messageSender.connect(queueName, bindingKeys, queueOptions, botId);
+            asyncShutdownConnection();
             if (autonomyType.equals("reactive")) {
                 this.messageSender.receiveMessage(queueName, botProperties, botRabbitConfig, order, this.launcherPackage);
             } else if (autonomyType.equals("proactive")) {
@@ -77,6 +81,9 @@ public abstract class AbstractLauncher {
     
     // Executes bot action.
     protected abstract void botAction();
+
+    // Shutdown condition.
+    protected abstract boolean shutdownCondition();
 
     // Creates message to send to RabbitMQ.
     protected abstract JSONObject createMessage();
@@ -98,5 +105,44 @@ public abstract class AbstractLauncher {
         } catch (Exception e) {
             ExceptionUtils.throwRuntimeErrorException("Error checking connection to RabbitMQ", e);
         }
+    }
+
+    public void asyncShutdownConnection(){
+
+        String botId = botProperties.getProperty("bot.botId");
+        String queueName = botId + ".shutdown.queue";
+
+        DeliverCallback deliverCallback = (consumerTag, delivery) -> {
+            try{
+                String message = new String(delivery.getBody(), "UTF-8");
+                logger.info("Received message: " + message);
+                shutdownAction();
+            }  catch (Exception e) {
+                ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
+            }
+        };
+        messageSender.prepareShutdownConnection(queueName, SHUTDOWN_EXCHANGE_NAME, deliverCallback);
+    }
+
+    public void shutdownAction() {
+        Boolean shutdownCond = shutdownCondition();
+
+        while(!shutdownCond){
+            try {
+                Thread.sleep(TimeUnit.SECONDS.toMillis(5));
+                shutdownCond = shutdownCondition();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        if (shutdownCond){
+            try{
+                this.messageSender.sendMessageToExchange("shutdownManager", "ready " + botProperties.getProperty("bot.botId")); // TODO: REVIEW ROUTING KEY
+                this.messageSender.close();
+                logger.info("Shutdown action completed");
+            } catch (Exception e) {
+                ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
+            }
+        } 
     }
 }

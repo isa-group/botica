@@ -15,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.botica.rabbitmq.CollectorMessageProcessor;
 import com.botica.rabbitmq.RabbitMQManager;
+import com.botica.runners.CollectorLoader;
 import com.botica.utils.directory.DirectoryOperations;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
@@ -153,5 +154,25 @@ public class CollectorUtils {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static void collectData(CollectorLoader collectorLoader){
+
+        String imageName = collectorLoader.getImageName();
+        String containerName = collectorLoader.getContainerName();
+        List<String> pathsToObserve = collectorLoader.getPathsToObserve();
+        String localPathToCopy = collectorLoader.getLocalPathToCopy();
+        String defaultWindowsHost = collectorLoader.getWindowsDockerHost();
+
+        DockerClient dockerClient = launchContainerToCollect(imageName, containerName, defaultWindowsHost);
+
+        logger.info("Collecting data ...");
+        for (String path : pathsToObserve) {
+            Path directoryPath = Path.of(localPathToCopy + path);
+            DirectoryOperations.createDir(directoryPath);
+            executeDockerCp(containerId, path, BASE_CONTAINER_PATH, localPathToCopy + path);
+        }
+        dockerClient.killContainerCmd(containerName).exec();
+        dockerClient.removeContainerCmd(containerName).exec();
     }
 }
