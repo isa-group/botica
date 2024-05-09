@@ -11,14 +11,7 @@
     mvn clean install
     ```
 
-3. **Installing the project in your Local Maven Repository.**
-
-    Run the following maven command in the `target` folder of your project:
-    ```
-    mvn install:install-file -Dfile=botica.jar -DgroupId=com.botica -DartifactId=botica -Dversion=0.1.0 -Dpackaging=jar
-    ```
-
-4. **Adding dependency to your project.**
+3. **Adding dependency to your project.**
 
     1. Open the `pom.xml` file of your project.
 
@@ -26,14 +19,8 @@
 
         ```xml
         <dependency>
-          <groupId>com.botica</groupId>
+          <groupId>io.github.isa-group</groupId>
           <artifactId>botica</artifactId>
-          <version>0.1.0</version>
+          <version>1.0-SNAPSHOT</version>
         </dependency>
         ```
-## Uninstalling BOTICA as a local dependency
-
-Run the following maven command:
-```
-mvn dependency:purge-local-repository -DmanualInclude=com.botica:botica:0.1.0
-```
