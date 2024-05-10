@@ -21,7 +21,7 @@ public class JSONUtils {
         try{
             return new String(Files.readAllBytes(Paths.get(file)));
         } catch (Exception e) {
-            throw new JSONException("Error reading file: " + file);
+            throw new JSONException("Error reading file: " + file, e);
         }
     }
 }
