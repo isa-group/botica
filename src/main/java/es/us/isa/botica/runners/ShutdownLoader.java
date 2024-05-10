@@ -13,8 +13,6 @@ import lombok.Getter;
 public class ShutdownLoader extends AbstractLoader {
     private static final Logger logger = LogManager.getLogger(ShutdownLoader.class);
 
-    String collectorPropertiesFilePath;
-
     List<String> botsToShutDown;
     String host;
     String shutdownCommandType;
@@ -24,13 +22,12 @@ public class ShutdownLoader extends AbstractLoader {
     // TODO: REVIEW IN NEXT MEEETING
     // String exchangeName;
 
-    public ShutdownLoader(String collectorPropertiesFilePath, boolean reloadBotProperties) {
+    public ShutdownLoader(String propertiesFilePath, boolean reloadBotProperties) {
         if (reloadBotProperties) {
             PropertyManager.setUserPropertiesFilePath(null);
         }
-        this.collectorPropertiesFilePath = collectorPropertiesFilePath;
 
-        this.propertiesFilePath = collectorPropertiesFilePath;
+        this.propertiesFilePath = propertiesFilePath;
         this.hasGlobalPropertiesPath = true;
 
         readProperties();
