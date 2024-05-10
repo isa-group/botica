@@ -26,7 +26,7 @@ public class CreateConfiguration {
     protected static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
 
     private static List<String> botIds = new ArrayList<>();
-    private static Set<Map<String, Object>> requiredPaths = new HashSet<>();
+    private static Set<Map<String, Object>> mounts = new HashSet<>();
     private static List<String> botImages = new ArrayList<>();
     private static String botImage;
     private static HashMap<String, List<String>> rabbitQueues = new HashMap<>();
@@ -96,8 +96,8 @@ public class CreateConfiguration {
 
         rabbitQueues.put(mainQueue, bindings);
 
-        List<Map<String, Object>> botRequiredPaths = getList(jsonMap, "requiredPaths");
-        requiredPaths.addAll(botRequiredPaths);
+        List<Map<String, Object>> botMounts = getList(jsonMap, "mount");
+        mounts.addAll(botMounts);
 
         return configurationPairs;
     }
@@ -388,7 +388,7 @@ public class CreateConfiguration {
         for (int i = 0; i < botIds.size(); i++) {
             String intermediateContent = String.format(intermediateContentTemplate, botIds.get(i), botImages.get(i), botIds.get(i));
             content.add(intermediateContent);
-            for (Map<String, Object> requiredPath : requiredPaths) {
+            for (Map<String, Object> requiredPath : mounts) {
                 content.add("      - type: bind\r\n" +
                             "        source: " + requiredPath.get("source") + "\r\n" +
                             "        target: " + requiredPath.get("target") + "\r\n" +
