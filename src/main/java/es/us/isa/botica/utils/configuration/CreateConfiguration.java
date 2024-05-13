@@ -393,7 +393,7 @@ public class CreateConfiguration {
                             "        source: " + requiredPath.get("source") + "\r\n" +
                             "        target: " + requiredPath.get("target") + "\r\n" +
                             "        bind:\r\n" +
-                            "           create_host_path: true\r\n"); //TODO REVISAR
+                            "           create_host_path: true");
             }
         }
 
