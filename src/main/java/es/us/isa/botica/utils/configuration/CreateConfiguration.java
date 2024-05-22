@@ -26,7 +26,7 @@ public class CreateConfiguration {
     protected static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
 
     private static List<String> botIds = new ArrayList<>();
-    private static Set<String> requiredPaths = new HashSet<>();
+    private static Set<Map<String, Object>> mounts = new HashSet<>();
     private static List<String> botImages = new ArrayList<>();
     private static String botImage;
     private static HashMap<String, List<String>> rabbitQueues = new HashMap<>();
@@ -41,16 +41,16 @@ public class CreateConfiguration {
             // Parse the JSON file using JSONTokener
             JSONTokener tokener = new JSONTokener(reader);
             JSONArray jsonArray = new JSONArray(tokener);
-            
+
             // Iterate through the array and process each JSON object
             for (int i = 0; i < jsonArray.length(); i++) {
                 JSONObject jsonObject = jsonArray.getJSONObject(i);
                 Map<String, Object> jsonmap = jsonObject.toMap();
-               
+
                 Map<String, String> configurationPairs = createConfigurationPairs(jsonmap);
                 List<Map<String,Object>> bots = (List<Map<String,Object>>) jsonmap.get("bots");
 
-                bots.forEach(bot -> createBotPropertiesFile(bot, configurationPairs, botPropertiesPath));                
+                bots.forEach(bot -> createBotPropertiesFile(bot, configurationPairs, botPropertiesPath));
             }
 
         } catch (IOException e) {
@@ -95,9 +95,9 @@ public class CreateConfiguration {
         configurationPairs.put("rabbitOptions.bindings", content);
 
         rabbitQueues.put(mainQueue, bindings);
-        
-        List<String> botRequiredPaths = getList(jsonMap, "requiredPaths");
-        requiredPaths.addAll(botRequiredPaths);
+
+        List<Map<String, Object>> botMounts = getList(jsonMap, "mount");
+        mounts.addAll(botMounts);
 
         return configurationPairs;
     }
@@ -110,8 +110,8 @@ public class CreateConfiguration {
         return (Map<String, Object>) map.get(key);
     }
 
-    private static List<String> getList(Map<String, Object> map, String key) {
-        return (List<String>) map.get(key);
+    private static <E> List<E> getList(Map<String, Object> map, String key) {
+        return (List<E>) map.get(key);
     }
 
     private static void createBotPropertiesFile(Map<String,Object> bot, Map<String, String> configurationPairs, String botPropertiesPath){
@@ -240,16 +240,6 @@ public class CreateConfiguration {
                 "\t\t\t\"arguments\": {}\r\n" +
                 "\t\t}";
 
-        String collectorQueue = "\t\t{\r\n" +
-                "\t\t\t\"name\": \"collector\",\r\n" +
-                "\t\t\t\"vhost\": \"/\",\r\n" +
-                "\t\t\t\"durable\": true,\r\n" +
-                "\t\t\t\"auto_delete\": false,\r\n" +
-                "\t\t\t\"arguments\": {\r\n" +
-                "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
-                "\t\t\t}\r\n" +
-                "\t\t}";
-
         String shutdownQueue = "\t\t{\r\n" +
                 "\t\t\t\"name\": \"shutdown\",\r\n" +
                 "\t\t\t\"vhost\": \"/\",\r\n" +
@@ -258,15 +248,6 @@ public class CreateConfiguration {
                 "\t\t\t\"arguments\": {\r\n" +
                 "\t\t\t\t\"x-message-ttl\": 3600000\r\n" +
                 "\t\t\t}\r\n" +
-                "\t\t}";
-
-        String collectorBinding = "\t\t{\r\n" +
-                "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
-                "\t\t\t\"vhost\": \"/\",\r\n" +
-                "\t\t\t\"destination\": \"collector\",\r\n" +
-                "\t\t\t\"destination_type\": \"queue\",\r\n" +
-                "\t\t\t\"routing_key\": \"requestToCollector\",\r\n" +
-                "\t\t\t\"arguments\": {}\r\n" +
                 "\t\t}";
 
         String shutdownBinding = "\t\t{\r\n" +
@@ -286,7 +267,6 @@ public class CreateConfiguration {
             content.add(queueContent);
         }
 
-        content.add(collectorQueue + ",\r\n");
         content.add(shutdownQueue);
         content.add("\r\n\t],");
 
@@ -303,7 +283,6 @@ public class CreateConfiguration {
             }
         }
 
-        content.add(collectorBinding + ",\r\n");
         content.add(shutdownBinding);
         content.add("\r\n\t]\r\n}");
 
@@ -359,8 +338,7 @@ public class CreateConfiguration {
 
         List<String> content = new ArrayList<>();
 
-        String initialContentTemplate = "version: '3'\r\n" +
-                "\r\n" +
+        String initialContentTemplate =
                 "services:\r\n" +
                 "  rabbitmq:\r\n" +
                 "    image: \"rabbitmq:3.12-management\"\r\n" +
@@ -386,7 +364,13 @@ public class CreateConfiguration {
                 "    networks:\r\n" +
                 "      - rabbitmq-network\r\n" +
                 "    volumes:\r\n" +
-                "      - botica-volume:/app/volume";
+                "      - botica-volume:/app/shared\r\n" +
+                "      - type: bind\r\n" +
+                "        source: ./rabbitmq/server-config.json\r\n" +
+                "        target: /app/rabbitmq/server-config.json\r\n" +
+                "      - type: bind\r\n" + // TODO config should go through env variables
+                "        source: ./src/main/resources/ConfigurationFiles\r\n" +
+                "        target: /app/volume/src/main/resources/ConfigurationFiles";
 
         String finalContentTemplate = "\nvolumes:\r\n" +
                 "  botica-volume:\r\n\n" +
@@ -404,6 +388,13 @@ public class CreateConfiguration {
         for (int i = 0; i < botIds.size(); i++) {
             String intermediateContent = String.format(intermediateContentTemplate, botIds.get(i), botImages.get(i), botIds.get(i));
             content.add(intermediateContent);
+            for (Map<String, Object> requiredPath : mounts) {
+                content.add("      - type: bind\r\n" +
+                            "        source: " + requiredPath.get("source") + "\r\n" +
+                            "        target: " + requiredPath.get("target") + "\r\n" +
+                            "        bind:\r\n" +
+                            "           create_host_path: true");
+            }
         }
 
         String finalContent = String.format(finalContentTemplate, rabbitMQConfigurationPath);
@@ -419,55 +410,8 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createDummyDockerfile(String dummyDockerfilePath) {
-        Path dockerfilePath = Path.of(dummyDockerfilePath);
-        DirectoryOperations.createDir(dockerfilePath);
-
-        try {
-            Files.writeString(dockerfilePath, "FROM alpine:3.18.4\n\n", StandardOpenOption.CREATE,
-                    StandardOpenOption.TRUNCATE_EXISTING);
-
-            Files.writeString(dockerfilePath, "WORKDIR /app\n\n", StandardOpenOption.APPEND);
-            Files.writeString(dockerfilePath, "RUN mkdir -p rabbitmq\n", StandardOpenOption.APPEND);
-
-            Set<String> directoriesToCreate = createRequiredDirectories();
-            directoriesToCreate.add("src/main/resources");
-
-            for (String directory : directoriesToCreate) {
-                String dockerfileCommand = String.format("RUN mkdir -p %s%n", directory);
-                Files.writeString(dockerfilePath, dockerfileCommand, StandardOpenOption.APPEND);
-            }
-
-            Files.writeString(dockerfilePath, "\nRUN chmod -R 755 /app\n", StandardOpenOption.APPEND);
-
-            logger.info("Dummy Dockerfile created successfully!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static Set<String> createRequiredDirectories(){
-
-        Set<String> directoriesToCreate = new HashSet<>();
-        String directoryToCreate;
-
-        for (String path : requiredPaths) {
-            if (Files.isDirectory(Path.of(path))) {
-                directoryToCreate = path.replace("./", "");
-            } else{
-                directoryToCreate = path.replace("./", "").replace("/" + Path.of(path).getFileName().toString(), "");
-            }
-
-            if (directoryToCreate.contains("/")){
-                directoryToCreate = directoryToCreate.substring(0, directoryToCreate.lastIndexOf("/"));
-                directoriesToCreate.add(directoryToCreate);
-            }
-        }
-        return directoriesToCreate;
-    }
-
     public static void createBoticaDockerfile(String boticaDockerfilePath, String jarFileName) {
-        
+
         Path scriptPath = Path.of(boticaDockerfilePath);
         DirectoryOperations.createDir(scriptPath);
 
@@ -476,7 +420,7 @@ public class CreateConfiguration {
         try {
             Files.writeString(scriptPath, "FROM openjdk:11\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            Files.writeString(scriptPath, "WORKDIR /app/volume\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "WORKDIR /app\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "COPY target/" + auxJarFileName + " /app/" + auxJarFileName + "\n\n", StandardOpenOption.APPEND);
 
@@ -489,112 +433,15 @@ public class CreateConfiguration {
 
     }
 
-    public static void createUnixInitVolumeScript(String unixInitVolumeScriptPath) {
+    public static void createUnixMainScript(String unixMainScriptPath, String dummyDockerfilePath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
 
-        String projectName = DirectoryOperations.getProjectName();
-
-        Path scriptPath = Path.of(unixInitVolumeScriptPath);
-        DirectoryOperations.createDir(scriptPath);
-
-        try {
-            Files.writeString(scriptPath, "#!/bin/bash\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            Files.writeString(scriptPath, "if docker ps -a | grep -q dummy; then\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    echo \"Removing existing container...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    docker rm dummy\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "fi\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "if docker volume ls | grep -q " + projectName + "_botica-volume; then\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    echo \"Removing existing volume...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    docker volume rm " + projectName + "_botica-volume\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "fi\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "docker container create --name dummy -v " + projectName + "_botica-volume:/app dummy\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker volume create --name " + projectName + "_botica-volume\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "docker cp ./pom.xml dummy:/app/pom.xml\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker cp ./rabbitmq/server-config.json dummy:/app/rabbitmq/server-config.json\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker cp ./src/main/resources/ConfigurationFiles dummy:/app/src/main/resources/ConfigurationFiles\n\n", StandardOpenOption.APPEND);
-
-            for (String path : requiredPaths) {
-
-                String scriptCommand;
-                String auxPath = path.replace("./", "");
-                if (auxPath.contains("/")) {
-                    String newPath = auxPath.substring(0, auxPath.lastIndexOf("/"));
-                    scriptCommand = String.format("docker cp %s dummy:/app/%s%n", path, newPath);
-                }else{
-                    scriptCommand = String.format("docker cp %s dummy:/app%n", path);
-                }
-                Files.writeString(scriptPath, scriptCommand, StandardOpenOption.APPEND);
-            }
-
-            Files.writeString(scriptPath, "\ndocker rm dummy\n", StandardOpenOption.APPEND);
-
-            logger.info("Init volume script created successfully!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void createWindowsInitVolumeScript(String windowsInitVolumeScriptPath) {
-
-        String projectName = DirectoryOperations.getProjectName();
-
-        Path scriptPath = Path.of(windowsInitVolumeScriptPath);
-        DirectoryOperations.createDir(scriptPath);
-
-        try {
-            Files.writeString(scriptPath, "@echo off\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            Files.writeString(scriptPath, "docker ps -a | find \"dummy\" && (\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    echo Removing existing container...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    docker rm dummy\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, ")\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "docker volume ls | find \"" + projectName + "_botica-volume\" && (\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    echo Removing existing volume...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "    docker volume rm " + projectName + "_botica-volume\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, ")\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "docker container create --name dummy -v " + projectName + "_botica-volume:/app dummy\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker volume create --name " + projectName + "_botica-volume\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "docker cp .\\pom.xml dummy:/app/pom.xml\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker cp .\\rabbitmq\\server-config.json dummy:/app/rabbitmq/server-config.json\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker cp .\\src\\main\\resources\\ConfigurationFiles dummy:/app/src/main/resources/ConfigurationFiles\n\n", StandardOpenOption.APPEND);
-
-            for (String path : requiredPaths) {
-
-                String scriptCommand;
-                String auxPath = path.replace("./", "");
-                String windowsPath = path.replace("/", "\\");
-                if (auxPath.contains("/")) {
-                    String newPath = auxPath.substring(0, auxPath.lastIndexOf("/"));
-                    scriptCommand = String.format("docker cp %s dummy:/app/%s%n", windowsPath, newPath);
-                } else {
-                    scriptCommand = String.format("docker cp %s dummy:/app%n", windowsPath);
-                }
-                Files.writeString(scriptPath, scriptCommand, StandardOpenOption.APPEND);
-            }
-
-            Files.writeString(scriptPath, "\ndocker rm dummy\n", StandardOpenOption.APPEND);
-
-            logger.info("Windows init volume script created successfully!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void createUnixMainScript(String unixMainScriptPath, String dummyDockerfilePath, String unixInitVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
-        
         Path scriptPath = Path.of(unixMainScriptPath);
         DirectoryOperations.createDir(scriptPath);
 
-        String dummyDirectory = dummyDockerfilePath.contains("/") 
+        String dummyDirectory = dummyDockerfilePath.contains("/")
                 ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/"))
                 : ".";
-        String boticaDirectory = boticaDockerfilePath.contains("/") 
+        String boticaDirectory = boticaDockerfilePath.contains("/")
                 ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/"))
                 : ".";
 
@@ -608,21 +455,17 @@ public class CreateConfiguration {
             Files.writeString(scriptPath, "echo \"Building the image at ./Dockerfile...\"\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "docker build -t " + boticaImageName + " " + boticaDirectory + "\n\n", StandardOpenOption.APPEND);
 
-            Files.writeString(scriptPath, "echo \"Starting the data volume...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "chmod +x " + unixInitVolumeScriptPath + "\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, unixInitVolumeScriptPath + "\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "echo \"Running docker-compose...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker-compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "echo \"Running docker compose...\"\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo \"Script completed successfully.\"", StandardOpenOption.APPEND);
 
             try{
                 Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
             } catch (Exception e) {
-              logger.warn("Couldn't set permissions to the BOTICA Unix main script. Please, set them manually in case you need to execute it.");  
+              logger.warn("Couldn't set permissions to the BOTICA Unix main script. Please, set them manually in case you need to execute it.");
             }
-            
+
 
             logger.info("BOTICA Unix main script created successfully!");
         } catch (Exception e) {
@@ -630,7 +473,7 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createWindowsMainScript(String windowsMainScriptPath, String dummyDockerfilePath, String windowsInitVolumeScriptPath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    public static void createWindowsMainScript(String windowsMainScriptPath, String dummyDockerfilePath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
 
         Path scriptPath = Path.of(windowsMainScriptPath);
         DirectoryOperations.createDir(scriptPath);
@@ -651,18 +494,15 @@ public class CreateConfiguration {
             Files.writeString(scriptPath, "echo Building the image at ./Dockerfile...\n", StandardOpenOption.APPEND);
             Files.writeString(scriptPath, "docker build -t " + boticaImageName + " " + boticaDirectory + "\n\n", StandardOpenOption.APPEND);
 
-            Files.writeString(scriptPath, "echo Starting the data volume...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "call .\\" + windowsInitVolumeScriptPath.replace("/", "\\") + "\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "echo Running docker-compose...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker-compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "echo Running docker compose...\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo Script completed successfully.", StandardOpenOption.APPEND);
 
             try{
                 Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
             }catch (Exception e) {
-                logger.warn("Couldn't set permissions to the BOTICA Windows main script. Please, set them manually in case you need to execute it.");  
+                logger.warn("Couldn't set permissions to the BOTICA Windows main script. Please, set them manually in case you need to execute it.");
             }
 
             logger.info("BOTICA Windows main script created successfully!");
