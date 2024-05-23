@@ -1,0 +1,6 @@
+{
+  "string": "value",
+  "object": {
+    "integer": 1
+  }
+}
