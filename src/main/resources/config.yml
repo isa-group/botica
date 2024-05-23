@@ -1,0 +1,29 @@
+bots:
+  - name: "bot-name"
+    image: "container-image"
+    mount:
+      - source: "path/to/host/file.extension"
+        target: "path/to/container/file.extension"
+      - source: "path/to/host/directory"
+        target: "path/to/container/directory"
+    lifecycle:
+      type: proactive
+      initialDelay: 60
+      period: 60
+    publish:
+      key: "publish-key"
+      order: "order"
+    subscribe: [ "subscribe-key" ]
+    instances:
+      - id: "bot-1"
+        persistent: true
+        environment:
+          key: value
+      - id: "bot-2"
+        persistent: true
+        lifecycle:
+          type: proactive
+          initialDelay: 30
+          period: 30
+        environment:
+          key: value
