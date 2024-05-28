@@ -3,6 +3,11 @@ package es.us.isa.botica.configuration.bot.lifecycle;
 public class ReactiveBotLifecycleConfiguration implements BotLifecycleConfiguration {
   private String order;
 
+  @Override
+  public BotLifecycleType getType() {
+    return BotLifecycleType.REACTIVE;
+  }
+
   public String getOrder() {
     return order;
   }

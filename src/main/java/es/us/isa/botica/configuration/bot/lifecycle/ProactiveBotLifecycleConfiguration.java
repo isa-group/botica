@@ -4,6 +4,11 @@ public class ProactiveBotLifecycleConfiguration implements BotLifecycleConfigura
   private long initialDelay;
   private long period;
 
+  @Override
+  public BotLifecycleType getType() {
+    return BotLifecycleType.PROACTIVE;
+  }
+
   public long getInitialDelay() {
     return initialDelay;
   }

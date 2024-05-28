@@ -188,7 +188,7 @@ public class RabbitMQManager {
      */
     public void receiveMessage(String queueName, Properties botProperties, BotRabbitConfig botRabbitConfig, String order, String launchersPackage) throws IOException {
 
-        boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
+        boolean isPersistent = System.getenv("BOTICA_BOT_PERSISTENT").equals("true");
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
@@ -214,7 +214,7 @@ public class RabbitMQManager {
      * @throws IOException
      */
     public void proactiveAction(Properties botProperties, BotRabbitConfig botRabbitConfig, String launchersPackage) throws IOException {
-        boolean isPersistent = botProperties.getProperty("bot.isPersistent").equals("true");
+        boolean isPersistent = System.getenv("BOTICA_BOT_PERSISTENT").equals("true");
         BotHandler.handleProactiveBotAction(botRabbitConfig, botProperties, launchersPackage);
         disconnectBot(isPersistent);
     }
