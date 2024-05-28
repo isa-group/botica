@@ -1,163 +1,52 @@
 package es.us.isa.botica.utils.configuration;
 
-import java.io.IOException;
+import es.us.isa.botica.configuration.MainConfigurationFile;
+import es.us.isa.botica.configuration.bot.BotConfiguration;
+import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
+import es.us.isa.botica.configuration.bot.BotPublishConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.ProactiveBotLifecycleConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
+import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
+import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
+import es.us.isa.botica.util.configuration.JacksonConfigurationFileLoader;
+import es.us.isa.botica.utils.directory.DirectoryOperations;
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.io.FileReader;
-
-import es.us.isa.botica.utils.directory.DirectoryOperations;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
 
 public class CreateConfiguration {
 
-    protected static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
+    private static final String BOTICA_EXCHANGE = "botica";
+    private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";
 
-    private static List<String> botIds = new ArrayList<>();
-    private static Set<Map<String, Object>> mounts = new HashSet<>();
-    private static List<String> botImages = new ArrayList<>();
-    private static String botImage;
-    private static HashMap<String, List<String>> rabbitQueues = new HashMap<>();
+    protected static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
 
     private CreateConfiguration() {
     }
 
-    public static void createBotPropertiesFiles(String configurationFilePath, String botPropertiesPath){
-
-        try (FileReader reader = new FileReader(configurationFilePath)) {
-
-            // Parse the JSON file using JSONTokener
-            JSONTokener tokener = new JSONTokener(reader);
-            JSONArray jsonArray = new JSONArray(tokener);
-
-            // Iterate through the array and process each JSON object
-            for (int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject = jsonArray.getJSONObject(i);
-                Map<String, Object> jsonmap = jsonObject.toMap();
-
-                Map<String, String> configurationPairs = createConfigurationPairs(jsonmap);
-                List<Map<String,Object>> bots = (List<Map<String,Object>>) jsonmap.get("bots");
-
-                bots.forEach(bot -> createBotPropertiesFile(bot, configurationPairs, botPropertiesPath));
-            }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public static void createConfiguration(File file) {
+        ConfigurationFileLoader loader = new JacksonConfigurationFileLoader();
+        createConfiguration(loader.load(file, MainConfigurationFile.class));
     }
 
-    private static Map<String, String> createConfigurationPairs(Map<String, Object> jsonMap) {
-        Map<String, String> configurationPairs = new HashMap<>();
-        String property;
-
-        property = "botType";
-        configurationPairs.put(property, jsonMap.get(property).toString());
-        property = "dockerImage";
-        configurationPairs.put(property, jsonMap.get(property).toString());
-        botImage = jsonMap.get(property).toString();
-        property = "keyToPublish";
-        configurationPairs.put(property, jsonMap.get(property).toString());
-        property = "orderToPublish";
-        configurationPairs.put(property, jsonMap.get(property).toString());
-
-        Map<String, Object> autonomy = getMap(jsonMap, "autonomy");
-        String autonomyType = getString(autonomy, "type");
-        configurationPairs.put("autonomy.type", autonomyType);
-
-        if (autonomyType.equals("proactive")) {
-            configurationPairs.put("autonomy.initialDelay", getString(autonomy, "initialDelay"));
-            configurationPairs.put("autonomy.period", getString(autonomy, "period"));
-        } else if (autonomyType.equals("reactive")) {
-            configurationPairs.put("autonomy.order", getString(autonomy, "order"));
-        } else {
-            throw new IllegalArgumentException("Invalid autonomy type!");
-        }
-
-        Map<String, Object> rabbitOptions = getMap(jsonMap, "rabbitOptions");
-        configurationPairs.put("rabbitOptions.queueByBot", getString(rabbitOptions, "queueByBot"));
-        String mainQueue = getString(rabbitOptions, "mainQueue");
-        configurationPairs.put("rabbitOptions.mainQueue", mainQueue);
-
-        List<String> bindings = getList(rabbitOptions, "bindings");
-        String content = String.join(",", bindings);
-        configurationPairs.put("rabbitOptions.bindings", content);
-
-        rabbitQueues.put(mainQueue, bindings);
-
-        List<Map<String, Object>> botMounts = getList(jsonMap, "mount");
-        mounts.addAll(botMounts);
-
-        return configurationPairs;
+    public static void createConfiguration(MainConfigurationFile mainConfigurationFile) {
+        createRabbitMQConfigFile(mainConfigurationFile);
+        createRabbitMQPortsConfigurationFile(mainConfigurationFile);
+        createRabbitMQConnectionFile(mainConfigurationFile);
+        createDockerCompose(mainConfigurationFile);
+        createUnixMainScript();
+        createWindowsMainScript();
     }
 
-    private static String getString(Map<String, Object> map, String key) {
-        return map.get(key).toString();
-    }
-
-    private static Map<String, Object> getMap(Map<String, Object> map, String key) {
-        return (Map<String, Object>) map.get(key);
-    }
-
-    private static <E> List<E> getList(Map<String, Object> map, String key) {
-        return (List<E>) map.get(key);
-    }
-
-    private static void createBotPropertiesFile(Map<String,Object> bot, Map<String, String> configurationPairs, String botPropertiesPath){
-
-        Map<String, String> specificBotProperties = new HashMap<>();
-        Map<String, String> botConfigurationPairs = new HashMap<>(configurationPairs);
-        String property;
-
-        bot.keySet().stream()
-                    .filter(key -> !key.equals("autonomy"))
-                    .forEach(key -> specificBotProperties.put("bot." + key, bot.get(key).toString()));
-
-        if (bot.containsKey("autonomy")) {
-            Map<String, Object> autonomy = (Map<String, Object>) bot.get("autonomy");
-            property = "initialDelay";
-            if (autonomy.containsKey(property)) {
-                botConfigurationPairs.put("autonomy." + property, autonomy.get(property).toString());
-            }
-            property = "period";
-            if (autonomy.containsKey(property)) {
-                botConfigurationPairs.put("autonomy." + property, autonomy.get(property).toString());
-            }
-        }
-
-        String botId = bot.get("botId").toString();
-
-        botIds.add(botId);
-        botImages.add(botImage);
-        botConfigurationPairs.keySet().forEach(key -> specificBotProperties.put(key, botConfigurationPairs.get(key)));
-
-        Path filePath = Path.of(botPropertiesPath + botId + ".properties");
-        DirectoryOperations.createDir(filePath);
-
-        try {
-            Files.write(filePath, specificBotProperties.entrySet().stream()
-                                                                    .map(e -> e.getKey() + "=" + e.getValue())
-                                                                    .collect(Collectors.toList()),
-                        StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            logger.info("Bot properties file created successfully! Bot id: {}", botId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void createRabbitMQConfigFile(String rabbitExchange, String rabbitConfigurationPath) {
-
+    private static void createRabbitMQConfigFile(MainConfigurationFile mainConfigurationFile) {
         List<String> content = new ArrayList<>();
 
         String initialContent = "{\r\n" +
@@ -208,7 +97,7 @@ public class CreateConfiguration {
                 "\t],\r\n" +
                 "\t\"exchanges\": [\r\n" +
                 "\t\t{\r\n" +
-                "\t\t\t\"name\": \"" + rabbitExchange + "\",\r\n" +
+                "\t\t\t\"name\": \"" + BOTICA_EXCHANGE + "\",\r\n" +
                 "\t\t\t\"vhost\": \"/\",\r\n" +
                 "\t\t\t\"type\": \"topic\",\r\n" +
                 "\t\t\t\"durable\": true,\r\n" +
@@ -251,7 +140,7 @@ public class CreateConfiguration {
                 "\t\t}";
 
         String shutdownBinding = "\t\t{\r\n" +
-                "\t\t\t\"source\": \"" + rabbitExchange + "\",\r\n" +
+                "\t\t\t\"source\": \"" + BOTICA_EXCHANGE + "\",\r\n" +
                 "\t\t\t\"vhost\": \"/\",\r\n" +
                 "\t\t\t\"destination\": \"shutdown\",\r\n" +
                 "\t\t\t\"destination_type\": \"queue\",\r\n" +
@@ -261,32 +150,33 @@ public class CreateConfiguration {
 
         content.add(initialContent);
 
-        for (String queue : rabbitQueues.keySet()) {
-            String queueContent = String.format(queueTemplate, queue);
-            queueContent += ",\r\n";
-            content.add(queueContent);
-        }
+        mainConfigurationFile.getBots().stream()
+                .map(BotConfiguration::getPublishConfiguration)
+                .map(BotPublishConfiguration::getKey)
+                .forEach(queueName -> {
+                    String queueContent = String.format(queueTemplate, queueName);
+                    queueContent += ",\r\n";
+                    content.add(queueContent);
+                });
 
         content.add(shutdownQueue);
         content.add("\r\n\t],");
 
         content.add(bindingPrefix);
 
-        for (Map.Entry<String, List<String>> entry : rabbitQueues.entrySet()) {
-            String queue = entry.getKey();
-            List<String> bindings = entry.getValue();
-
-            for (String binding : bindings) {
-                String bindingContent = String.format(bindingTemplate, rabbitExchange, queue, binding);
+        mainConfigurationFile.getBots().forEach(botConfiguration -> {
+            botConfiguration.getSubscribeKeys().forEach(queue -> {
+                String bindingContent = String.format(bindingTemplate, BOTICA_EXCHANGE, botConfiguration.getName(), queue);
                 bindingContent += ",\r\n";
                 content.add(bindingContent);
-            }
-        }
+            });
+        });
 
         content.add(shutdownBinding);
         content.add("\r\n\t]\r\n}");
 
-        Path filePath = Path.of(rabbitConfigurationPath);
+        RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfigurationFile.getBrokerConfiguration();
+        Path filePath = Path.of(rabbitMqConfiguration.getConfigurationPaths().getDefinitions());
         DirectoryOperations.createDir(filePath);
         try {
             // Create the file if it doesn't exist, or overwrite it if it does
@@ -295,47 +185,44 @@ public class CreateConfiguration {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    public static void createRabbitMQPortsConfigurationFile(String rabbitMQPortsConfigurationPath,  Integer rabbitMQAMQPPort, Integer rabbitMQUIPort){
-
-        Path confPath = Path.of(rabbitMQPortsConfigurationPath);
+    private static void createRabbitMQPortsConfigurationFile(MainConfigurationFile mainConfigurationFile){
+        RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfigurationFile.getBrokerConfiguration();
+        Path confPath = Path.of(rabbitMqConfiguration.getConfigurationPaths().getMain());
         DirectoryOperations.createDir(confPath);
 
         try {
-            Files.writeString(confPath, "listeners.tcp.default = " + rabbitMQAMQPPort, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(confPath, "listeners.tcp.default = " + rabbitMqConfiguration.getPort(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            Files.writeString(confPath, "\nmanagement.tcp.port = " + rabbitMQUIPort, StandardOpenOption.APPEND);
+            Files.writeString(confPath, "\nmanagement.tcp.port = " + rabbitMqConfiguration.getUiPort(), StandardOpenOption.APPEND);
 
             logger.info("RabbitMQ ports configuration file created successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    public static void createRabbitMQConnectionFile(String rabbitConnectionPath, String rabbitmqUsername, String rabbitmqPassword, String rabbitmqHost, Integer rabbitmqAMQPPort, String rabbitmqExchange) {
-        Path filePath = Path.of(rabbitConnectionPath);
+    private static void createRabbitMQConnectionFile(MainConfigurationFile mainConfigurationFile) {
+        RabbitMqConfiguration config = (RabbitMqConfiguration) mainConfigurationFile.getBrokerConfiguration();
+        Path filePath = Path.of(config.getConfigurationPaths().getConnection());
         DirectoryOperations.createDir(filePath);
 
         try {
-            Files.writeString(filePath, "{\n\t\"username\": \"" + rabbitmqUsername + "\",\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            Files.writeString(filePath, "\t\"password\": \"" + rabbitmqPassword + "\",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "{\n\t\"username\": \"" + config.getUsername() + "\",\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            Files.writeString(filePath, "\t\"password\": \"" + config.getPassword() + "\",\n", StandardOpenOption.APPEND);
             Files.writeString(filePath, "\t\"virtualHost\": \"/\",\n", StandardOpenOption.APPEND);
-            Files.writeString(filePath, "\t\"host\": \"" + rabbitmqHost + "\",\n", StandardOpenOption.APPEND);
-            Files.writeString(filePath, "\t\"port\": " + rabbitmqAMQPPort + ",\n", StandardOpenOption.APPEND);
-            Files.writeString(filePath, "\t\"exchange\": \"" + rabbitmqExchange + "\"\n}", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"host\": \"" + config.getHost() + "\",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"port\": " + config.getPort() + ",\n", StandardOpenOption.APPEND);
+            Files.writeString(filePath, "\t\"exchange\": \"" + BOTICA_EXCHANGE + "\"\n}", StandardOpenOption.APPEND);
 
             logger.info("RabbitMQ connection file created successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
-    public static void createDockerCompose(String dockerComposePath, String rabbitPortsConfigurationPath, String rabbitMQConfigurationPath, Integer rabbitMQAMQPPort, Integer rabbitMQUIPort) {
-
+    private static void createDockerCompose(MainConfigurationFile mainConfigurationFile) {
         List<String> content = new ArrayList<>();
 
         String initialContentTemplate =
@@ -359,18 +246,13 @@ public class CreateConfiguration {
                 "      - rabbitmq\r\n" +
                 "    restart: unless-stopped\r\n" +
                 "    image: %s\r\n" +
-                "    environment:\r\n" +
-                "      - BOT_PROPERTY_FILE_PATH=/app/volume/src/main/resources/ConfigurationFiles/%s.properties\r\n" +
                 "    networks:\r\n" +
                 "      - rabbitmq-network\r\n" +
                 "    volumes:\r\n" +
                 "      - botica-volume:/app/shared\r\n" +
                 "      - type: bind\r\n" +
                 "        source: ./rabbitmq/server-config.json\r\n" +
-                "        target: /app/rabbitmq/server-config.json\r\n" +
-                "      - type: bind\r\n" + // TODO config should go through env variables
-                "        source: ./src/main/resources/ConfigurationFiles\r\n" +
-                "        target: /app/volume/src/main/resources/ConfigurationFiles";
+                "        target: /app/rabbitmq/server-config.json";
 
         String finalContentTemplate = "\nvolumes:\r\n" +
                 "  botica-volume:\r\n\n" +
@@ -381,26 +263,35 @@ public class CreateConfiguration {
                 "  rabbit_config:\r\n" +
                 "    file: ./%s";
 
-        String initialContent = String.format(initialContentTemplate, rabbitMQAMQPPort, rabbitMQAMQPPort, rabbitMQUIPort, rabbitMQUIPort,
-                rabbitPortsConfigurationPath);
+        RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfigurationFile.getBrokerConfiguration();
+        String initialContent = String.format(initialContentTemplate,
+                rabbitMqConfiguration.getPort(), rabbitMqConfiguration.getPort(),
+                rabbitMqConfiguration.getUiPort(), rabbitMqConfiguration.getUiPort(),
+                rabbitMqConfiguration.getConfigurationPaths().getMain());
         content.add(initialContent);
 
-        for (int i = 0; i < botIds.size(); i++) {
-            String intermediateContent = String.format(intermediateContentTemplate, botIds.get(i), botImages.get(i), botIds.get(i));
-            content.add(intermediateContent);
-            for (Map<String, Object> requiredPath : mounts) {
-                content.add("      - type: bind\r\n" +
-                            "        source: " + requiredPath.get("source") + "\r\n" +
-                            "        target: " + requiredPath.get("target") + "\r\n" +
-                            "        bind:\r\n" +
-                            "           create_host_path: true");
-            }
-        }
+        mainConfigurationFile.getBots().forEach(bot -> {
+            bot.getInstances().forEach(instance -> {
+                String intermediateContent = String.format(intermediateContentTemplate, instance.getId(), bot.getImage());
+                content.add(intermediateContent);
 
-        String finalContent = String.format(finalContentTemplate, rabbitMQConfigurationPath);
+                bot.getMounts().forEach(mount -> {
+                    content.add("      - type: bind\r\n" +
+                                "        source: " + mount.getSource() + "\r\n" +
+                                "        target: " + mount.getTarget() + "\r\n" +
+                                "        bind:\r\n" +
+                                "           create_host_path: true");
+                });
+                content.add("    environment:");
+
+                buildEnvironmentVariables(bot, instance).forEach(env -> content.add("      - " + env));
+            });
+        });
+
+        String finalContent = String.format(finalContentTemplate, rabbitMqConfiguration.getConfigurationPaths().getDefinitions());
         content.add(finalContent);
 
-        Path filePath = Path.of(dockerComposePath);
+        Path filePath = Path.of(DOCKER_COMPOSE_PATH);
         try {
             // Create the file if it doesn't exist, or overwrite it if it does
             Files.write(filePath, content, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
@@ -410,62 +301,57 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createBoticaDockerfile(String boticaDockerfilePath, String jarFileName) {
+    private static List<String> buildEnvironmentVariables(BotConfiguration bot, BotInstanceConfiguration instance) {
+        List<String> environment = new ArrayList<>(instance.getEnvironment());
 
-        Path scriptPath = Path.of(boticaDockerfilePath);
-        DirectoryOperations.createDir(scriptPath);
+        // provisional env variables (legacy)
+        environment.add("BOTICA_BOT_TYPE=" + bot.getName());
+        environment.addAll(getLifecycleVariables(bot, instance));
+        environment.add("BOTICA_BOT_PUBLISH_KEY=" + bot.getPublishConfiguration().getKey());
+        environment.add("BOTICA_BOT_PUBLISH_ORDER=" + bot.getPublishConfiguration().getOrder());
+        environment.add("BOTICA_BOT_SUBSCRIBE_KEYS=" + String.join(",", bot.getSubscribeKeys()));
 
-        String auxJarFileName = jarFileName.contains(".jar") ? jarFileName : jarFileName + ".jar";
-
-        try {
-            Files.writeString(scriptPath, "FROM openjdk:11\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-
-            Files.writeString(scriptPath, "WORKDIR /app\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "COPY target/" + auxJarFileName + " /app/" + auxJarFileName + "\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "CMD [\"java\",\"-jar\",\"/app/" + auxJarFileName + "\"]", StandardOpenOption.APPEND);
-
-            logger.info("BOTICA main script created successfully!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
+        environment.add("BOTICA_BOT_ID=" + instance.getId());
+        environment.add("BOTICA_BOT_PERSISTENT=" + instance.isPersistent());
+        return environment;
     }
 
-    public static void createUnixMainScript(String unixMainScriptPath, String dummyDockerfilePath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
+    private static List<String> getLifecycleVariables(BotConfiguration bot, BotInstanceConfiguration instance) {
+        List<String> environment = new ArrayList<>(instance.getEnvironment());
 
-        Path scriptPath = Path.of(unixMainScriptPath);
+        BotLifecycleConfiguration lifecycle = Optional.ofNullable(instance.getLifecycleConfiguration())
+                .orElseGet(bot::getLifecycleConfiguration);
+
+        environment.add("BOTICA_BOT_AUTONOMY_TYPE=" + lifecycle.getType().getName());
+        if (lifecycle instanceof ProactiveBotLifecycleConfiguration) {
+            ProactiveBotLifecycleConfiguration proactiveLifecycle = (ProactiveBotLifecycleConfiguration) lifecycle;
+            environment.add("BOTICA_BOT_AUTONOMY_INITIAL_DELAY=" + proactiveLifecycle.getInitialDelay());
+            environment.add("BOTICA_BOT_AUTONOMY_PERIOD=" + proactiveLifecycle.getPeriod());
+        } else if (lifecycle instanceof ReactiveBotLifecycleConfiguration) {
+            ReactiveBotLifecycleConfiguration reactiveLifecycle = (ReactiveBotLifecycleConfiguration) lifecycle;
+            environment.add("BOTICA_BOT_AUTONOMY_ORDER=" + reactiveLifecycle.getOrder());
+        }
+
+        return environment;
+    }
+
+    public static void createUnixMainScript() {
+        Path scriptPath = Path.of("launch-botica.sh");
         DirectoryOperations.createDir(scriptPath);
-
-        String dummyDirectory = dummyDockerfilePath.contains("/")
-                ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/"))
-                : ".";
-        String boticaDirectory = boticaDockerfilePath.contains("/")
-                ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/"))
-                : ".";
-
 
         try {
             Files.writeString(scriptPath, "#!/bin/bash\n\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            Files.writeString(scriptPath, "echo \"Building the image at " + dummyDockerfilePath + "...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker build -t dummy " + dummyDirectory + "\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "echo \"Building the image at ./Dockerfile...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker build -t " + boticaImageName + " " + boticaDirectory + "\n\n", StandardOpenOption.APPEND);
-
             Files.writeString(scriptPath, "echo \"Running docker compose...\"\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker compose -f " + DOCKER_COMPOSE_PATH + " up -d\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo \"Script completed successfully.\"", StandardOpenOption.APPEND);
 
-            try{
+            try {
                 Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
             } catch (Exception e) {
               logger.warn("Couldn't set permissions to the BOTICA Unix main script. Please, set them manually in case you need to execute it.");
             }
-
 
             logger.info("BOTICA Unix main script created successfully!");
         } catch (Exception e) {
@@ -473,60 +359,25 @@ public class CreateConfiguration {
         }
     }
 
-    public static void createWindowsMainScript(String windowsMainScriptPath, String dummyDockerfilePath, String dockerComposePath, String boticaDockerfilePath, String boticaImageName) {
-
-        Path scriptPath = Path.of(windowsMainScriptPath);
+    public static void createWindowsMainScript() {
+        Path scriptPath = Path.of("launch-botica.bat");
         DirectoryOperations.createDir(scriptPath);
-
-        String dummyDirectory = dummyDockerfilePath.contains("/")
-                ? dummyDockerfilePath.substring(0, dummyDockerfilePath.lastIndexOf("/"))
-                : ".";
-        String boticaDirectory = boticaDockerfilePath.contains("/")
-                ? boticaDockerfilePath.substring(0, boticaDockerfilePath.lastIndexOf("/"))
-                : ".";
 
         try {
             Files.writeString(scriptPath, "@echo off\n", StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-            Files.writeString(scriptPath, "echo Building the image at " + dummyDockerfilePath + "...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker build -t dummy " + dummyDirectory + "\n\n", StandardOpenOption.APPEND);
-
-            Files.writeString(scriptPath, "echo Building the image at ./Dockerfile...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker build -t " + boticaImageName + " " + boticaDirectory + "\n\n", StandardOpenOption.APPEND);
-
             Files.writeString(scriptPath, "echo Running docker compose...\n", StandardOpenOption.APPEND);
-            Files.writeString(scriptPath, "docker compose -f " + dockerComposePath + " up -d\n\n", StandardOpenOption.APPEND);
+            Files.writeString(scriptPath, "docker compose -f " + DOCKER_COMPOSE_PATH + " up -d\n\n", StandardOpenOption.APPEND);
 
             Files.writeString(scriptPath, "echo Script completed successfully.", StandardOpenOption.APPEND);
 
-            try{
+            try {
                 Files.setPosixFilePermissions(scriptPath, PosixFilePermissions.fromString("rwxr-xr-x"));
-            }catch (Exception e) {
+            } catch (Exception e) {
                 logger.warn("Couldn't set permissions to the BOTICA Windows main script. Please, set them manually in case you need to execute it.");
             }
 
             logger.info("BOTICA Windows main script created successfully!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void addBotIdsToShutdownProperties(String propertiesFile){
-
-        Path filePath = Path.of(propertiesFile);
-
-        try {
-            List<String> lines = Files.readAllLines(filePath);
-
-            int index = lines.indexOf(lines.stream()
-                                            .filter(line -> line.contains("bots.of.the.system="))
-                                            .findFirst()
-                                            .get());
-
-            String botIdsString = "bots.of.the.system=" + String.join(",", botIds);
-            lines.set(index, botIdsString);
-            Files.write(filePath, lines, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-            logger.info("Bot ids added to shutdown properties file successfully!");
         } catch (Exception e) {
             e.printStackTrace();
         }

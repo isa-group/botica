@@ -30,7 +30,7 @@ bots:
       - id: "bot-1"
         persistent: true
         environment:
-          key: value
+          - KEY=VALUE
       - id: "bot-2"
         persistent: true
         lifecycle:
@@ -38,4 +38,4 @@ bots:
           initialDelay: 30
           period: 30
         environment:
-          key: value
+          - KEY=VALUE

@@ -1,4 +1,17 @@
 {
+  "broker": {
+    "type": "rabbitmq",
+    "host": "rabbitmq",
+    "port": 5671,
+    "uiPort": 15671,
+    "username": "username",
+    "password": "password",
+    "configurationPaths": {
+      "main": "rabbitmq/rabbitmq.conf",
+      "definitions": "rabbitmq/definitions.json",
+      "connection": "rabbitmq/server-config.json"
+    }
+  },
   "bots": [
     {
       "name": "bot-name",
@@ -29,9 +42,9 @@
         {
           "id": "bot-1",
           "persistent": true,
-          "environment": {
-            "key": "value"
-          }
+          "environment": [
+            "KEY=VALUE"
+          ]
         },
         {
           "id": "bot-2",
@@ -41,9 +54,9 @@
             "initialDelay": 30,
             "period": 30
           },
-          "environment": {
-            "key": "value"
-          }
+          "environment": [
+            "KEY=VALUE"
+          ]
         }
       ]
     }

@@ -2,13 +2,12 @@ package es.us.isa.botica.configuration.bot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
-
-import java.util.Map;
+import java.util.List;
 
 public class BotInstanceConfiguration {
   private String id;
   private boolean persistent;
-  private Map<String, String> environment;
+  private List<String> environment;
 
   @JsonProperty("lifecycle")
   private BotLifecycleConfiguration lifecycleConfiguration;
@@ -29,11 +28,11 @@ public class BotInstanceConfiguration {
     this.persistent = persistent;
   }
 
-  public Map<String, String> getEnvironment() {
+  public List<String> getEnvironment() {
     return environment;
   }
 
-  public void setEnvironment(Map<String, String> environment) {
+  public void setEnvironment(List<String> environment) {
     this.environment = environment;
   }
 

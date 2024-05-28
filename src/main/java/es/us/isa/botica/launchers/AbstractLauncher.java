@@ -63,7 +63,7 @@ public abstract class AbstractLauncher {
      */
     public void launchBot(BotRabbitConfig botRabbitConfig, String queueName, List<String> bindingKeys, boolean autoDelete, String autonomyType, String order) {
         
-        String botId = botProperties.getProperty("bot.botId");
+        String botId = System.getenv("BOTICA_BOT_ID");
 
         try {
             List<Boolean> queueOptions = Arrays.asList(true, false, autoDelete);
@@ -109,7 +109,7 @@ public abstract class AbstractLauncher {
 
     public void asyncShutdownConnection(){
 
-        String botId = botProperties.getProperty("bot.botId");
+        String botId = System.getenv("BOTICA_BOT_ID");
         String queueName = botId + ".shutdown.queue";
 
         DeliverCallback deliverCallback = (consumerTag, delivery) -> {
@@ -137,7 +137,7 @@ public abstract class AbstractLauncher {
         }
         if (shutdownCond){
             try{
-                this.messageSender.sendMessageToExchange("shutdownManager", "ready " + botProperties.getProperty("bot.botId")); // TODO: REVIEW ROUTING KEY
+                this.messageSender.sendMessageToExchange("shutdownManager", "ready " + System.getenv("BOTICA_BOT_ID")); // TODO: REVIEW ROUTING KEY
                 this.messageSender.close();
                 logger.info("Shutdown action completed");
             } catch (Exception e) {
