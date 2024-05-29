@@ -1,6 +1,7 @@
 package es.us.isa.botica.utils.shutdown;
 
 import com.rabbitmq.client.*;
+import es.us.isa.botica.broker.RabbitMqMessageBroker;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.rabbitmq.RabbitMQManager;
 import es.us.isa.botica.runners.ShutdownLoader;
@@ -18,8 +19,6 @@ import org.apache.logging.log4j.Logger;
 public class ShutdownUtils {
 
     private static final Logger logger = LogManager.getLogger(ShutdownUtils.class);
-
-    private static final String SHUTDOWN_EXCHANGE_NAME = "botica";
 
     private static Boolean alreadyStopped = false;
 
@@ -40,7 +39,7 @@ public class ShutdownUtils {
 
             List<Boolean> queueOptions = Arrays.asList(true, false, true);
             messageSender.connect("", null, queueOptions);
-            messageSender.sendMessageToExchange(SHUTDOWN_EXCHANGE_NAME, "", message);
+            messageSender.sendMessageToExchange(RabbitMqMessageBroker.INTERNAL_EXCHANGE, "", message);
             messageSender.close();
 
         } catch (Exception e) {
@@ -49,7 +48,6 @@ public class ShutdownUtils {
     }
 
     private static void receiveMessage(List<String> botIds) {
-
         RabbitMQManager messageSender = new RabbitMQManager("localhost");
 
         List<Boolean> queueOptions = Arrays.asList(true, false, true);

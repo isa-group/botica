@@ -1,14 +1,8 @@
 broker:
   type: rabbitmq
-  host: "rabbitmq"
-  port: 5671
-  uiPort: 15671
   username: "username"
   password: "password"
-  configurationPaths: # provisional
-    main: "rabbitmq/rabbitmq.conf"
-    definitions: "rabbitmq/definitions.json"
-    connection: "rabbitmq/server-config.json"
+  port: 5672
 
 bots:
   - name: "bot-name"

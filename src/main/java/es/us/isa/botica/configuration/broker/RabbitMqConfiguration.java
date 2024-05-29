@@ -1,36 +1,9 @@
 package es.us.isa.botica.configuration.broker;
 
 public class RabbitMqConfiguration implements BrokerConfiguration {
-  private String host;
-  private int port;
-  private int uiPort;
   private String username;
   private String password;
-  private RabbitMqConfigurationPaths configurationPaths;
-
-  public String getHost() {
-    return host;
-  }
-
-  public void setHost(String host) {
-    this.host = host;
-  }
-
-  public int getPort() {
-    return port;
-  }
-
-  public void setPort(int port) {
-    this.port = port;
-  }
-
-  public int getUiPort() {
-    return uiPort;
-  }
-
-  public void setUiPort(int uiPort) {
-    this.uiPort = uiPort;
-  }
+  private int port;
 
   public String getUsername() {
     return username;
@@ -48,32 +21,25 @@ public class RabbitMqConfiguration implements BrokerConfiguration {
     this.password = password;
   }
 
-  public RabbitMqConfigurationPaths getConfigurationPaths() {
-    return configurationPaths;
+  public int getPort() {
+    return port;
   }
 
-  public void setConfigurationPaths(RabbitMqConfigurationPaths configurationPaths) {
-    this.configurationPaths = configurationPaths;
+  public void setPort(int port) {
+    this.port = port;
   }
 
   @Override
   public String toString() {
     return "RabbitMqConfiguration{"
-        + "host='"
-        + host
-        + '\''
-        + ", port="
-        + port
-        + ", uiPort="
-        + uiPort
-        + ", username='"
+        + "username='"
         + username
         + '\''
         + ", password='"
         + password
         + '\''
-        + ", configurationPaths="
-        + configurationPaths
+        + ", port="
+        + port
         + '}';
   }
 }
