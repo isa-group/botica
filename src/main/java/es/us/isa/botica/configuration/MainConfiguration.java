@@ -1,16 +1,16 @@
 package es.us.isa.botica.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import es.us.isa.botica.configuration.bot.BotConfiguration;
+import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.broker.BrokerConfiguration;
 import es.us.isa.botica.util.configuration.ConfigurationFile;
 import java.util.List;
 
-public class MainConfigurationFile implements ConfigurationFile {
+public class MainConfiguration implements ConfigurationFile {
   @JsonProperty("broker")
   private BrokerConfiguration brokerConfiguration;
 
-  private List<BotConfiguration> bots;
+  private List<BotTypeConfiguration> botTypes;
 
   public BrokerConfiguration getBrokerConfiguration() {
     return brokerConfiguration;
@@ -20,21 +20,21 @@ public class MainConfigurationFile implements ConfigurationFile {
     this.brokerConfiguration = brokerConfiguration;
   }
 
-  public List<BotConfiguration> getBots() {
-    return bots;
+  public List<BotTypeConfiguration> getBotTypes() {
+    return botTypes;
   }
 
-  public void setBots(List<BotConfiguration> bots) {
-    this.bots = bots;
+  public void setBotTypes(List<BotTypeConfiguration> botTypes) {
+    this.botTypes = botTypes;
   }
 
   @Override
   public String toString() {
-    return "MainConfigurationFile{"
+    return "MainConfiguration{"
         + "brokerConfiguration="
         + brokerConfiguration
-        + ", bots="
-        + bots
+        + ", botTypes="
+        + botTypes
         + '}';
   }
 }

@@ -3,8 +3,8 @@ package es.us.isa.botica.broker;
 import static es.us.isa.botica.broker.RabbitMqMessageBroker.BOT_MESSAGES_EXCHANGE;
 import static es.us.isa.botica.broker.RabbitMqMessageBroker.INTERNAL_EXCHANGE;
 
-import es.us.isa.botica.configuration.MainConfigurationFile;
-import es.us.isa.botica.configuration.bot.BotConfiguration;
+import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.io.IOException;
@@ -28,9 +28,9 @@ public class RabbitMqConfigurationGenerator {
   public static final Path DEFINITIONS_TARGET_PATH = Path.of(".botica/rabbitmq/definitions.json");
   private static final String DEFINITIONS_TEMPLATE_PATH = "templates/rabbitmq/definitions.json.stg";
 
-  private final MainConfigurationFile configuration;
+  private final MainConfiguration configuration;
 
-  public RabbitMqConfigurationGenerator(MainConfigurationFile configuration) {
+  public RabbitMqConfigurationGenerator(MainConfiguration configuration) {
     this.configuration = configuration;
   }
 
@@ -65,16 +65,16 @@ public class RabbitMqConfigurationGenerator {
   }
 
   private List<String> buildQueues() {
-    return configuration.getBots().stream()
-        .map(BotConfiguration::getName)
+    return configuration.getBotTypes().stream()
+        .map(BotTypeConfiguration::getName)
         .collect(Collectors.toList());
   }
 
   private List<Binding> buildBindings() {
     List<Binding> bindings = new ArrayList<>();
-    for (BotConfiguration bot : configuration.getBots()) {
-      for (String key : bot.getSubscribeKeys()) {
-        bindings.add(new Binding(BOT_MESSAGES_EXCHANGE, bot.getName(), key));
+    for (BotTypeConfiguration botType : configuration.getBotTypes()) {
+      for (String key : botType.getSubscribeKeys()) {
+        bindings.add(new Binding(BOT_MESSAGES_EXCHANGE, botType.getName(), key));
       }
     }
     return bindings;

@@ -3,8 +3,8 @@ package es.us.isa.botica.broker;
 import static es.us.isa.botica.broker.RabbitMqMessageBroker.BOT_MESSAGES_EXCHANGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import es.us.isa.botica.configuration.MainConfigurationFile;
-import es.us.isa.botica.configuration.bot.BotConfiguration;
+import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -161,27 +161,27 @@ public class RabbitMqConfigurationGeneratorTest {
                 + "  ]");
   }
 
-  private static MainConfigurationFile buildConfiguration() {
-    MainConfigurationFile configuration = new MainConfigurationFile();
+  private static MainConfiguration buildConfiguration() {
+    MainConfiguration configuration = new MainConfiguration();
 
     RabbitMqConfiguration rabbitConfiguration = new RabbitMqConfiguration();
     rabbitConfiguration.setUsername("username");
     rabbitConfiguration.setPassword("password");
 
     configuration.setBrokerConfiguration(rabbitConfiguration);
-    configuration.setBots(buildBotConfigurations());
+    configuration.setBotTypes(buildBotConfigurations());
     return configuration;
   }
 
-  private static List<BotConfiguration> buildBotConfigurations() {
-    BotConfiguration fooBot = new BotConfiguration();
-    fooBot.setName("foo");
-    fooBot.setSubscribeKeys(List.of("foo_key", "bar_key"));
+  private static List<BotTypeConfiguration> buildBotConfigurations() {
+    BotTypeConfiguration fooBotType = new BotTypeConfiguration();
+    fooBotType.setName("foo");
+    fooBotType.setSubscribeKeys(List.of("foo_key", "bar_key"));
 
-    BotConfiguration barBot = new BotConfiguration();
-    barBot.setName("bar");
-    barBot.setSubscribeKeys(List.of("bar_key", "qux_key"));
+    BotTypeConfiguration barBotType = new BotTypeConfiguration();
+    barBotType.setName("bar");
+    barBotType.setSubscribeKeys(List.of("bar_key", "qux_key"));
 
-    return List.of(fooBot, barBot);
+    return List.of(fooBotType, barBotType);
   }
 }

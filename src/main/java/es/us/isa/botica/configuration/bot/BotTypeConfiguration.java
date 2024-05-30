@@ -5,7 +5,7 @@ import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 
 import java.util.List;
 
-public class BotConfiguration {
+public class BotTypeConfiguration {
   private String name;
   private String image;
 

@@ -1,9 +1,9 @@
 package es.us.isa.botica.utils.configuration;
 
 import es.us.isa.botica.broker.RabbitMqConfigurationGenerator;
-import es.us.isa.botica.configuration.MainConfigurationFile;
-import es.us.isa.botica.configuration.bot.BotConfiguration;
+import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
+import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ProactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
@@ -35,21 +35,21 @@ public class CreateConfiguration {
 
     public static void createConfiguration(File file) {
         ConfigurationFileLoader loader = new JacksonConfigurationFileLoader();
-        createConfiguration(loader.load(file, MainConfigurationFile.class));
+        createConfiguration(loader.load(file, MainConfiguration.class));
     }
 
-    public static void createConfiguration(MainConfigurationFile mainConfigurationFile) {
+    public static void createConfiguration(MainConfiguration mainConfiguration) {
         try {
-            new RabbitMqConfigurationGenerator(mainConfigurationFile).generateDefinitionsFile();
+            new RabbitMqConfigurationGenerator(mainConfiguration).generateDefinitionsFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        createDockerCompose(mainConfigurationFile);
+        createDockerCompose(mainConfiguration);
         createUnixMainScript();
         createWindowsMainScript();
     }
 
-    private static void createDockerCompose(MainConfigurationFile mainConfigurationFile) {
+    private static void createDockerCompose(MainConfiguration mainConfiguration) {
         List<String> content = new ArrayList<>();
 
         String initialContent =
@@ -87,15 +87,15 @@ public class CreateConfiguration {
                 "  rabbit_config:\r\n" +
                 "    file: ./%s";
 
-        RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfigurationFile.getBrokerConfiguration();
+        RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfiguration.getBrokerConfiguration();
         content.add(String.format(initialContent, rabbitMqConfiguration.getPort()));
 
-        mainConfigurationFile.getBots().forEach(bot -> {
-            bot.getInstances().forEach(instance -> {
-                String intermediateContent = String.format(intermediateContentTemplate, instance.getId(), bot.getImage());
+        mainConfiguration.getBotTypes().forEach(type -> {
+            type.getInstances().forEach(instance -> {
+                String intermediateContent = String.format(intermediateContentTemplate, instance.getId(), type.getImage());
                 content.add(intermediateContent);
 
-                bot.getMounts().forEach(mount -> {
+                type.getMounts().forEach(mount -> {
                     content.add("      - type: bind\r\n" +
                                 "        source: " + mount.getSource() + "\r\n" +
                                 "        target: " + mount.getTarget() + "\r\n" +
@@ -104,7 +104,7 @@ public class CreateConfiguration {
                 });
                 content.add("    environment:");
 
-                buildEnvironmentVariables(bot, instance).forEach(env -> content.add("      - " + env));
+                buildEnvironmentVariables(type, instance).forEach(env -> content.add("      - " + env));
             });
         });
 
@@ -121,7 +121,7 @@ public class CreateConfiguration {
         }
     }
 
-    private static List<String> buildEnvironmentVariables(BotConfiguration bot, BotInstanceConfiguration instance) {
+    private static List<String> buildEnvironmentVariables(BotTypeConfiguration bot, BotInstanceConfiguration instance) {
         List<String> environment = new ArrayList<>(instance.getEnvironment());
 
         // provisional env variables (legacy)
@@ -136,7 +136,7 @@ public class CreateConfiguration {
         return environment;
     }
 
-    private static List<String> getLifecycleVariables(BotConfiguration bot, BotInstanceConfiguration instance) {
+    private static List<String> getLifecycleVariables(BotTypeConfiguration bot, BotInstanceConfiguration instance) {
         List<String> environment = new ArrayList<>(instance.getEnvironment());
 
         BotLifecycleConfiguration lifecycle = Optional.ofNullable(instance.getLifecycleConfiguration())
