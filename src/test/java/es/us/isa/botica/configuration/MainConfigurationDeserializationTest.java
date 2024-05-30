@@ -5,9 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.InvalidBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ProactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.BrokerConfiguration;
+import es.us.isa.botica.configuration.broker.InvalidBrokerConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +19,8 @@ public class MainConfigurationDeserializationTest {
     ObjectMapper mapper = new ObjectMapper();
 
     String json = "{'type': 'foo'}".replace("'", "\"");
-    assertThat(mapper.readValue(json, BrokerConfiguration.class)).isNull();
+    assertThat(mapper.readValue(json, BrokerConfiguration.class))
+        .isInstanceOf(InvalidBrokerConfiguration.class);
   }
 
   @Test
@@ -42,7 +45,8 @@ public class MainConfigurationDeserializationTest {
     ObjectMapper mapper = new ObjectMapper();
 
     String json = "{'type': 'foo'}".replace("'", "\"");
-    assertThat(mapper.readValue(json, BotLifecycleConfiguration.class)).isNull();
+    assertThat(mapper.readValue(json, BotLifecycleConfiguration.class))
+            .isInstanceOf(InvalidBotLifecycleConfiguration.class);
   }
 
   @Test

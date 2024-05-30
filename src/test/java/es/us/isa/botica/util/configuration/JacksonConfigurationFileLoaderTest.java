@@ -13,8 +13,8 @@ public class JacksonConfigurationFileLoaderTest {
   void testLoadYamlFile() {
     File file = getResource("dummy-configuration-file.yml");
 
-    DummyConfigurationFile dummyConfigurationFile =
-        configurationFileLoader.load(file, DummyConfigurationFile.class);
+    DummyConfiguration dummyConfigurationFile =
+        configurationFileLoader.load(file, DummyConfiguration.class);
 
     assertThatContentsAreReadCorrectly(dummyConfigurationFile);
   }
@@ -23,13 +23,13 @@ public class JacksonConfigurationFileLoaderTest {
   void testLoadJsonFile() {
     File file = getResource("dummy-configuration-file.json");
 
-    DummyConfigurationFile dummyConfigurationFile =
-        configurationFileLoader.load(file, DummyConfigurationFile.class);
+    DummyConfiguration dummyConfigurationFile =
+        configurationFileLoader.load(file, DummyConfiguration.class);
 
     assertThatContentsAreReadCorrectly(dummyConfigurationFile);
   }
 
-  static void assertThatContentsAreReadCorrectly(DummyConfigurationFile dummyConfigurationFile) {
+  static void assertThatContentsAreReadCorrectly(DummyConfiguration dummyConfigurationFile) {
     assertThat(dummyConfigurationFile.string).isEqualTo("value");
     assertThat(dummyConfigurationFile.object).isNotNull();
     assertThat(dummyConfigurationFile.object.integer).isEqualTo(1);

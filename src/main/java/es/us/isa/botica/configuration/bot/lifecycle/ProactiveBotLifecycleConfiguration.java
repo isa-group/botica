@@ -1,8 +1,16 @@
 package es.us.isa.botica.configuration.bot.lifecycle;
 
+import es.us.isa.botica.util.configuration.validate.ValidationReport;
+
 public class ProactiveBotLifecycleConfiguration implements BotLifecycleConfiguration {
   private long initialDelay;
   private long period;
+
+  @Override
+  public void validate(ValidationReport report) {
+    if (initialDelay < 0) report.addError("initialDelay", "initialDelay must be positive");
+    if (period < 1) report.addError("period", "period must be greater than 1");
+  }
 
   @Override
   public BotLifecycleType getType() {
