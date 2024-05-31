@@ -2,11 +2,6 @@ package es.us.isa.botica.utils.configuration;
 
 import es.us.isa.botica.broker.RabbitMqConfigurationGenerator;
 import es.us.isa.botica.configuration.MainConfiguration;
-import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
-import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
-import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
-import es.us.isa.botica.configuration.bot.lifecycle.ProactiveBotLifecycleConfiguration;
-import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
 import es.us.isa.botica.util.configuration.JacksonConfigurationFileLoader;
@@ -19,37 +14,37 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFilePermissions;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CreateConfiguration {
 
-    private static final String BOTICA_EXCHANGE = "botica";
-    private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";
+    public static final String BOTICA_CONFIG_SECRET = "botica-config";
+    private static final String RABBIT_DEFINITIONS_SECRET = "rabbit-definitions";
 
-    protected static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
+    private static final Logger logger = LogManager.getLogger(CreateConfiguration.class);
+    private static final String DOCKER_COMPOSE_PATH = "docker-compose.yml";
 
     private CreateConfiguration() {
     }
 
     public static void createConfiguration(File file) {
         ConfigurationFileLoader loader = new JacksonConfigurationFileLoader();
-        createConfiguration(loader.load(file, MainConfiguration.class));
+        createConfiguration(loader.load(file, MainConfiguration.class), file);
     }
 
-    public static void createConfiguration(MainConfiguration mainConfiguration) {
+    public static void createConfiguration(MainConfiguration mainConfiguration, File file) {
         try {
             new RabbitMqConfigurationGenerator(mainConfiguration).generateDefinitionsFile();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        createDockerCompose(mainConfiguration);
+        createDockerCompose(mainConfiguration, file);
         createUnixMainScript();
         createWindowsMainScript();
     }
 
-    private static void createDockerCompose(MainConfiguration mainConfiguration) {
+    private static void createDockerCompose(MainConfiguration mainConfiguration, File file) {
         List<String> content = new ArrayList<>();
 
         String initialContent =
@@ -59,9 +54,9 @@ public class CreateConfiguration {
                 "    ports:\r\n" +
                 "      - %d:5672\r\n" +
                 "    environment:\r\n" +
-                "      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions \"/run/secrets/rabbit_config\"\r\n" +
+                "      - RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS=-rabbitmq_management load_definitions \"/run/secrets/" + RABBIT_DEFINITIONS_SECRET + "\"\r\n" +
                 "    secrets:\r\n" +
-                "      - rabbit_config\r\n" +
+                "      - " + RABBIT_DEFINITIONS_SECRET + "\r\n" +
                 "    networks:\r\n" +
                 "      - rabbitmq-network";
 
@@ -70,13 +65,12 @@ public class CreateConfiguration {
                 "      - rabbitmq\r\n" +
                 "    restart: unless-stopped\r\n" +
                 "    image: %s\r\n" +
+                "    secrets:\r\n" +
+                "      - " + BOTICA_CONFIG_SECRET + "\r\n" +
                 "    networks:\r\n" +
                 "      - rabbitmq-network\r\n" +
                 "    volumes:\r\n" +
-                "      - botica-volume:/app/shared\r\n" +
-                "      - type: bind\r\n" +
-                "        source: ./rabbitmq/server-config.json\r\n" +
-                "        target: /app/rabbitmq/server-config.json";
+                "      - botica-volume:/app/shared";
 
         String finalContentTemplate = "\nvolumes:\r\n" +
                 "  botica-volume:\r\n\n" +
@@ -84,7 +78,9 @@ public class CreateConfiguration {
                 "  rabbitmq-network:\r\n" +
                 "    driver: bridge\r\n\n" +
                 "secrets:\r\n" +
-                "  rabbit_config:\r\n" +
+                "  " + BOTICA_CONFIG_SECRET + ":\r\n" +
+                "    file: ./%s\n" +
+                "  " + RABBIT_DEFINITIONS_SECRET + ":\r\n" +
                 "    file: ./%s";
 
         RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfiguration.getBrokerConfiguration();
@@ -102,13 +98,18 @@ public class CreateConfiguration {
                                 "        bind:\r\n" +
                                 "           create_host_path: true");
                 });
-                content.add("    environment:");
+                List<String> environment = new ArrayList<>(instance.getEnvironment());
+                environment.add("BOTICA_BOT_TYPE=" + type.getName());
+                environment.add("BOTICA_BOT_ID=" + instance.getId());
 
-                buildEnvironmentVariables(type, instance).forEach(env -> content.add("      - " + env));
+                content.add("    environment:");
+                environment.forEach(env -> content.add("      - " + env));
             });
         });
 
-        String finalContent = String.format(finalContentTemplate, RabbitMqConfigurationGenerator.DEFINITIONS_TARGET_PATH);
+        String finalContent = String.format(finalContentTemplate,
+                file.getPath(),
+                RabbitMqConfigurationGenerator.DEFINITIONS_TARGET_PATH);
         content.add(finalContent);
 
         Path filePath = Path.of(DOCKER_COMPOSE_PATH);
@@ -119,40 +120,6 @@ public class CreateConfiguration {
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private static List<String> buildEnvironmentVariables(BotTypeConfiguration bot, BotInstanceConfiguration instance) {
-        List<String> environment = new ArrayList<>(instance.getEnvironment());
-
-        // provisional env variables (legacy)
-        environment.add("BOTICA_BOT_TYPE=" + bot.getName());
-        environment.addAll(getLifecycleVariables(bot, instance));
-        environment.add("BOTICA_BOT_PUBLISH_KEY=" + bot.getPublishConfiguration().getKey());
-        environment.add("BOTICA_BOT_PUBLISH_ORDER=" + bot.getPublishConfiguration().getOrder());
-        environment.add("BOTICA_BOT_SUBSCRIBE_KEYS=" + String.join(",", bot.getSubscribeKeys()));
-
-        environment.add("BOTICA_BOT_ID=" + instance.getId());
-        environment.add("BOTICA_BOT_PERSISTENT=" + instance.isPersistent());
-        return environment;
-    }
-
-    private static List<String> getLifecycleVariables(BotTypeConfiguration bot, BotInstanceConfiguration instance) {
-        List<String> environment = new ArrayList<>(instance.getEnvironment());
-
-        BotLifecycleConfiguration lifecycle = Optional.ofNullable(instance.getLifecycleConfiguration())
-                .orElseGet(bot::getLifecycleConfiguration);
-
-        environment.add("BOTICA_BOT_AUTONOMY_TYPE=" + lifecycle.getType().getName());
-        if (lifecycle instanceof ProactiveBotLifecycleConfiguration) {
-            ProactiveBotLifecycleConfiguration proactiveLifecycle = (ProactiveBotLifecycleConfiguration) lifecycle;
-            environment.add("BOTICA_BOT_AUTONOMY_INITIAL_DELAY=" + proactiveLifecycle.getInitialDelay());
-            environment.add("BOTICA_BOT_AUTONOMY_PERIOD=" + proactiveLifecycle.getPeriod());
-        } else if (lifecycle instanceof ReactiveBotLifecycleConfiguration) {
-            ReactiveBotLifecycleConfiguration reactiveLifecycle = (ReactiveBotLifecycleConfiguration) lifecycle;
-            environment.add("BOTICA_BOT_AUTONOMY_ORDER=" + reactiveLifecycle.getOrder());
-        }
-
-        return environment;
     }
 
     public static void createUnixMainScript() {

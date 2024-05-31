@@ -2,6 +2,7 @@ package es.us.isa.botica.utils.shutdown;
 
 import com.rabbitmq.client.*;
 import es.us.isa.botica.broker.RabbitMqMessageBroker;
+import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.rabbitmq.RabbitMQManager;
 import es.us.isa.botica.runners.ShutdownLoader;
 import java.io.BufferedReader;
@@ -23,21 +24,22 @@ public class ShutdownUtils {
 
     public static void shutdown(ShutdownLoader shutdownLoader) {
         String message = "{\"BoticaShutdownAction\": \"true\",\"order\": \"SystemShutdown\"}\"";
-        sendMessage(message);
+        RabbitMqConfiguration rabbitConfiguration = (RabbitMqConfiguration) shutdownLoader.getConfigurationFile().getBrokerConfiguration();
+        sendMessage(message, rabbitConfiguration);
 
         List<String> botIds = shutdownLoader.getConfigurationFile().getBotTypes().values().stream()
                 .flatMap(bot -> bot.getInstances().keySet().stream())
                 .collect(Collectors.toList());
-        receiveMessage(botIds);
+        receiveMessage(botIds, rabbitConfiguration);
     }
 
-    public static void sendMessage(String message) {
+    public static void sendMessage(String message, RabbitMqConfiguration configuration) {
         try {
-            RabbitMQManager messageSender = new RabbitMQManager("localhost");
+            RabbitMQManager messageSender = new RabbitMQManager("localhost", configuration);
 
             List<Boolean> queueOptions = Arrays.asList(true, false, true);
             messageSender.connect("", null, queueOptions);
-            messageSender.sendMessageToExchange(RabbitMqMessageBroker.INTERNAL_EXCHANGE, "", message);
+            messageSender.sendMessageToExchange(RabbitMqMessageBroker.INTERNAL_EXCHANGE, "shutdown", message);
             messageSender.close();
 
         } catch (Exception e) {
@@ -45,13 +47,13 @@ public class ShutdownUtils {
         }
     }
 
-    private static void receiveMessage(List<String> botIds) {
-        RabbitMQManager messageSender = new RabbitMQManager("localhost");
+    private static void receiveMessage(List<String> botIds, RabbitMqConfiguration rabbitConfiguration) {
+        RabbitMQManager messageSender = new RabbitMQManager("localhost", rabbitConfiguration);
 
         List<Boolean> queueOptions = Arrays.asList(true, false, true);
 
         try {
-            messageSender.connect("", null, queueOptions);
+            messageSender.connect("shutdown", List.of("shutdownManager"), queueOptions);
             Connection connection = messageSender.getConnection();
             System.out.println(" [*] Waiting for messages. To exit press Ctrl+C");
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
