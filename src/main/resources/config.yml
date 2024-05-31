@@ -5,7 +5,7 @@ broker:
   port: 5672
 
 bots:
-  - name: "bot-name"
+  bot-name:
     image: "container-image"
     mount:
       - source: "path/to/host/file.extension"

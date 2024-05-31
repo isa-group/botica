@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -173,7 +174,7 @@ public class RabbitMqConfigurationGeneratorTest {
     return configuration;
   }
 
-  private static List<BotTypeConfiguration> buildBotConfigurations() {
+  private static Map<String, BotTypeConfiguration> buildBotConfigurations() {
     BotTypeConfiguration fooBotType = new BotTypeConfiguration();
     fooBotType.setName("foo");
     fooBotType.setSubscribeKeys(List.of("foo_key", "bar_key"));
@@ -182,6 +183,6 @@ public class RabbitMqConfigurationGeneratorTest {
     barBotType.setName("bar");
     barBotType.setSubscribeKeys(List.of("bar_key", "qux_key"));
 
-    return List.of(fooBotType, barBotType);
+    return Map.of("foo", fooBotType, "bar", barBotType);
   }
 }

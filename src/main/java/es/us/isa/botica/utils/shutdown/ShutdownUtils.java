@@ -26,7 +26,7 @@ public class ShutdownUtils {
         String message = "{\"BoticaShutdownAction\": \"true\",\"order\": \"SystemShutdown\"}\"";
         sendMessage(message);
 
-        List<String> botIds = shutdownLoader.getConfigurationFile().getBotTypes().stream()
+        List<String> botIds = shutdownLoader.getConfigurationFile().getBotTypes().values().stream()
                 .flatMap(bot -> bot.getInstances().stream())
                 .map(BotInstanceConfiguration::getId)
                 .collect(Collectors.toList());

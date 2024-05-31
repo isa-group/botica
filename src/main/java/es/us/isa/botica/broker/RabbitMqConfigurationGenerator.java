@@ -14,7 +14,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
 
@@ -52,7 +51,7 @@ public class RabbitMqConfigurationGenerator {
     definitions.add("authentication", this.buildAuthentication());
     definitions.add("exchanges", new Exchange(BOT_MESSAGES_EXCHANGE, "topic"));
     definitions.add("exchanges", new Exchange(INTERNAL_EXCHANGE, "topic"));
-    definitions.add("queues", this.buildQueues());
+    definitions.add("queues", this.configuration.getBotTypes().keySet());
     definitions.add("bindings", this.buildBindings());
 
     return definitions.render();
@@ -64,15 +63,9 @@ public class RabbitMqConfigurationGenerator {
     return new Authentication(rabbitConfiguration.getUsername(), rabbitConfiguration.getPassword());
   }
 
-  private List<String> buildQueues() {
-    return configuration.getBotTypes().stream()
-        .map(BotTypeConfiguration::getName)
-        .collect(Collectors.toList());
-  }
-
   private List<Binding> buildBindings() {
     List<Binding> bindings = new ArrayList<>();
-    for (BotTypeConfiguration botType : configuration.getBotTypes()) {
+    for (BotTypeConfiguration botType : configuration.getBotTypes().values()) {
       for (String key : botType.getSubscribeKeys()) {
         bindings.add(new Binding(BOT_MESSAGES_EXCHANGE, botType.getName(), key));
       }

@@ -6,14 +6,14 @@ import es.us.isa.botica.configuration.broker.BrokerConfiguration;
 import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import java.util.Collections;
-import java.util.List;
+import java.util.Map;
 
 public class MainConfiguration implements Configuration {
   @JsonProperty("broker")
   private BrokerConfiguration brokerConfiguration;
 
   @JsonProperty("bots")
-  private List<BotTypeConfiguration> botTypes = Collections.emptyList();
+  private Map<String, BotTypeConfiguration> botTypes = Collections.emptyMap();
 
   @Override
   public void validate(ValidationReport report) {
@@ -26,7 +26,7 @@ public class MainConfiguration implements Configuration {
     if (botTypes.isEmpty()) {
       report.addWarning("bots", "missing or empty bots declaration");
     } else {
-      report.registerChild("bots", botTypes);
+      botTypes.forEach((name, botType) -> report.registerChild("bots." + name, botType));
     }
   }
 
@@ -38,12 +38,13 @@ public class MainConfiguration implements Configuration {
     this.brokerConfiguration = brokerConfiguration;
   }
 
-  public List<BotTypeConfiguration> getBotTypes() {
+  public Map<String, BotTypeConfiguration> getBotTypes() {
     return botTypes;
   }
 
-  public void setBotTypes(List<BotTypeConfiguration> botTypes) {
+  public void setBotTypes(Map<String, BotTypeConfiguration> botTypes) {
     this.botTypes = botTypes;
+    botTypes.forEach((name, botType) -> botType.setName(name));
   }
 
   @Override

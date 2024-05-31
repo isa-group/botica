@@ -90,7 +90,7 @@ public class CreateConfiguration {
         RabbitMqConfiguration rabbitMqConfiguration = (RabbitMqConfiguration) mainConfiguration.getBrokerConfiguration();
         content.add(String.format(initialContent, rabbitMqConfiguration.getPort()));
 
-        mainConfiguration.getBotTypes().forEach(type -> {
+        mainConfiguration.getBotTypes().values().forEach(type -> {
             type.getInstances().forEach(instance -> {
                 String intermediateContent = String.format(intermediateContentTemplate, instance.getId(), type.getImage());
                 content.add(intermediateContent);

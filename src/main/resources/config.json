@@ -5,8 +5,8 @@
     "password": "password",
     "port": 5672
   },
-  "bots": [
-    {
+  "bots": {
+    "bot-name": {
       "name": "bot-name",
       "image": "container-image",
       "mount": [
@@ -53,5 +53,5 @@
         }
       ]
     }
-  ]
+  }
 }
