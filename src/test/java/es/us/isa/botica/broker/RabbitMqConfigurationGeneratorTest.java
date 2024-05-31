@@ -9,6 +9,7 @@ import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
@@ -183,6 +184,9 @@ public class RabbitMqConfigurationGeneratorTest {
     barBotType.setName("bar");
     barBotType.setSubscribeKeys(List.of("bar_key", "qux_key"));
 
-    return Map.of("foo", fooBotType, "bar", barBotType);
+    Map<String, BotTypeConfiguration> bots = new LinkedHashMap<>();
+    bots.put("foo", fooBotType);
+    bots.put("bar", barBotType);
+    return bots;
   }
 }

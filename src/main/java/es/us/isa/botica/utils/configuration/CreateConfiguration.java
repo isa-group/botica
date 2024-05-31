@@ -91,7 +91,7 @@ public class CreateConfiguration {
         content.add(String.format(initialContent, rabbitMqConfiguration.getPort()));
 
         mainConfiguration.getBotTypes().values().forEach(type -> {
-            type.getInstances().forEach(instance -> {
+            type.getInstances().values().forEach(instance -> {
                 String intermediateContent = String.format(intermediateContentTemplate, instance.getId(), type.getImage());
                 content.add(intermediateContent);
 

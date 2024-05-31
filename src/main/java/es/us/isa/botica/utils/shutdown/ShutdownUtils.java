@@ -2,7 +2,6 @@ package es.us.isa.botica.utils.shutdown;
 
 import com.rabbitmq.client.*;
 import es.us.isa.botica.broker.RabbitMqMessageBroker;
-import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.rabbitmq.RabbitMQManager;
 import es.us.isa.botica.runners.ShutdownLoader;
 import java.io.BufferedReader;
@@ -27,8 +26,7 @@ public class ShutdownUtils {
         sendMessage(message);
 
         List<String> botIds = shutdownLoader.getConfigurationFile().getBotTypes().values().stream()
-                .flatMap(bot -> bot.getInstances().stream())
-                .map(BotInstanceConfiguration::getId)
+                .flatMap(bot -> bot.getInstances().keySet().stream())
                 .collect(Collectors.toList());
         receiveMessage(botIds);
     }

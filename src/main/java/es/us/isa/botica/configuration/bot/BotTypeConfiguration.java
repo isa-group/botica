@@ -6,6 +6,7 @@ import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public class BotTypeConfiguration implements Configuration {
   private String name;
@@ -23,7 +24,7 @@ public class BotTypeConfiguration implements Configuration {
   @JsonProperty("subscribe")
   private List<String> subscribeKeys = Collections.emptyList();
 
-  private List<BotInstanceConfiguration> instances = Collections.emptyList();
+  private Map<String, BotInstanceConfiguration> instances = Collections.emptyMap();
 
   @Override
   public void validate(ValidationReport report) {
@@ -32,7 +33,7 @@ public class BotTypeConfiguration implements Configuration {
     if (instances.isEmpty()) {
       report.addWarning("instances", "missing or empty instances");
     } else {
-      report.registerChild("instances", instances);
+      instances.forEach((id, instance) -> report.registerChild("instances." + id, instance));
     }
     report.registerChild("mounts", mounts);
     report.registerChild("lifecycle", lifecycleConfiguration);
@@ -87,12 +88,13 @@ public class BotTypeConfiguration implements Configuration {
     this.subscribeKeys = subscribeKeys;
   }
 
-  public List<BotInstanceConfiguration> getInstances() {
+  public Map<String, BotInstanceConfiguration> getInstances() {
     return instances;
   }
 
-  public void setInstances(List<BotInstanceConfiguration> instances) {
+  public void setInstances(Map<String, BotInstanceConfiguration> instances) {
     this.instances = instances;
+    instances.forEach((id, instance) -> instance.setId(id));
   }
 
   @Override

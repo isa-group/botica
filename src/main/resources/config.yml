@@ -21,11 +21,11 @@ bots:
       order: "order"
     subscribe: [ "subscribe-key" ]
     instances:
-      - id: "bot-1"
+      bot-1:
         persistent: true
         environment:
           - KEY=VALUE
-      - id: "bot-2"
+      bot-2:
         persistent: true
         lifecycle:
           type: proactive
