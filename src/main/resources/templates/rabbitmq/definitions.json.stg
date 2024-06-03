@@ -1,0 +1,69 @@
+file(authentication, exchanges, queues, bindings) ::= <<
+{
+  "vhosts": [
+    {
+      "name": "/"
+    }
+  ],
+  "users": [
+    {
+      "name": "<authentication.username>",
+      "password": "<authentication.password>",
+      "tags": "administrator"
+    }
+  ],
+  "permissions": [
+    {
+      "user": "<authentication.username>",
+      "vhost": "/",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    }
+  ],
+  "queues": [
+    <queues:queue(); separator=",\n">
+  ],
+  "exchanges": [
+    <exchanges:exchange(); separator=",\n">
+  ],
+  "bindings": [
+    <bindings:binding(); separator=",\n">
+  ]
+}
+>>
+
+queue(name) ::= <<
+{
+  "name": "<name>",
+  "vhost": "/",
+  "durable": true,
+  "auto_delete": false,
+  "arguments": {
+    "x-message-ttl": 3600000
+  }
+}
+>>
+
+exchange(exchange) ::= <<
+{
+  "name": "<exchange.name>",
+  "vhost": "/",
+  "type": "<exchange.type>",
+  "durable": true,
+  "auto_delete": false,
+  "internal": false,
+  "arguments": {}
+}
+>>
+
+binding(binding) ::= <<
+{
+  "source": "<binding.source>",
+  "vhost": "/",
+  "destination": "<binding.destination>",
+  "destination_type": "queue",
+  "routing_key": "<binding.routingKey>",
+  "arguments": {}
+}
+>>
