@@ -123,7 +123,6 @@ public class RabbitMQManager {
             channel.basicPublish(RabbitMqMessageBroker.BOT_MESSAGES_EXCHANGE, routingKey, null, message.getBytes());
             channel.queueDelete(queue);
             logger.info("Message sent to RabbitMQ: {}", message);
-            close(); // TODO: Review
         } catch (Exception e) {
             ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }

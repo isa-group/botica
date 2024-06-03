@@ -113,6 +113,7 @@ public abstract class AbstractLauncher {
             this.messageSender.sendMessageToExchange(
                     this.botTypeConfiguration.getPublishConfiguration().getKey(),
                     createMessage().toString());
+            this.messageSender.close();
         } catch (Exception e) {
             ExceptionUtils.handleException(logger, "Error sending message to RabbitMQ", e);
         }
