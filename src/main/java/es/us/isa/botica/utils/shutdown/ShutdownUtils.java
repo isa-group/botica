@@ -37,7 +37,7 @@ public class ShutdownUtils {
         try {
             RabbitMQManager messageSender = new RabbitMQManager("localhost", configuration);
 
-            List<Boolean> queueOptions = Arrays.asList(true, false, true);
+            List<Boolean> queueOptions = Arrays.asList(false, false, true);
             messageSender.connect("", null, queueOptions);
             messageSender.sendMessageToExchange(RabbitMqMessageBroker.INTERNAL_EXCHANGE, "shutdown", message);
             messageSender.close();
@@ -50,7 +50,7 @@ public class ShutdownUtils {
     private static void receiveMessage(List<String> botIds, RabbitMqConfiguration rabbitConfiguration) {
         RabbitMQManager messageSender = new RabbitMQManager("localhost", rabbitConfiguration);
 
-        List<Boolean> queueOptions = Arrays.asList(true, false, true);
+        List<Boolean> queueOptions = Arrays.asList(false, false, true);
 
         try {
             messageSender.connect("shutdown", List.of("shutdownManager"), queueOptions);

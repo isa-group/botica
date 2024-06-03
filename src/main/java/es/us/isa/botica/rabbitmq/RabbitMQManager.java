@@ -219,7 +219,7 @@ public class RabbitMQManager {
         try {
             Connection connection = this.factory.newConnection();
             Channel channel = connection.createChannel();
-            channel.queueDeclare(queueName, true, false, true, null);
+            channel.queueDeclare(queueName, false, false, true, null);
             channel.queueBind(queueName, RabbitMqMessageBroker.INTERNAL_EXCHANGE, "shutdown");
 
             CompletableFuture.runAsync(() -> {
