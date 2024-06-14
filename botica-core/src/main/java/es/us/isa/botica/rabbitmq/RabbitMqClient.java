@@ -40,7 +40,7 @@ public class RabbitMqClient {
         this.mainChannel = this.connection.createChannel();
       } catch (IOException | TimeoutException e) {
         if (attempts++ > MAX_ATTEMPTS) {
-          throw new TimeoutException("Couldn't establish connection with RabbitMQ");
+          throw new TimeoutException("couldn't establish connection with RabbitMQ");
         }
         logger.error(
             "Couldn't establish connection with RabbitMQ: {}. Retrying in {} seconds...",
@@ -92,6 +92,10 @@ public class RabbitMqClient {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public boolean isConnected() {
+    return this.connection != null && this.connection.isOpen();
   }
 
   private static void sleep(int seconds) {

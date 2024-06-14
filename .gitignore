@@ -1,8 +1,8 @@
-# VSCode Settings
-/.vscode/
-
 # DS_Store Files
 **/.DS_Store
+
+# IDEA Files
+.idea/
 
 # Generated Files
 target/
