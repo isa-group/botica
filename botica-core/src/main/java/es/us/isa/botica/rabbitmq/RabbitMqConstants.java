@@ -1,7 +1,7 @@
 package es.us.isa.botica.rabbitmq;
 
 public class RabbitMqConstants {
-  public static final String CONTAINER_NAME = "botica_rabbitmq";
+  public static final String CONTAINER_NAME = "rabbitmq";
 
   public static final String ORDER_EXCHANGE = "botica.order";
   public static final String PROTOCOL_EXCHANGE = "botica.protocol";

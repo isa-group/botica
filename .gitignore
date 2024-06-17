@@ -4,5 +4,8 @@
 # IDEA Files
 .idea/
 
+# Botica Director Files
+.botica/
+
 # Generated Files
 target/
