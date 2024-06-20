@@ -1,7 +1,9 @@
-package es.us.isa.botica.broker;
+package es.us.isa.botica.director.broker;
 
+import static es.us.isa.botica.BoticaConstants.BROKER_NETWORK_NAME;
 import static es.us.isa.botica.BoticaConstants.CONTAINER_PREFIX;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.CONTAINER_NAME;
+import static es.us.isa.botica.director.util.StringUtils.buildEnv;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -17,11 +19,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RabbitMqDeploymentHandler implements BrokerDeploymentHandler {
-  private static final Logger log = LoggerFactory.getLogger(RabbitMqDeploymentHandler.class);
+public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler {
+  private static final Logger log = LoggerFactory.getLogger(DockerRabbitMqDeploymentHandler.class);
 
   private static final String RABBITMQ_IMAGE = "rabbitmq:3.13-management";
-  private static final String DEFINITIONS_SECRET_PATH = "/run/secrets/definitions.json";
+  private static final String DEFINITIONS_SECRET_PATH = "/run/secrets/definitions";
   private static final ExposedPort DEFAULT_PORT = new ExposedPort(5672);
 
   private final DockerClient dockerClient;
@@ -31,7 +33,8 @@ public class RabbitMqDeploymentHandler implements BrokerDeploymentHandler {
   private String networkId;
   private String containerId;
 
-  public RabbitMqDeploymentHandler(DockerClient dockerClient, MainConfiguration mainConfiguration) {
+  public DockerRabbitMqDeploymentHandler(
+      DockerClient dockerClient, MainConfiguration mainConfiguration) {
     this.dockerClient = dockerClient;
     this.configurationGenerator = new RabbitMqConfigurationGenerator(mainConfiguration);
     this.rabbitMqConfiguration = (RabbitMqConfiguration) mainConfiguration.getBrokerConfiguration();
@@ -46,14 +49,14 @@ public class RabbitMqDeploymentHandler implements BrokerDeploymentHandler {
       throw new RuntimeException(e);
     }
 
-    this.shutdownPreviousDeployment();
+    this.removePreviousDeployment();
     this.pullImage();
     this.networkId = this.createNetwork();
     this.containerId = this.createContainer();
     this.dockerClient.startContainerCmd(this.containerId).exec();
   }
 
-  private void shutdownPreviousDeployment() {
+  private void removePreviousDeployment() {
     log.debug("Shutting down any previously running deployments...");
     this.dockerClient
         .listContainersCmd()
@@ -79,7 +82,7 @@ public class RabbitMqDeploymentHandler implements BrokerDeploymentHandler {
 
   private void pullImage() {
     try {
-      log.info("Pulling {} from repository...", RABBITMQ_IMAGE);
+      log.info("Downloading {}...", RABBITMQ_IMAGE);
       this.dockerClient.pullImageCmd(RABBITMQ_IMAGE).start().awaitCompletion();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
@@ -154,9 +157,5 @@ public class RabbitMqDeploymentHandler implements BrokerDeploymentHandler {
 
   private String buildContainerName() {
     return CONTAINER_PREFIX + CONTAINER_NAME;
-  }
-
-  private static String buildEnv(String key, String value) {
-    return String.format("%s=%s", key, value);
   }
 }

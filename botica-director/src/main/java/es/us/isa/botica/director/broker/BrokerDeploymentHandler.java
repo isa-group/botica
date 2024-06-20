@@ -1,8 +1,6 @@
-package es.us.isa.botica.broker;
+package es.us.isa.botica.director.broker;
 
 public interface BrokerDeploymentHandler {
-  String BROKER_NETWORK_NAME = "broker_network";
-
   void deploy();
 
   boolean isRunning();

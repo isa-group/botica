@@ -1,4 +1,4 @@
-package es.us.isa.botica.broker;
+package es.us.isa.botica.director.broker;
 
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_FORMAT;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.ORDER_EXCHANGE;
