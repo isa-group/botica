@@ -53,7 +53,7 @@ public class RabbitMqClient {
 
   public void createQueue(String queue) {
     try {
-      this.mainChannel.queueDeclare(queue, false, true, true, null);
+      this.mainChannel.queueDeclare(queue, false, false, true, null);
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
@@ -76,12 +76,13 @@ public class RabbitMqClient {
   }
 
   public void subscribe(String queue, Consumer<String> consumer) {
-    try (Channel channel = this.connection.createChannel()) {
+    try {
+      Channel channel = this.connection.createChannel();
       channel.basicConsume(
           queue,
           (consumerTag, message) -> consumer.accept(new String(message.getBody())),
           consumerTag -> {});
-    } catch (IOException | TimeoutException e) {
+    } catch (IOException e) {
       throw new RuntimeException(e);
     }
   }
