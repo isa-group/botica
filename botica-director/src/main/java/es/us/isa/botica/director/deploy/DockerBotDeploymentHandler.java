@@ -24,6 +24,11 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Bot deployment handler using docker-java.
+ *
+ * @author Alberto Mimbrero
+ */
 public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   private static final Logger log = LoggerFactory.getLogger(DockerBotDeploymentHandler.class);
 
@@ -47,7 +52,7 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   @Override
   public void removePreviousDeployment() {
     this.removeBotContainers();
-    this.removeNetwork();
+    this.removeSharedVolume();
   }
 
   private void removeBotContainers() {
@@ -62,12 +67,14 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
         .withNameFilter(containerNames)
         .withShowAll(true)
         .exec()
+        .stream()
+        .peek(container -> log.debug("Removing container {}...", container.getId()))
         .forEach(
             container ->
                 this.dockerClient.removeContainerCmd(container.getId()).withForce(true).exec());
   }
 
-  private void removeNetwork() {
+  private void removeSharedVolume() {
     this.dockerClient
         .listVolumesCmd()
         .withFilter("name", List.of(this.buildSharedVolumeName()))
@@ -97,6 +104,7 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   }
 
   private String createContainer(BotTypeConfiguration type, BotInstanceConfiguration bot) {
+    log.info("Creating {}...", bot.getId());
     return this.dockerClient
         .createContainerCmd(type.getImage())
         .withName(this.buildContainerName(bot.getId()))
@@ -155,6 +163,7 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   private void startBotContainers() {
     for (BotTypeConfiguration typeConfiguration : this.mainConfiguration.getBotTypes().values()) {
       for (BotInstanceConfiguration botConfiguration : typeConfiguration.getInstances().values()) {
+        log.info("Starting {}...", botConfiguration.getId());
         this.dockerClient
             .startContainerCmd(this.botContainerIds.get(botConfiguration.getId()))
             .exec();

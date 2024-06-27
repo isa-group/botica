@@ -1,43 +1,28 @@
 package es.us.isa.botica.director;
 
-import com.github.dockerjava.api.DockerClient;
-import com.github.dockerjava.core.DefaultDockerClientConfig;
-import com.github.dockerjava.core.DockerClientBuilder;
-import com.github.dockerjava.core.DockerClientConfig;
-import com.github.dockerjava.httpclient5.ApacheDockerHttpClient;
-import es.us.isa.botica.director.broker.DockerRabbitMqDeploymentHandler;
-import es.us.isa.botica.configuration.MainConfiguration;
-import es.us.isa.botica.director.deploy.BotDeploymentHandler;
-import es.us.isa.botica.director.deploy.DockerBotDeploymentHandler;
-import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
-import es.us.isa.botica.util.configuration.JacksonConfigurationFileLoader;
+import es.us.isa.botica.director.exception.DirectorException;
 import java.io.File;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DirectorBootstrap {
+  private static final Logger log = LoggerFactory.getLogger(DirectorBootstrap.class);
   private static final File DEFAULT_MAIN_CONFIGURATION_FILE = new File("config.yml");
 
   public static void main(String[] args) {
-    ConfigurationFileLoader loader = new JacksonConfigurationFileLoader();
-    File configFile = new File("config.yml");
-    MainConfiguration mainConfiguration = loader.load(configFile, MainConfiguration.class);
+    File mainConfigurationFile = DEFAULT_MAIN_CONFIGURATION_FILE;
+    if (args.length > 0) {
+      mainConfigurationFile = new File(args[0]);
+    }
 
-    DockerClient dockerClient = buildDockerClient();
-    DockerRabbitMqDeploymentHandler brokerDeploymentHandler =
-        new DockerRabbitMqDeploymentHandler(dockerClient, mainConfiguration);
-    BotDeploymentHandler botDeploymentHandler =
-        new DockerBotDeploymentHandler(configFile, mainConfiguration, dockerClient);
-
-    new Director(brokerDeploymentHandler, botDeploymentHandler, mainConfiguration).init();
-  }
-
-  private static DockerClient buildDockerClient() {
-    DockerClientConfig dockerConfig =
-        DefaultDockerClientConfig.createDefaultConfigBuilder().build();
-
-    // TODO make configurable!
-    return DockerClientBuilder.getInstance(dockerConfig)
-        .withDockerHttpClient(
-            new ApacheDockerHttpClient.Builder().dockerHost(dockerConfig.getDockerHost()).build())
-        .build();
+    Director director = new Director(mainConfigurationFile);
+    Runtime.getRuntime().addShutdownHook(new Thread(director::stop));
+    try {
+      director.init();
+    } catch (DirectorException e) {
+      log.error(e.getMessage());
+    } catch (Exception e) {
+      log.error("An unexpected error occurred", e);
+    }
   }
 }

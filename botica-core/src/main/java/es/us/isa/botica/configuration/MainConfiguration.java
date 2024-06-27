@@ -3,6 +3,7 @@ package es.us.isa.botica.configuration;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.broker.BrokerConfiguration;
+import es.us.isa.botica.configuration.docker.DockerConfiguration;
 import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import java.util.Collections;
@@ -13,6 +14,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class MainConfiguration implements Configuration {
+  @JsonProperty("docker")
+  private DockerConfiguration dockerConfiguration = new DockerConfiguration();
+
   @JsonProperty("broker")
   private BrokerConfiguration brokerConfiguration;
 
@@ -44,6 +48,14 @@ public class MainConfiguration implements Configuration {
         .flatMap(type -> type.getInstances().keySet().stream())
         .filter(id -> !distinctBotIds.add(id))
         .collect(Collectors.toCollection(LinkedHashSet::new));
+  }
+
+  public DockerConfiguration getDockerConfiguration() {
+    return dockerConfiguration;
+  }
+
+  public void setDockerConfiguration(DockerConfiguration dockerConfiguration) {
+    this.dockerConfiguration = dockerConfiguration;
   }
 
   public BrokerConfiguration getBrokerConfiguration() {

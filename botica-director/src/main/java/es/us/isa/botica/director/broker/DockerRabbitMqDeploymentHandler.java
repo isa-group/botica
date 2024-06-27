@@ -19,6 +19,11 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Containerized RabbitMQ deployment handler using docker-java.
+ *
+ * @author Alberto Mimbrero
+ */
 public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler {
   private static final Logger log = LoggerFactory.getLogger(DockerRabbitMqDeploymentHandler.class);
 
@@ -29,9 +34,6 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
   private final DockerClient dockerClient;
   private final RabbitMqConfigurationGenerator configurationGenerator;
   private final RabbitMqConfiguration rabbitMqConfiguration;
-
-  private String networkId;
-  private String containerId;
 
   public DockerRabbitMqDeploymentHandler(
       DockerClient dockerClient, MainConfiguration mainConfiguration) {
@@ -51,32 +53,25 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
 
     this.removePreviousDeployment();
     this.pullImage();
-    this.networkId = this.createNetwork();
-    this.containerId = this.createContainer();
-    this.dockerClient.startContainerCmd(this.containerId).exec();
+    this.createNetwork();
+    String containerId = this.createContainer();
+    this.dockerClient.startContainerCmd(containerId).exec();
   }
 
   private void removePreviousDeployment() {
-    log.debug("Shutting down any previously running deployments...");
     this.dockerClient
         .listContainersCmd()
         .withShowAll(true)
         .withNameFilter(List.of(this.buildContainerName()))
         .exec()
         .stream()
-        .peek(
-            container ->
-                log.debug(
-                    "Found container from previous deployment: {}. Deleting...", container.getId()))
+        .peek(container -> log.debug("Removing container {}...", container.getId()))
         .forEach(
             container ->
                 this.dockerClient.removeContainerCmd(container.getId()).withForce(true).exec());
 
     this.dockerClient.listNetworksCmd().withNameFilter(this.buildNetworkName()).exec().stream()
-        .peek(
-            network ->
-                log.debug(
-                    "Found network from previous deployment: {}. Deleting...", network.getId()))
+        .peek(network -> log.debug("Removing network {}...", network.getId()))
         .forEach(network -> this.dockerClient.removeNetworkCmd(network.getName()).exec());
   }
 
@@ -89,13 +84,12 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
     }
   }
 
-  private String createNetwork() {
-    return this.dockerClient
+  private void createNetwork() {
+    this.dockerClient
         .createNetworkCmd()
         .withName(this.buildNetworkName())
         .withAttachable(true)
-        .exec()
-        .getId();
+        .exec();
   }
 
   private String createContainer() {
@@ -147,8 +141,7 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
 
   @Override
   public void shutdown() {
-    this.dockerClient.removeContainerCmd(this.containerId).withForce(true).exec();
-    this.dockerClient.removeNetworkCmd(this.networkId).exec();
+    this.removePreviousDeployment();
   }
 
   private String buildNetworkName() {
