@@ -1,8 +1,11 @@
-# VSCode Settings
-/.vscode/
-
 # DS_Store Files
 **/.DS_Store
 
+# IDEA Files
+.idea/
+
+# Botica Director Files
+.botica/
+
 # Generated Files
-/target
+target/

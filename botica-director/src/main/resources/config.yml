@@ -1,0 +1,37 @@
+broker:
+  type: rabbitmq
+  username: "username"
+  password: "password"
+  port: 5672
+
+bots:
+  bot-name:
+    image: "container-image"
+    mount:
+      - source: "path/to/host/file.extension"
+        target: "path/to/container/file.extension"
+      - source: "path/to/host/directory"
+        target: "path/to/container/directory"
+    lifecycle:
+      type: proactive
+      initialDelay: 60
+      period: 60
+    environment:
+      - KEY=VALUE
+    publish:
+      key: "publish-key"
+      order: "doPublish"
+    subscribe: [ "subscribe-key" ]
+    instances:
+      bot-1:
+        persistent: true
+        environment:
+          - KEY=VALUE
+      bot-2:
+        persistent: true
+        lifecycle:
+          type: proactive
+          initialDelay: 30
+          period: 30
+        environment:
+          - KEY=VALUE
