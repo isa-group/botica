@@ -117,7 +117,7 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
             new HostConfig()
                 .withNetworkMode(this.buildNetworkName())
                 .withMounts(this.buildMounts(type))
-                .withRestartPolicy(RestartPolicy.alwaysRestart()))
+                .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
         .exec()
         .getId();
   }

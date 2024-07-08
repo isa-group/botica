@@ -9,7 +9,7 @@ public class ProactiveBotLifecycleConfiguration implements BotLifecycleConfigura
   @Override
   public void validate(ValidationReport report) {
     if (initialDelay < 0) report.addError("initialDelay", "initialDelay must be positive");
-    if (period < 1) report.addError("period", "period must be greater than 1");
+    if (period == 0) report.addError("period", "period cannot be 0");
   }
 
   @Override

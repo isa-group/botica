@@ -9,7 +9,6 @@ import java.util.List;
 
 public class BotInstanceConfiguration implements Configuration {
   private String id;
-  private Boolean persistent;
   private List<String> environment = Collections.emptyList();
 
   @JsonProperty("lifecycle")
@@ -18,9 +17,8 @@ public class BotInstanceConfiguration implements Configuration {
   @Override
   public void validate(ValidationReport report) {
     if (id == null || id.isBlank()) report.addError("id", "missing or empty id");
-    if (persistent == null) report.addError("persistent", "missing property");
     if (lifecycleConfiguration != null) {
-        report.registerChild("lifecycle", lifecycleConfiguration);
+      report.registerChild("lifecycle", lifecycleConfiguration);
     }
   }
 
@@ -30,14 +28,6 @@ public class BotInstanceConfiguration implements Configuration {
 
   public void setId(String id) {
     this.id = id;
-  }
-
-  public boolean isPersistent() {
-    return persistent;
-  }
-
-  public void setPersistent(Boolean persistent) {
-    this.persistent = persistent;
   }
 
   public List<String> getEnvironment() {
@@ -62,8 +52,6 @@ public class BotInstanceConfiguration implements Configuration {
         + "id='"
         + id
         + '\''
-        + ", persistent="
-        + persistent
         + ", environment="
         + environment
         + ", lifecycleConfiguration="
