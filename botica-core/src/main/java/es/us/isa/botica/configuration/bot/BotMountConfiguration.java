@@ -6,6 +6,7 @@ import es.us.isa.botica.util.configuration.validate.ValidationReport;
 public class BotMountConfiguration implements Configuration {
   private String source;
   private String target;
+  private boolean createHostPath = false;
 
   @Override
   public void validate(ValidationReport report) {
@@ -29,6 +30,14 @@ public class BotMountConfiguration implements Configuration {
     this.target = target;
   }
 
+  public boolean isCreateHostPath() {
+    return createHostPath;
+  }
+
+  public void setCreateHostPath(boolean createHostPath) {
+    this.createHostPath = createHostPath;
+  }
+
   @Override
   public String toString() {
     return "BotMountConfiguration{"
@@ -38,6 +47,8 @@ public class BotMountConfiguration implements Configuration {
         + ", target='"
         + target
         + '\''
+        + ", createHostPath="
+        + createHostPath
         + '}';
   }
 }

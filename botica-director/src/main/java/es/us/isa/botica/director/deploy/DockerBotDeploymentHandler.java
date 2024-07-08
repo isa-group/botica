@@ -15,7 +15,10 @@ import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotMountConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
+import es.us.isa.botica.director.exception.MountNotFoundException;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -56,11 +59,12 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   }
 
   private void removeBotContainers() {
-    List<String> containerNames = this.mainConfiguration.getBotTypes().values().stream()
-        .flatMap(type -> type.getInstances().values().stream())
-        .map(BotInstanceConfiguration::getId)
-        .map(this::buildContainerName)
-        .collect(Collectors.toList());
+    List<String> containerNames =
+        this.mainConfiguration.getBotTypes().values().stream()
+            .flatMap(type -> type.getInstances().values().stream())
+            .map(BotInstanceConfiguration::getId)
+            .map(this::buildContainerName)
+            .collect(Collectors.toList());
 
     this.dockerClient
         .listContainersCmd()
@@ -137,10 +141,12 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   private List<Mount> buildMountsFromConfiguration(BotTypeConfiguration typeConfiguration) {
     List<Mount> mounts = new ArrayList<>();
     for (BotMountConfiguration mount : typeConfiguration.getMounts()) {
-      // TODO check if not exists
-      String source = new File(mount.getSource()).getAbsolutePath();
+      checkMount(typeConfiguration, mount);
       mounts.add(
-          new Mount().withType(MountType.BIND).withSource(source).withTarget(mount.getTarget()));
+          new Mount()
+              .withType(MountType.BIND)
+              .withSource(Path.of(mount.getSource()).toAbsolutePath().toString())
+              .withTarget(mount.getTarget()));
     }
     return mounts;
   }
@@ -186,5 +192,22 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
 
   private String buildContainerName(String id) {
     return CONTAINER_PREFIX + id;
+  }
+
+  private static void checkMount(BotTypeConfiguration botType, BotMountConfiguration mount) {
+    File source = new File(mount.getSource());
+    if (source.exists()) {
+      return;
+    }
+    if (!mount.isCreateHostPath() || !source.mkdirs()) {
+      try {
+        throw new MountNotFoundException(
+            String.format(
+                "The file or directory at %s does not exist and is required by '%s' bots",
+                source.getCanonicalFile().getAbsolutePath(), botType.getId()));
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
   }
 }

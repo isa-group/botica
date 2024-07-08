@@ -12,6 +12,7 @@ bots:
         target: "path/to/container/file.extension"
       - source: "path/to/host/directory"
         target: "path/to/container/directory"
+        createHostPath: true
     lifecycle:
       type: proactive
       initialDelay: 60

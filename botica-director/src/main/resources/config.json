@@ -16,7 +16,8 @@
         },
         {
           "source": "path/to/host/directory",
-          "target": "path/to/container/directory"
+          "target": "path/to/container/directory",
+          "createHostPath": true
         }
       ],
       "lifecycle": {
