@@ -9,8 +9,12 @@ public class BotPublishConfiguration implements Configuration {
 
   @Override
   public void validate(ValidationReport report) {
-    if (key == null || key.isBlank()) report.addError("key", "missing or empty key");
-    if (order == null || order.isBlank()) report.addError("order", "missing or empty order");
+    boolean missingKey = key == null || key.isBlank();
+    boolean missingOrder = order == null || order.isBlank();
+    if (missingKey ^ missingOrder) {
+      if (missingKey) report.addError("key", "missing or empty key");
+      if (missingOrder) report.addError("order", "missing or empty order");
+    }
   }
 
   public String getKey() {

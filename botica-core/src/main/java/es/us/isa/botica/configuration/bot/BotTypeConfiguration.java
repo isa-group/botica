@@ -19,7 +19,7 @@ public class BotTypeConfiguration implements Configuration {
   private BotLifecycleConfiguration lifecycleConfiguration;
 
   @JsonProperty("publish")
-  private BotPublishConfiguration publishConfiguration;
+  private BotPublishConfiguration publishConfiguration = new BotPublishConfiguration();
 
   private Map<String, BotInstanceConfiguration> instances = Collections.emptyMap();
 
