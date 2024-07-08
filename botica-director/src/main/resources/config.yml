@@ -21,7 +21,6 @@ bots:
     publish:
       key: "publish-key"
       order: "doPublish"
-    subscribe: [ "subscribe-key" ]
     instances:
       bot-1:
         persistent: true

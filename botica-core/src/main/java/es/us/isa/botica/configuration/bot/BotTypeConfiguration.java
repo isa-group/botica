@@ -21,9 +21,6 @@ public class BotTypeConfiguration implements Configuration {
   @JsonProperty("publish")
   private BotPublishConfiguration publishConfiguration;
 
-  @JsonProperty("subscribe")
-  private List<String> subscribeKeys = Collections.emptyList();
-
   private Map<String, BotInstanceConfiguration> instances = Collections.emptyMap();
 
   @Override
@@ -80,14 +77,6 @@ public class BotTypeConfiguration implements Configuration {
     this.publishConfiguration = publishConfiguration;
   }
 
-  public List<String> getSubscribeKeys() {
-    return subscribeKeys;
-  }
-
-  public void setSubscribeKeys(List<String> subscribeKeys) {
-    this.subscribeKeys = subscribeKeys;
-  }
-
   public Map<String, BotInstanceConfiguration> getInstances() {
     return instances;
   }
@@ -112,8 +101,6 @@ public class BotTypeConfiguration implements Configuration {
         + lifecycleConfiguration
         + ", publishConfiguration="
         + publishConfiguration
-        + ", subscribeKeys="
-        + subscribeKeys
         + ", instanceConfigurations="
         + instances
         + '}';

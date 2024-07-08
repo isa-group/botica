@@ -28,9 +28,6 @@
         "key": "publish-key",
         "order": "order"
       },
-      "subscribe": [
-        "subscribe-key"
-      ],
       "instances": {
         "bot-1": {
           "persistent": true,

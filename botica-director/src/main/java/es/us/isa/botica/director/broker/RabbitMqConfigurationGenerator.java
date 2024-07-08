@@ -6,6 +6,8 @@ import static es.us.isa.botica.rabbitmq.RabbitMqConstants.PROTOCOL_EXCHANGE;
 
 import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleType;
+import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.io.IOException;
@@ -77,7 +79,12 @@ public class RabbitMqConfigurationGenerator {
   private List<Binding> buildBindings() {
     List<Binding> bindings = new ArrayList<>();
     for (BotTypeConfiguration botType : configuration.getBotTypes().values()) {
-      for (String key : botType.getSubscribeKeys()) {
+      if (botType.getLifecycleConfiguration().getType() != BotLifecycleType.REACTIVE) {
+        continue;
+      }
+      ReactiveBotLifecycleConfiguration lifecycleConfiguration =
+          (ReactiveBotLifecycleConfiguration) botType.getLifecycleConfiguration();
+      for (String key : lifecycleConfiguration.getSubscribeKeys()) {
         bindings.add(new Binding(ORDER_EXCHANGE, buildBotTypeQueue(botType.getId()), key));
       }
     }

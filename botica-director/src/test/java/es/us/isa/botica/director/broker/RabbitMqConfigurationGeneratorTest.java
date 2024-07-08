@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -179,11 +180,17 @@ public class RabbitMqConfigurationGeneratorTest {
   private static Map<String, BotTypeConfiguration> buildBotConfigurations() {
     BotTypeConfiguration fooBotType = new BotTypeConfiguration();
     fooBotType.setId("foo");
-    fooBotType.setSubscribeKeys(List.of("foo_key", "bar_key"));
+    ReactiveBotLifecycleConfiguration fooLifecycleConfiguration =
+        new ReactiveBotLifecycleConfiguration();
+    fooLifecycleConfiguration.setSubscribeKeys(List.of("foo_key", "bar_key"));
+    fooBotType.setLifecycleConfiguration(fooLifecycleConfiguration);
 
     BotTypeConfiguration barBotType = new BotTypeConfiguration();
     barBotType.setId("bar");
-    barBotType.setSubscribeKeys(List.of("bar_key", "qux_key"));
+    ReactiveBotLifecycleConfiguration barLifecycleConfiguration =
+        new ReactiveBotLifecycleConfiguration();
+    barLifecycleConfiguration.setSubscribeKeys(List.of("bar_key", "qux_key"));
+    barBotType.setLifecycleConfiguration(barLifecycleConfiguration);
 
     Map<String, BotTypeConfiguration> bots = new LinkedHashMap<>();
     bots.put("foo", fooBotType);
