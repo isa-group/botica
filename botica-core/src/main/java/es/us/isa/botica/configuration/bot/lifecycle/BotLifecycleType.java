@@ -2,7 +2,8 @@ package es.us.isa.botica.configuration.bot.lifecycle;
 
 public enum BotLifecycleType {
   REACTIVE("reactive"),
-  PROACTIVE("proactive");
+  PROACTIVE("proactive"),
+  UNMANAGED("unmanaged");
 
   private final String name;
 

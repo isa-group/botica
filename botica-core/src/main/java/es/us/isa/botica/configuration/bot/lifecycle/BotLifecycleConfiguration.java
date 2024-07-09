@@ -11,7 +11,8 @@ import es.us.isa.botica.util.configuration.Configuration;
     defaultImpl = InvalidBotLifecycleConfiguration.class)
 @JsonSubTypes({
   @JsonSubTypes.Type(value = ProactiveBotLifecycleConfiguration.class, name = "proactive"),
-  @JsonSubTypes.Type(value = ReactiveBotLifecycleConfiguration.class, name = "reactive")
+  @JsonSubTypes.Type(value = ReactiveBotLifecycleConfiguration.class, name = "reactive"),
+  @JsonSubTypes.Type(value = UnmanagedBotLifecycleConfiguration.class, name = "unmanaged")
 })
 public interface BotLifecycleConfiguration extends Configuration {
   @JsonIgnore
