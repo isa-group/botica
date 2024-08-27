@@ -13,15 +13,20 @@ bots:
       - source: "path/to/host/directory"
         target: "path/to/container/directory"
         createHostPath: true
+    environment:
+      - KEY=VALUE
+    publish:
+      key: "publish_key"
+      order: "do_publish"
+    subscribe:
+      - key: "subscribe_key_1"
+        strategy: distributed
+      - key: "subscribe_key_2"
+        strategy: broadcast
     lifecycle:
       type: proactive
       initialDelay: 60
       period: 60
-    environment:
-      - KEY=VALUE
-    publish:
-      key: "publish-key"
-      order: "doPublish"
     instances:
       bot-1:
         persistent: true

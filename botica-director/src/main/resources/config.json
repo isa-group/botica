@@ -20,14 +20,24 @@
           "createHostPath": true
         }
       ],
+      "publish": {
+        "key": "publish_key",
+        "order": "do_publish"
+      },
+      "subscribe": [
+        {
+          "key": "subscribe_key_1",
+          "strategy": "distributed"
+        },
+        {
+          "key": "subscribe_key_2",
+          "strategy": "broadcast"
+        }
+      ],
       "lifecycle": {
         "type": "proactive",
         "initialDelay": 60,
         "period": 60
-      },
-      "publish": {
-        "key": "publish-key",
-        "order": "order"
       },
       "instances": {
         "bot-1": {

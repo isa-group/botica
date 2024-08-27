@@ -1,13 +1,14 @@
 package es.us.isa.botica.director.broker;
 
-import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_FORMAT;
+import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_BROADCAST_FORMAT;
+import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_DISTRIBUTED_FORMAT;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.ORDER_EXCHANGE;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.PROTOCOL_EXCHANGE;
 
 import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.bot.BotSubscribeConfiguration;
+import es.us.isa.botica.configuration.bot.BotSubscribeConfiguration.RoutingStrategy;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
-import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleType;
-import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.io.IOException;
@@ -17,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroupFile;
@@ -60,8 +62,12 @@ public class RabbitMqConfigurationGenerator {
     return definitions.render();
   }
 
-  private String buildBotTypeQueue(String botType) {
-    return String.format(BOT_TYPE_ORDERS_FORMAT, botType);
+  private String buildBotTypeDistributedQueue(String botType) {
+    return String.format(BOT_TYPE_ORDERS_DISTRIBUTED_FORMAT, botType);
+  }
+
+  private String buildBotTypeBroadcastQueue(String botType) {
+    return String.format(BOT_TYPE_ORDERS_BROADCAST_FORMAT, botType);
   }
 
   private Authentication buildAuthentication() {
@@ -70,22 +76,40 @@ public class RabbitMqConfigurationGenerator {
     return new Authentication(rabbitConfiguration.getUsername(), rabbitConfiguration.getPassword());
   }
 
-  private List<String> buildQueues() {
-    return this.configuration.getBotTypes().keySet().stream()
-        .map(this::buildBotTypeQueue)
+  private List<Queue> buildQueues() {
+    return this.configuration.getBotTypes().values().stream()
+        .map(this::buildQueues)
+        .flatMap(List::stream)
         .collect(Collectors.toList());
+  }
+
+  private List<Queue> buildQueues(BotTypeConfiguration botType) {
+    List<Queue> queues = new ArrayList<>(2);
+    Set<RoutingStrategy> strategies =
+        botType.getSubscribeConfigurations().stream()
+            .map(BotSubscribeConfiguration::getStrategy)
+            .collect(Collectors.toSet());
+
+    if (strategies.contains(RoutingStrategy.DISTRIBUTED)) {
+      String name = buildBotTypeDistributedQueue(botType.getId());
+      queues.add(new Queue(name, false));
+    }
+    if (strategies.contains(RoutingStrategy.BROADCAST)) {
+      String name = buildBotTypeBroadcastQueue(botType.getId());
+      queues.add(new Queue(name, true));
+    }
+    return queues;
   }
 
   private List<Binding> buildBindings() {
     List<Binding> bindings = new ArrayList<>();
     for (BotTypeConfiguration botType : configuration.getBotTypes().values()) {
-      if (botType.getLifecycleConfiguration().getType() != BotLifecycleType.REACTIVE) {
-        continue;
-      }
-      ReactiveBotLifecycleConfiguration lifecycleConfiguration =
-          (ReactiveBotLifecycleConfiguration) botType.getLifecycleConfiguration();
-      for (String key : lifecycleConfiguration.getSubscribeKeys()) {
-        bindings.add(new Binding(ORDER_EXCHANGE, buildBotTypeQueue(botType.getId()), key));
+      for (BotSubscribeConfiguration subscription : botType.getSubscribeConfigurations()) {
+        String queue =
+            subscription.getStrategy() == RoutingStrategy.DISTRIBUTED
+                ? buildBotTypeDistributedQueue(botType.getId())
+                : buildBotTypeBroadcastQueue(botType.getId());
+        bindings.add(new Binding(ORDER_EXCHANGE, queue, subscription.getKey()));
       }
     }
     return bindings;
@@ -106,6 +130,16 @@ public class RabbitMqConfigurationGenerator {
     private Exchange(String name, String type) {
       this.name = name;
       this.type = type;
+    }
+  }
+
+  private static class Queue {
+    public final String name;
+    public final boolean isStream;
+
+    private Queue(String name, boolean isStream) {
+      this.name = name;
+      this.isStream = isStream;
     }
   }
 

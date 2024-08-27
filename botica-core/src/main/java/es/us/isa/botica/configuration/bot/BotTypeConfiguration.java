@@ -15,11 +15,14 @@ public class BotTypeConfiguration implements Configuration {
   @JsonProperty("mount")
   private List<BotMountConfiguration> mounts = Collections.emptyList();
 
-  @JsonProperty("lifecycle")
-  private BotLifecycleConfiguration lifecycleConfiguration;
-
   @JsonProperty("publish")
   private BotPublishConfiguration publishConfiguration = new BotPublishConfiguration();
+
+  @JsonProperty("subscribe")
+  private List<BotSubscribeConfiguration> subscribeConfigurations = Collections.emptyList();
+
+  @JsonProperty("lifecycle")
+  private BotLifecycleConfiguration lifecycleConfiguration;
 
   private Map<String, BotInstanceConfiguration> instances = Collections.emptyMap();
 
@@ -33,8 +36,9 @@ public class BotTypeConfiguration implements Configuration {
       instances.forEach((id, instance) -> report.registerChild("instances." + id, instance));
     }
     report.registerChild("mounts", mounts);
-    report.registerChild("lifecycle", lifecycleConfiguration);
     report.registerChild("publish", publishConfiguration);
+    report.registerChild("subscribe", subscribeConfigurations);
+    report.registerChild("lifecycle", lifecycleConfiguration);
   }
 
   public String getId() {
@@ -77,6 +81,14 @@ public class BotTypeConfiguration implements Configuration {
     this.publishConfiguration = publishConfiguration;
   }
 
+  public List<BotSubscribeConfiguration> getSubscribeConfigurations() {
+    return subscribeConfigurations;
+  }
+
+  public void setSubscribeConfigurations(List<BotSubscribeConfiguration> subscribeConfigurations) {
+    this.subscribeConfigurations = subscribeConfigurations;
+  }
+
   public Map<String, BotInstanceConfiguration> getInstances() {
     return instances;
   }
@@ -88,20 +100,22 @@ public class BotTypeConfiguration implements Configuration {
 
   @Override
   public String toString() {
-    return "BotConfiguration{"
+    return "BotTypeConfiguration{"
         + "id='"
         + id
         + '\''
         + ", image='"
         + image
         + '\''
-        + ", mountConfigurations="
+        + ", mounts="
         + mounts
-        + ", lifecycleConfiguration="
-        + lifecycleConfiguration
         + ", publishConfiguration="
         + publishConfiguration
-        + ", instanceConfigurations="
+        + ", subscribeConfigurations="
+        + subscribeConfigurations
+        + ", lifecycleConfiguration="
+        + lifecycleConfiguration
+        + ", instances="
         + instances
         + '}';
   }

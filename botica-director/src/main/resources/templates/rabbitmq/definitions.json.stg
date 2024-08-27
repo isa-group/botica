@@ -33,15 +33,17 @@ file(authentication, exchanges, queues, bindings) ::= <<
 }
 >>
 
-queue(name) ::= <<
+queue(queue) ::= <<
 {
-  "name": "<name>",
+  "name": "<queue.name>",
   "vhost": "/",
   "durable": true,
   "auto_delete": false,
-  "arguments": {
-    "x-message-ttl": 3600000
+  "arguments": {<if(queue.isStream)>
+    "x-queue-type": "stream"
   }
+  <else>}
+  <endif>
 }
 >>
 

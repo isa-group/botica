@@ -78,9 +78,18 @@ public class RabbitMqClient {
   public void subscribe(String queue, Consumer<String> consumer) {
     try {
       Channel channel = this.connection.createChannel();
+      channel.basicQos(10);
       channel.basicConsume(
           queue,
-          (consumerTag, message) -> consumer.accept(new String(message.getBody())),
+          (consumerTag, message) -> {
+            try {
+              consumer.accept(new String(message.getBody()));
+              channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+            } catch (Exception e) {
+              logger.error("An exception was thrown while consuming an order.", e);
+              channel.basicReject(message.getEnvelope().getDeliveryTag(), false);
+            }
+          },
           consumerTag -> {});
     } catch (IOException e) {
       throw new RuntimeException(e);

@@ -1,12 +1,17 @@
 package es.us.isa.botica.director.broker;
 
+import static es.us.isa.botica.director.broker.RabbitMqConfigurationGeneratorTestData.BINDING_FORMAT;
+import static es.us.isa.botica.director.broker.RabbitMqConfigurationGeneratorTestData.EXCHANGE_FORMAT;
+import static es.us.isa.botica.director.broker.RabbitMqConfigurationGeneratorTestData.QUEUE_FORMAT;
+import static es.us.isa.botica.director.broker.RabbitMqConfigurationGeneratorTestData.STREAM_QUEUE_FORMAT;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.ORDER_EXCHANGE;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.PROTOCOL_EXCHANGE;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.bot.BotSubscribeConfiguration;
+import es.us.isa.botica.configuration.bot.BotSubscribeConfiguration.RoutingStrategy;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
-import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -89,23 +94,15 @@ public class RabbitMqConfigurationGeneratorTest {
     RabbitMqConfigurationGenerator configurationGenerator =
         new RabbitMqConfigurationGenerator(buildConfiguration());
     String content = configurationGenerator.buildDefinitionsContent();
-    String format =
-        "    {\n"
-            + "      \"name\": \"%s\",\n"
-            + "      \"vhost\": \"/\",\n"
-            + "      \"durable\": true,\n"
-            + "      \"auto_delete\": false,\n"
-            + "      \"arguments\": {\n"
-            + "        \"x-message-ttl\": 3600000\n"
-            + "      }\n"
-            + "    }";
 
     assertThat(content)
         .contains(
             "  \"queues\": [\n"
-                + String.format(format, "bot_type.foo.orders")
+                + String.format(QUEUE_FORMAT, "bot_type.foo.orders.distributed")
                 + ",\n"
-                + String.format(format, "bot_type.bar.orders")
+                + String.format(QUEUE_FORMAT, "bot_type.bar.orders.distributed")
+                + ",\n"
+                + String.format(STREAM_QUEUE_FORMAT, "bot_type.bar.orders.broadcast")
                 + "\n"
                 + "  ]");
   }
@@ -115,23 +112,13 @@ public class RabbitMqConfigurationGeneratorTest {
     RabbitMqConfigurationGenerator configurationGenerator =
         new RabbitMqConfigurationGenerator(buildConfiguration());
     String content = configurationGenerator.buildDefinitionsContent();
-    String format =
-        "    {\n"
-            + "      \"name\": \"%s\",\n"
-            + "      \"vhost\": \"/\",\n"
-            + "      \"type\": \"topic\",\n"
-            + "      \"durable\": true,\n"
-            + "      \"auto_delete\": false,\n"
-            + "      \"internal\": false,\n"
-            + "      \"arguments\": {}\n"
-            + "    }";
 
     assertThat(content)
         .contains(
             "  \"exchanges\": [\n"
-                + String.format(format, ORDER_EXCHANGE)
+                + String.format(EXCHANGE_FORMAT, ORDER_EXCHANGE)
                 + ",\n"
-                + String.format(format, PROTOCOL_EXCHANGE)
+                + String.format(EXCHANGE_FORMAT, PROTOCOL_EXCHANGE)
                 + "\n"
                 + "  ]");
   }
@@ -141,26 +128,21 @@ public class RabbitMqConfigurationGeneratorTest {
     RabbitMqConfigurationGenerator configurationGenerator =
         new RabbitMqConfigurationGenerator(buildConfiguration());
     String content = configurationGenerator.buildDefinitionsContent();
-    String format =
-        "    {\n"
-            + "      \"source\": \"%s\",\n"
-            + "      \"vhost\": \"/\",\n"
-            + "      \"destination\": \"%s\",\n"
-            + "      \"destination_type\": \"queue\",\n"
-            + "      \"routing_key\": \"%s\",\n"
-            + "      \"arguments\": {}\n"
-            + "    }";
 
     assertThat(content)
         .contains(
             "  \"bindings\": [\n"
-                + String.format(format, ORDER_EXCHANGE, "bot_type.foo.orders", "foo_key")
+                + String.format(
+                    BINDING_FORMAT, ORDER_EXCHANGE, "bot_type.foo.orders.distributed", "foo_key")
                 + ",\n"
-                + String.format(format, ORDER_EXCHANGE, "bot_type.foo.orders", "bar_key")
+                + String.format(
+                    BINDING_FORMAT, ORDER_EXCHANGE, "bot_type.foo.orders.distributed", "bar_key")
                 + ",\n"
-                + String.format(format, ORDER_EXCHANGE, "bot_type.bar.orders", "bar_key")
+                + String.format(
+                    BINDING_FORMAT, ORDER_EXCHANGE, "bot_type.bar.orders.distributed", "bar_key")
                 + ",\n"
-                + String.format(format, ORDER_EXCHANGE, "bot_type.bar.orders", "qux_key")
+                + String.format(
+                    BINDING_FORMAT, ORDER_EXCHANGE, "bot_type.bar.orders.broadcast", "qux_key")
                 + "\n"
                 + "  ]");
   }
@@ -178,23 +160,28 @@ public class RabbitMqConfigurationGeneratorTest {
   }
 
   private static Map<String, BotTypeConfiguration> buildBotConfigurations() {
+    var fooKeySubscription = buildSubscription("foo_key", RoutingStrategy.DISTRIBUTED);
+    var barKeySubscription = buildSubscription("bar_key", RoutingStrategy.DISTRIBUTED);
+    var quxKeySubscription = buildSubscription("qux_key", RoutingStrategy.BROADCAST);
+
     BotTypeConfiguration fooBotType = new BotTypeConfiguration();
     fooBotType.setId("foo");
-    ReactiveBotLifecycleConfiguration fooLifecycleConfiguration =
-        new ReactiveBotLifecycleConfiguration();
-    fooLifecycleConfiguration.setSubscribeKeys(List.of("foo_key", "bar_key"));
-    fooBotType.setLifecycleConfiguration(fooLifecycleConfiguration);
+    fooBotType.setSubscribeConfigurations(List.of(fooKeySubscription, barKeySubscription));
 
     BotTypeConfiguration barBotType = new BotTypeConfiguration();
     barBotType.setId("bar");
-    ReactiveBotLifecycleConfiguration barLifecycleConfiguration =
-        new ReactiveBotLifecycleConfiguration();
-    barLifecycleConfiguration.setSubscribeKeys(List.of("bar_key", "qux_key"));
-    barBotType.setLifecycleConfiguration(barLifecycleConfiguration);
+    barBotType.setSubscribeConfigurations(List.of(barKeySubscription, quxKeySubscription));
 
     Map<String, BotTypeConfiguration> bots = new LinkedHashMap<>();
     bots.put("foo", fooBotType);
     bots.put("bar", barBotType);
     return bots;
+  }
+
+  private static BotSubscribeConfiguration buildSubscription(String key, RoutingStrategy strategy) {
+    BotSubscribeConfiguration subscribeConfiguration = new BotSubscribeConfiguration();
+    subscribeConfiguration.setKey(key);
+    subscribeConfiguration.setStrategy(strategy);
+    return subscribeConfiguration;
   }
 }
