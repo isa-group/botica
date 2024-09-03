@@ -259,3 +259,5 @@ Option to override the [lifecycle configuration of the bot's type](#lifecycle).
 #### environment
 
 The list of the environment variables to pass to the bot's container.
+
+[<- Messaging between bots](messaging-between-bots.md) | [Example projects ->](example-projects.md)
