@@ -6,9 +6,7 @@ public class ReactiveBotLifecycleConfiguration implements BotLifecycleConfigurat
   private String order;
 
   @Override
-  public void validate(ValidationReport report) {
-    if (order == null || order.isBlank()) report.addError("order", "missing or empty order");
-  }
+  public void validate(ValidationReport report) {}
 
   @Override
   public BotLifecycleType getType() {
