@@ -23,8 +23,9 @@ Botica environment:
 
 1. [The concept of a bot](the-concept-of-a-bot.md)
 2. [Messaging between bots](messaging-between-bots.md)
-3. [The infrastructure configuration file](the-infrastructure-configuration-file.md)
-4. [Example projects](example-projects.md)
+3. [Sharing files between bots](sharing-files-between-bots.md)
+4. [The infrastructure configuration file](the-infrastructure-configuration-file.md)
+5. [Example projects](example-projects.md)
 
 ## Setting up your Botica environment
 

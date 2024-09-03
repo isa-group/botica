@@ -171,4 +171,4 @@ await bot.publish({id: 123, payload: "data"});
 In this example, the bot will automatically use the `task_updates` key and the `process_data` order
 when publishing messages.
 
-[<- The concept of a bot](the-concept-of-a-bot.md) | [The infrastructure configuration file ->](the-infrastructure-configuration-file.md)
+[<- The concept of a bot](the-concept-of-a-bot.md) | [Sharing files between bots ->](sharing-files-between-bots.md)

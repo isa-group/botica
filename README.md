@@ -36,4 +36,4 @@ Botica operates with two primary components:
   reactively (in response to messages). Moreover, bots can publish and subscribe to multiple orders,
   allowing for complex inter-bot communication and orchestration.
 
-## [Check out our documentation!](docs/getting-started.md)
+### Check out our documentation! [Get started](docs/getting-started.md).
