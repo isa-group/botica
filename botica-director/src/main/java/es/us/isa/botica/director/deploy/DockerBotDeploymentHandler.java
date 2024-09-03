@@ -36,7 +36,7 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   private static final Logger log = LoggerFactory.getLogger(DockerBotDeploymentHandler.class);
 
   private static final String SHARED_VOLUME_NAME = "shared";
-  private static final String SHARED_VOLUME_PATH = "/app/shared";
+  private static final String SHARED_VOLUME_PATH = "/shared";
   private static final String CONFIGURATION_SECRET_PATH = "/run/secrets/botica-config";
 
   private final File mainConfigurationFile;
