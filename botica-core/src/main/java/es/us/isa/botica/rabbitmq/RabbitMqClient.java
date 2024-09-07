@@ -78,7 +78,7 @@ public class RabbitMqClient {
   public void subscribe(String queue, Consumer<String> consumer) {
     try {
       Channel channel = this.connection.createChannel();
-      channel.basicQos(10);
+      channel.basicQos(1);
       channel.basicConsume(
           queue,
           (consumerTag, message) -> {
