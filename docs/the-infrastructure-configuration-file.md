@@ -8,8 +8,9 @@
 3. [Broker top-level element](#broker-top-level-element)
     1. [type](#type)
     2. [RabbitMQ configuration properties](#rabbitmq-configuration-properties)
-4. [Bots top-level element](#bots-top-level-element)
-5. [Bot type object](#bot-type-object)
+4. [Shutdown top-level element](#shutdown-top-level-element)
+5. [Bots top-level element](#bots-top-level-element)
+6. [Bot type object](#bot-type-object)
     1. [image](#image)
     2. [mount](#mount)
     3. [publish](#publish)
@@ -93,6 +94,18 @@ The port to expose the provided broker instance to your host system. Defaults to
 
 ```yaml
 port: 5672
+```
+
+## Shutdown top-level element
+
+### timeout
+
+The amount of time, in milliseconds, the director waits before considering that a bot has timed out
+in responding to a shutdown request. Defaults to `10000` milliseconds (10 seconds).
+
+```yaml
+shutdown:
+  timeout: 10000
 ```
 
 ## Bots top-level element

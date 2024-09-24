@@ -15,14 +15,15 @@ import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotMountConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
+import es.us.isa.botica.director.Director;
+import es.us.isa.botica.director.bot.Bot;
+import es.us.isa.botica.director.docker.DockerClientFactory;
 import es.us.isa.botica.director.exception.MountNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,21 +33,33 @@ import org.slf4j.LoggerFactory;
  *
  * @author Alberto Mimbrero
  */
-public class DockerBotDeploymentHandler implements BotDeploymentHandler {
-  private static final Logger log = LoggerFactory.getLogger(DockerBotDeploymentHandler.class);
+public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
+  private static final Logger log = LoggerFactory.getLogger(DockerJavaBotDeploymentHandler.class);
 
   private static final String SHARED_VOLUME_NAME = "shared";
   private static final String SHARED_VOLUME_PATH = "/shared";
   private static final String CONFIGURATION_SECRET_PATH = "/run/secrets/botica-config";
 
+  private final Director director;
   private final File mainConfigurationFile;
   private final MainConfiguration mainConfiguration;
   private final DockerClient dockerClient;
 
-  private final Map<String, String> botContainerIds = new HashMap<>();
+  public DockerJavaBotDeploymentHandler(
+      Director director, File mainConfigurationFile, MainConfiguration mainConfiguration) {
+    this(
+        director,
+        mainConfigurationFile,
+        mainConfiguration,
+        DockerClientFactory.createDockerClient(mainConfiguration.getDockerConfiguration()));
+  }
 
-  public DockerBotDeploymentHandler(
-      File mainConfigurationFile, MainConfiguration mainConfiguration, DockerClient dockerClient) {
+  public DockerJavaBotDeploymentHandler(
+      Director director,
+      File mainConfigurationFile,
+      MainConfiguration mainConfiguration,
+      DockerClient dockerClient) {
+    this.director = director;
     this.mainConfigurationFile = mainConfigurationFile;
     this.mainConfiguration = mainConfiguration;
     this.dockerClient = dockerClient;
@@ -88,35 +101,27 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
   }
 
   @Override
-  public void deploy() {
+  public void setupInfrastructure() {
     this.createSharedVolume();
-    this.createBotContainers();
-    this.startBotContainers();
   }
 
   private void createSharedVolume() {
     this.dockerClient.createVolumeCmd().withName(buildSharedVolumeName()).exec();
   }
 
-  private void createBotContainers() {
-    for (BotTypeConfiguration typeConfiguration : this.mainConfiguration.getBotTypes().values()) {
-      for (BotInstanceConfiguration botConfiguration : typeConfiguration.getInstances().values()) {
-        String containerId = this.createContainer(typeConfiguration, botConfiguration);
-        this.botContainerIds.put(botConfiguration.getId(), containerId);
-      }
+  @Override
+  public String createContainer(Bot bot) {
+    if (!this.director.isRunning()) {
+      return null;
     }
-  }
-
-  private String createContainer(BotTypeConfiguration type, BotInstanceConfiguration bot) {
-    log.info("Creating {}...", bot.getId());
     return this.dockerClient
-        .createContainerCmd(type.getImage())
+        .createContainerCmd(bot.getTypeConfiguration().getImage())
         .withName(this.buildContainerName(bot.getId()))
-        .withEnv(this.buildEnvironmentVariables(type, bot))
+        .withEnv(this.buildEnvironmentVariables(bot.getTypeConfiguration(), bot.getConfiguration()))
         .withHostConfig(
             new HostConfig()
                 .withNetworkMode(this.buildNetworkName())
-                .withMounts(this.buildMounts(type))
+                .withMounts(this.buildMounts(bot.getTypeConfiguration()))
                 .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
         .exec()
         .getId();
@@ -166,14 +171,20 @@ public class DockerBotDeploymentHandler implements BotDeploymentHandler {
         .withTarget(CONFIGURATION_SECRET_PATH);
   }
 
-  private void startBotContainers() {
-    for (BotTypeConfiguration typeConfiguration : this.mainConfiguration.getBotTypes().values()) {
-      for (BotInstanceConfiguration botConfiguration : typeConfiguration.getInstances().values()) {
-        log.info("Starting {}...", botConfiguration.getId());
-        this.dockerClient
-            .startContainerCmd(this.botContainerIds.get(botConfiguration.getId()))
-            .exec();
-      }
+  @Override
+  public void startContainer(String containerId) {
+    if (!this.director.isRunning()) {
+      return;
+    }
+    this.dockerClient.startContainerCmd(containerId).exec();
+  }
+
+  @Override
+  public void stopContainer(String containerId) {
+    try {
+      this.dockerClient.stopContainerCmd(containerId).exec();
+    } catch (RuntimeException e) {
+      log.debug("Error while stopping a container", e);
     }
   }
 

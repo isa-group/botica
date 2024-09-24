@@ -23,6 +23,9 @@ public class MainConfiguration implements Configuration {
   @JsonProperty("bots")
   private Map<String, BotTypeConfiguration> botTypes = Collections.emptyMap();
 
+  @JsonProperty("shutdown")
+  private ShutdownConfiguration shutdownConfiguration = new ShutdownConfiguration();
+
   @Override
   public void validate(ValidationReport report) {
     if (brokerConfiguration == null) {
@@ -40,6 +43,8 @@ public class MainConfiguration implements Configuration {
       }
       botTypes.forEach((name, botType) -> report.registerChild("bots." + name, botType));
     }
+
+    report.registerChild("shutdown", shutdownConfiguration);
   }
 
   private Set<String> getDuplicateBotIds() {
@@ -75,13 +80,25 @@ public class MainConfiguration implements Configuration {
     botTypes.forEach((name, botType) -> botType.setId(name));
   }
 
+  public ShutdownConfiguration getShutdownConfiguration() {
+    return shutdownConfiguration;
+  }
+
+  public void setShutdownConfiguration(ShutdownConfiguration shutdownConfiguration) {
+    this.shutdownConfiguration = shutdownConfiguration;
+  }
+
   @Override
   public String toString() {
     return "MainConfiguration{"
-        + "brokerConfiguration="
+        + "dockerConfiguration="
+        + dockerConfiguration
+        + ", brokerConfiguration="
         + brokerConfiguration
         + ", botTypes="
         + botTypes
+        + ", shutdownConfiguration="
+        + shutdownConfiguration
         + '}';
   }
 }

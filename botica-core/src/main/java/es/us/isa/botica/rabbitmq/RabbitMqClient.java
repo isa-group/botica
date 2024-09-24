@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 public class RabbitMqClient {
   private static final Logger logger = LoggerFactory.getLogger(RabbitMqClient.class);
-  private static final int RETRY_SECONDS = 5;
-  private static final int MAX_ATTEMPTS = 7;
+  private static final int RETRY_SECONDS = 2;
+  private static final int MAX_ATTEMPTS = 25;
 
   private Connection connection;
   private Channel mainChannel;
@@ -42,7 +42,7 @@ public class RabbitMqClient {
         if (attempts++ > MAX_ATTEMPTS) {
           throw new TimeoutException("couldn't establish connection with RabbitMQ");
         }
-        logger.error(
+        logger.debug(
             "Couldn't establish connection with RabbitMQ: {}. Retrying in {} seconds...",
             e.getMessage(),
             RETRY_SECONDS);

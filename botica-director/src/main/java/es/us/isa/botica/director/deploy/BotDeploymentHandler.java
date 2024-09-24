@@ -1,9 +1,11 @@
 package es.us.isa.botica.director.deploy;
 
+import es.us.isa.botica.director.bot.Bot;
+
 /**
  * Interface for handling the deployment of bots.
  *
- * @see DockerBotDeploymentHandler
+ * @see DockerJavaBotDeploymentHandler
  */
 public interface BotDeploymentHandler {
   /**
@@ -12,9 +14,14 @@ public interface BotDeploymentHandler {
    */
   void removePreviousDeployment();
 
-  /** Deploys all the containerized infrastructure. */
-  void deploy();
+  void setupInfrastructure();
 
-  /** Stops all the containerized infrastructure. */
+  String createContainer(Bot bot);
+
+  void startContainer(String containerId);
+
+  void stopContainer(String containerId);
+
+  /** Shuts down the container infrastructure. */
   void shutdown();
 }

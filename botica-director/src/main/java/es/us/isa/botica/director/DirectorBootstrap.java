@@ -1,5 +1,6 @@
 package es.us.isa.botica.director;
 
+import es.us.isa.botica.director.cli.DirectorCli;
 import es.us.isa.botica.director.exception.DirectorException;
 import java.io.File;
 import org.slf4j.Logger;
@@ -15,14 +16,26 @@ public class DirectorBootstrap {
       mainConfigurationFile = new File(args[0]);
     }
 
+    Director director = setupDirector(mainConfigurationFile);
+    DirectorCli cli = new DirectorCli(director);
+    new Thread(cli::start).start();
+  }
+
+  private static Director setupDirector(File mainConfigurationFile) {
     Director director = new Director(mainConfigurationFile);
-    Runtime.getRuntime().addShutdownHook(new Thread(director::stop));
+    Thread shutdownHook = new Thread(director::shutdownInfrastructure);
+    Runtime.getRuntime().addShutdownHook(shutdownHook);
     try {
-      director.init();
+      director.start();
     } catch (DirectorException e) {
       log.error(e.getMessage());
     } catch (Exception e) {
       log.error("An unexpected error occurred", e);
     }
+    if (director.isRunning()) {
+      // user interrupt will be handled by DirectorCli from this point
+      Runtime.getRuntime().removeShutdownHook(shutdownHook);
+    }
+    return director;
   }
 }

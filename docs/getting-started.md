@@ -26,6 +26,8 @@ Botica environment:
 3. [Sharing files between bots](sharing-files-between-bots.md)
 4. [The infrastructure configuration file](the-infrastructure-configuration-file.md)
 5. [Example projects](example-projects.md)
+6. Botica internals
+    1. [The botica protocol](protocol.md)
 
 ## Setting up your Botica environment
 
