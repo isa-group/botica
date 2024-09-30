@@ -6,7 +6,7 @@
 
   <groupId>io.github.isa-group.botica</groupId>
   <artifactId>botica-parent</artifactId>
-  <version>0.0.4</version>
+  <version>0.1.0</version>
   <packaging>pom</packaging>
 
   <modules>
