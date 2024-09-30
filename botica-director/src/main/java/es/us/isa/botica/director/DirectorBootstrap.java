@@ -16,12 +16,12 @@ public class DirectorBootstrap {
       mainConfigurationFile = new File(args[0]);
     }
 
-    Director director = setupDirector(mainConfigurationFile);
+    Director director = startDirector(mainConfigurationFile);
     DirectorCli cli = new DirectorCli(director);
     new Thread(cli::start).start();
   }
 
-  private static Director setupDirector(File mainConfigurationFile) {
+  private static Director startDirector(File mainConfigurationFile) {
     Director director = new Director(mainConfigurationFile);
     Thread shutdownHook = new Thread(director::shutdownInfrastructure);
     Runtime.getRuntime().addShutdownHook(shutdownHook);
@@ -29,8 +29,10 @@ public class DirectorBootstrap {
       director.start();
     } catch (DirectorException e) {
       log.error(e.getMessage());
+      System.exit(0);
     } catch (Exception e) {
       log.error("An unexpected error occurred", e);
+      System.exit(0);
     }
     if (director.isRunning()) {
       // user interrupt will be handled by DirectorCli from this point
