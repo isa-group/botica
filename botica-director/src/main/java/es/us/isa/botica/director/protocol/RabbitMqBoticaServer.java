@@ -18,6 +18,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -30,9 +33,11 @@ import org.slf4j.LoggerFactory;
  */
 public class RabbitMqBoticaServer implements BoticaServer {
   private static final Logger log = LoggerFactory.getLogger(RabbitMqBoticaServer.class);
+  private static final int MAX_THREAD_POOL_SIZE = 16;
 
   private final MainConfiguration mainConfiguration;
   private final PacketConverter packetConverter;
+  private final ExecutorService executorService;
 
   private final QueryHandler queryHandler;
   private final RabbitMqClient rabbitClient;
@@ -42,6 +47,9 @@ public class RabbitMqBoticaServer implements BoticaServer {
       MainConfiguration mainConfiguration, PacketConverter packetConverter) {
     this.mainConfiguration = mainConfiguration;
     this.packetConverter = packetConverter;
+    this.executorService =
+        new ThreadPoolExecutor(
+            0, MAX_THREAD_POOL_SIZE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
 
     this.queryHandler = new QueryHandler(ExecutorUtils.newDaemonSingleThreadScheduledExecutor());
     this.rabbitClient = new RabbitMqClient();
@@ -65,7 +73,7 @@ public class RabbitMqBoticaServer implements BoticaServer {
   private void installProtocol() {
     this.rabbitClient.createQueue(DIRECTOR_PROTOCOL);
     this.rabbitClient.bind(PROTOCOL_EXCHANGE, DIRECTOR_PROTOCOL, DIRECTOR_PROTOCOL);
-    this.rabbitClient.subscribe(DIRECTOR_PROTOCOL, this::callPacketListeners);
+    this.rabbitClient.subscribe(DIRECTOR_PROTOCOL, this::callPacketListeners, MAX_THREAD_POOL_SIZE);
   }
 
   @SuppressWarnings("unchecked")
@@ -79,7 +87,8 @@ public class RabbitMqBoticaServer implements BoticaServer {
       return;
     }
     for (PacketListener<?> listener : listeners) {
-      ((PacketListener<P>) listener).onPacketReceived(botId, (P) packet);
+      executorService.submit(
+          () -> ((PacketListener<P>) listener).onPacketReceived(botId, (P) packet));
     }
   }
 
