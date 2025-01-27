@@ -9,11 +9,16 @@ import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.protocol.Packet;
 import es.us.isa.botica.protocol.PacketConverter;
 import es.us.isa.botica.protocol.client.BotPacket;
+import es.us.isa.botica.protocol.query.QueryHandler;
+import es.us.isa.botica.protocol.query.RequestPacket;
+import es.us.isa.botica.protocol.query.ResponsePacket;
 import es.us.isa.botica.rabbitmq.RabbitMqClient;
+import es.us.isa.botica.util.ExecutorUtils;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,14 +34,16 @@ public class RabbitMqBoticaServer implements BoticaServer {
   private final MainConfiguration mainConfiguration;
   private final PacketConverter packetConverter;
 
+  private final QueryHandler queryHandler;
   private final RabbitMqClient rabbitClient;
   private final Map<Class<?>, List<PacketListener<?>>> packetListeners = new HashMap<>();
 
   public RabbitMqBoticaServer(
-      MainConfiguration mainConfiguration,
-      PacketConverter packetConverter) {
+      MainConfiguration mainConfiguration, PacketConverter packetConverter) {
     this.mainConfiguration = mainConfiguration;
     this.packetConverter = packetConverter;
+
+    this.queryHandler = new QueryHandler(ExecutorUtils.newDaemonSingleThreadScheduledExecutor());
     this.rabbitClient = new RabbitMqClient();
   }
 
@@ -52,10 +59,10 @@ public class RabbitMqBoticaServer implements BoticaServer {
         "localhost",
         configuration.getPort());
 
-    this.enableProtocol();
+    this.installProtocol();
   }
 
-  private void enableProtocol() {
+  private void installProtocol() {
     this.rabbitClient.createQueue(DIRECTOR_PROTOCOL);
     this.rabbitClient.bind(PROTOCOL_EXCHANGE, DIRECTOR_PROTOCOL, DIRECTOR_PROTOCOL);
     this.rabbitClient.subscribe(DIRECTOR_PROTOCOL, this::callPacketListeners);
@@ -84,7 +91,25 @@ public class RabbitMqBoticaServer implements BoticaServer {
   @Override
   public <P extends Packet> void registerPacketListener(
       Class<P> packetClass, PacketListener<P> listener) {
-    this.packetListeners.computeIfAbsent(packetClass, c -> new ArrayList<>()).add(listener);
+    this.ensureResponsePacketListener(packetClass);
+    this.packetListeners.get(packetClass).add(listener);
+  }
+
+  private <P extends Packet> void ensureResponsePacketListener(Class<P> packetClass) {
+    List<PacketListener<?>> listeners =
+        this.packetListeners.computeIfAbsent(packetClass, c -> new ArrayList<>());
+    if (!listeners.isEmpty() || !ResponsePacket.class.isAssignableFrom(packetClass)) {
+      return;
+    }
+
+    listeners.add(
+        (sourceBotId, response) -> {
+          try {
+            this.queryHandler.acceptResponse((ResponsePacket) response);
+          } catch (IllegalArgumentException e) {
+            log.error(e.getMessage());
+          }
+        });
   }
 
   @Override
@@ -93,6 +118,33 @@ public class RabbitMqBoticaServer implements BoticaServer {
         PROTOCOL_EXCHANGE,
         String.format(BOT_PROTOCOL_IN_FORMAT, botId),
         packetConverter.serialize(packet));
+  }
+
+  @Override
+  public <ResponsePacketT extends ResponsePacket> void sendPacket(
+      RequestPacket<ResponsePacketT> packet,
+      String botId,
+      PacketListener<ResponsePacketT> callback,
+      ResponseTimeoutCallback timeoutCallback) {
+    this.sendPacket(packet, botId, callback, timeoutCallback, 3, TimeUnit.SECONDS);
+  }
+
+  @Override
+  public <ResponsePacketT extends ResponsePacket> void sendPacket(
+      RequestPacket<ResponsePacketT> packet,
+      String botId,
+      PacketListener<ResponsePacketT> callback,
+      ResponseTimeoutCallback timeoutCallback,
+      long timeout,
+      TimeUnit timeoutUnit) {
+    this.ensureResponsePacketListener(packet.getResponsePacketClass());
+    this.queryHandler.registerQuery(
+        packet,
+        response -> callback.onPacketReceived(botId, response),
+        () -> timeoutCallback.onResponseTimeout(botId),
+        timeout,
+        timeoutUnit);
+    this.sendPacket(packet, botId);
   }
 
   @Override

@@ -1,12 +1,13 @@
 package es.us.isa.botica.protocol.client;
 
+import es.us.isa.botica.protocol.query.AbstractResponsePacket;
 import es.us.isa.botica.protocol.server.ShutdownRequestPacket;
 
 /**
  * Packet sent by bots in response to a {@link ShutdownRequestPacket}, indicating if it's ready to
  * be shut down or needs more time to complete its job.
  */
-public class ShutdownResponsePacket implements ClientPacket {
+public class ShutdownResponsePacket extends AbstractResponsePacket implements ClientPacket {
   private boolean ready;
 
   public ShutdownResponsePacket() {}
@@ -25,6 +26,6 @@ public class ShutdownResponsePacket implements ClientPacket {
 
   @Override
   public String toString() {
-    return "ShutdownResponsePacket{" + "ready=" + ready + '}';
+    return "ShutdownResponsePacket{" + "ready=" + ready + ", requestId='" + requestId + '\'' + '}';
   }
 }

@@ -3,7 +3,7 @@ package es.us.isa.botica.director.broker;
 import static es.us.isa.botica.BoticaConstants.BROKER_NETWORK_NAME;
 import static es.us.isa.botica.BoticaConstants.CONTAINER_PREFIX;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.CONTAINER_NAME;
-import static es.us.isa.botica.director.util.StringUtils.buildEnv;
+import static es.us.isa.botica.util.StringUtils.buildEnv;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.ExposedPort;
