@@ -86,13 +86,13 @@ import botica from "botica-lib-node";
 const bot = await botica();
 
 // Registering an order listener in a Node.js bot for the "process_data" order
-bot.onOrderReceived((order, message) => {
+bot.onOrderReceived((message) => {
   // Process the data contained in the message
   console.log("Processing data:", message);
 }, "process_data");
 
 // Now, for the "update_data" order
-bot.onOrderReceived((order, message) => {
+bot.onOrderReceived((message) => {
   console.log("Updating data:", message);
 }, "update_data");
 
@@ -142,7 +142,7 @@ In the bot code:
 
 ```js
 // Registering a listener for the "process_data" default order
-bot.registerOrderListener((order, message) => {
+bot.onOrderReceived((message) => {
   console.log("Processing data:", message);
 });
 ```
