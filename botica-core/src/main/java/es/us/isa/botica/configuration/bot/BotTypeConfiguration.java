@@ -2,6 +2,7 @@ package es.us.isa.botica.configuration.bot;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import java.util.Collections;
@@ -22,7 +23,8 @@ public class BotTypeConfiguration implements Configuration {
   private List<BotSubscribeConfiguration> subscribeConfigurations = Collections.emptyList();
 
   @JsonProperty("lifecycle")
-  private BotLifecycleConfiguration lifecycleConfiguration;
+  private BotLifecycleConfiguration lifecycleConfiguration =
+      new ReactiveBotLifecycleConfiguration();
 
   private Map<String, BotInstanceConfiguration> instances = Collections.emptyMap();
 

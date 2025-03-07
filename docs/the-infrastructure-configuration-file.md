@@ -29,7 +29,7 @@
 
 You can see the full example configuration files here:
 
-* [YAML](../botica-director/src/main/resources/config.yml)
+* [YAML](../botica-director/src/main/resources/config.yml) - with comments for every section
 * [JSON](../botica-director/src/main/resources/config.json)
 
 ## Docker top-level element
@@ -132,7 +132,7 @@ bots:
     image: "container_image"
 ```
 
-### mount
+### mount (optional)
 
 The list of the directories or files from the host system to mount on the file systems of the
 containers of the bot type. Every mount element specifies the `source` (on the host file system) and
@@ -151,28 +151,7 @@ bots:
         createHostPath: true
 ```
 
-### publish
-
-The publish configuration for the bot type. If your bot type does not publish any messages, you can
-skip this section.
-
-```yaml
-bots:
-  bot_name:
-    publish:
-      key: "publish_key"
-      order: "publish_order"
-```
-
-#### key
-
-The key of the message that the bot will send after completing its job.
-
-#### order
-
-The order that the bot will execute after completing its job.
-
-### subscribe
+### subscribe (optional)
 
 The subscribe configuration defines the keys that a bot type subscribes to. If your bot type does
 not need to subscribe to any key, you can skip this section.
@@ -196,41 +175,41 @@ The key to subscribe to.
 #### strategy
 
 The strategy defines how orders are delivered to the bots. Defaults to `distributed`.
-`distributed` subscriptions will deliver every new order to only one random instance of the bot
-type, while `broadcast` subscriptions will deliver every new order to each instance.
+`distributed` subscriptions will deliver every new order to only one random available instance of
+the bot type, while `broadcast` subscriptions will deliver every new order to each instance. Learn
+more in [this page](messaging-between-bots.md).
 
-### lifecycle
+### lifecycle (optional, defaults to reactive)
 
-`lifecycle` specifies how the instaces of this bot type will behave: when they will run and how.
+`lifecycle` specifies how the instances of this bot type will behave: when they will run and how.
 
 #### type
 
 The type of the lifecycle. Supported values:
 
-* `proactive`: the bot will run every `period` seconds after `initialDelay` seconds:
+* `proactive`: the main function of the bot will run every `period` seconds after `initialDelay`
+  seconds:
+    ```yaml
+    bots:
+      bot_name:
+        lifecycle:
+          type: proactive
+          initialDelay: 10 # defaults to 0
+          period: 60 # defaults to 1
+    ```
+  If `period` is set to `-1`, the action will execute once. The bot will then automatically shut
+  down if there are no active user threads remaining.
 
-```yaml
-bots:
-  bot_name:
-    lifecycle:
-      type: proactive
-      initialDelay: 10 # defaults to 0
-      period: 60 # defaults to 1
-```
-
-If `period` is set to `-1`, the action will execute once. The bot will then automatically shut down
-if there are no active user threads remaining.
 
 * `reactive`: the bot will run when it receives a message with the given `order` to one of the
-  subscribed `keys`.
-
-```yaml
-bots:
-  bot_name:
-    lifecycle:
-      type: reactive
-      order: "subscribe_order"
-```
+  subscribed `keys`. This is the default value if the whole lifecycle section is missing.
+    ```yaml
+    bots:
+      bot_name:
+        lifecycle:
+          type: reactive
+          defaultOrder: "subscribe_order"  # (optional) default value for order subscriptions if not specified in code
+    ```
 
 * `unmanaged`: the image is not a Botica bot and manages its own lifecycle. The director will not
   try to communicate with this container, but it will be connected to the same network as the other
@@ -241,6 +220,19 @@ bots:
   bot_name:
     lifecycle:
       type: unmanaged
+```
+
+### publish (optional)
+
+The optional default publish configuration for the bot type. If your bot publishes a message without
+specifying key or order, they will be taken from this section.
+
+```yaml
+bots:
+  bot_name:
+    publish:
+      key: "default_publish_key"
+      order: "default_publish_order"
 ```
 
 ### instances

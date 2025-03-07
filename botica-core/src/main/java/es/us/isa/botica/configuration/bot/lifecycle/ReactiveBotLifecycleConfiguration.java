@@ -1,8 +1,10 @@
 package es.us.isa.botica.configuration.bot.lifecycle;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 
 public class ReactiveBotLifecycleConfiguration implements BotLifecycleConfiguration {
+  @JsonAlias({"mainOrder", "defaultOrder"})
   private String order;
 
   @Override

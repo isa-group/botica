@@ -1,42 +1,82 @@
-broker:
+docker: # Optional section
+  host: "unix:///var/run/docker.sock" # Optional - uses OS defaults; recommended to remove this section
+
+broker: # Check file documentation
   type: rabbitmq
   username: "username"
   password: "password"
   port: 5672
 
 bots:
-  bot-name:
+  bot-type-name:
     image: "container-image"
-    mount:
+    mount: # Optional section
       - source: "path/to/host/file.extension"
         target: "path/to/container/file.extension"
       - source: "path/to/host/directory"
         target: "path/to/container/directory"
-        createHostPath: true
-    environment:
-      - KEY=VALUE
-    publish:
-      key: "publish_key"
-      order: "do_publish"
-    subscribe:
+        createHostPath: true # This creates "path/to/host/directory" if it does not exist
+    environment: # Optional section - not implemented at the bot type level at the moment, only at the instance level
+      - KEY1=VALUE2
+      - KEY2=VALUE2
+    publish: # Default publish values if not specified in the code (optional section)
+      key: "sample_actions"
+      order: "execute_something"
+    subscribe: # Optional section
       - key: "subscribe_key_1"
-        strategy: distributed
+        strategy: distributed # Each message sent to this key will be received by only one random available instance of this bot type
       - key: "subscribe_key_2"
-        strategy: broadcast
-    lifecycle:
+        strategy: broadcast # Each message sent to this key will be received by all instances of this bot type
+    lifecycle: # Optional section; default type is "reactive"
       type: proactive
       initialDelay: 60
       period: 60
     instances:
       bot-1:
-        persistent: true
         environment:
-          - KEY=VALUE
+          - KEY3=VALUE3
       bot-2:
-        persistent: true
-        lifecycle:
+        lifecycle: # Overrides the lifecycle section; not all sections are overridable (check file documentation)
           type: proactive
           initialDelay: 30
           period: 30
         environment:
+          - KEY3=VALUE4
+      bot-3: { } # Empty instance
+      bot-4: { } # Empty instance
+
+  other-bot-type:
+    image: "other-container-image"
+    mount: # Optional section
+      - source: "path/to/host/file.extension"
+        target: "path/to/container/file.extension"
+    subscribe: # Optional section
+      - key: "subscribe_key_1"
+        strategy: distributed # Each message sent to this key will be received by only one random available instance of this bot type
+      - key: "subscribe_key_2"
+        strategy: broadcast # Each message sent to this key will be received by all instances of this bot type
+    # Missing lifecycle section - default is "reactive"
+    instances:
+      other-bot-1: { } # Empty instance
+      other-bot-2: { } # Empty instance
+
+  database-type:
+    image: "my-database-image"
+    mount: # Optional section
+      - source: "path/to/host/directory"
+        target: "path/to/container/directory"
+        createHostPath: true # This creates "path/to/host/directory" if it does not exist
+    instances:
+      database:
+        environment:
           - KEY=VALUE
+    lifecycle:
+      # Important - this is not a Botica bot.
+      # The "unmanaged" lifecycle type tells Botica Director to ignore it as a bot.
+      # However, other bots can access the database instance through their private network.
+      # Just use the corresponding method to resolve the container hostname from your programming language's Botica library.
+      #
+      # Examples:
+      #   - Java: this.getBotHostname("database"); (inside AbstractBotApplication)
+      #   - Node.js: bot.getBotHostname("database");
+      type: unmanaged

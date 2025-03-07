@@ -22,9 +22,9 @@ can subscribe to multiple keys as defined in their configuration.
 
 The **order** is a bot-level concept. When a bot receives a message via a subscribed key, the order
 within that message is what the Botica library (e.g., for Java, Node.js) uses to trigger the
-appropriate order listener. This means that at the development level, when you are writing the bot,
-you are primarily concerned with adding listeners for specific orders rather than subscribing to
-keys directly.
+appropriate order listener/method. This means that at the development level, when you are writing
+the bot, you are primarily concerned with adding listeners for specific orders rather than
+subscribing to keys directly.
 
 > [!NOTE]
 > Order listeners are the mechanisms through which bots respond to incoming messages. Developers

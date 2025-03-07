@@ -6,8 +6,7 @@
     "port": 5672
   },
   "bots": {
-    "bot-name": {
-      "name": "bot-name",
+    "bot-type-name": {
       "image": "container-image",
       "mount": [
         {
@@ -20,9 +19,13 @@
           "createHostPath": true
         }
       ],
+      "environment": [
+        "KEY1=VALUE2",
+        "KEY2=VALUE2"
+      ],
       "publish": {
-        "key": "publish_key",
-        "order": "do_publish"
+        "key": "sample_actions",
+        "order": "execute_something"
       },
       "subscribe": [
         {
@@ -41,22 +44,65 @@
       },
       "instances": {
         "bot-1": {
-          "persistent": true,
           "environment": [
-            "KEY=VALUE"
+            "KEY3=VALUE3"
           ]
         },
         "bot-2": {
-          "persistent": true,
           "lifecycle": {
             "type": "proactive",
             "initialDelay": 30,
             "period": 30
           },
           "environment": [
+            "KEY3=VALUE4"
+          ]
+        },
+        "bot-3": {},
+        "bot-4": {}
+      }
+    },
+    "other-bot-type": {
+      "image": "other-container-image",
+      "mount": [
+        {
+          "source": "path/to/host/file.extension",
+          "target": "path/to/container/file.extension"
+        }
+      ],
+      "subscribe": [
+        {
+          "key": "subscribe_key_1",
+          "strategy": "distributed"
+        },
+        {
+          "key": "subscribe_key_2",
+          "strategy": "broadcast"
+        }
+      ],
+      "instances": {
+        "other-bot-1": {},
+        "other-bot-2": {}
+      }
+    },
+    "database-type": {
+      "image": "my-database-image",
+      "mount": [
+        {
+          "source": "path/to/host/directory",
+          "target": "path/to/container/directory",
+          "createHostPath": true
+        }
+      ],
+      "instances": {
+        "database": {
+          "environment": [
             "KEY=VALUE"
           ]
         }
+      },
+      "lifecycle": {
+        "type": "unmanaged"
       }
     }
   }
