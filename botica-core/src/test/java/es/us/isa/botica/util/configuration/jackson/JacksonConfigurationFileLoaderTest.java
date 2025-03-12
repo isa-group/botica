@@ -1,7 +1,9 @@
-package es.us.isa.botica.util.configuration;
+package es.us.isa.botica.util.configuration.jackson;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
+import es.us.isa.botica.util.configuration.DummyConfiguration;
 import java.io.File;
 import org.junit.jupiter.api.Test;
 

@@ -2,6 +2,7 @@ package es.us.isa.botica.director;
 
 import es.us.isa.botica.director.cli.DirectorCli;
 import es.us.isa.botica.director.exception.DirectorException;
+import io.github.cdimascio.dotenv.Dotenv;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ public class DirectorBootstrap {
       mainConfigurationFile = new File(args[0]);
     }
 
+    Dotenv.configure().ignoreIfMissing().systemProperties().load();
+
     Director director = startDirector(mainConfigurationFile);
     DirectorCli cli = new DirectorCli(director);
     new Thread(cli::start).start();
@@ -28,7 +31,7 @@ public class DirectorBootstrap {
     try {
       director.start();
     } catch (DirectorException e) {
-      log.error(e.getMessage());
+      log.error(e.getMessage(), e.getCause());
       System.exit(0);
     } catch (Exception e) {
       log.error("An unexpected error occurred", e);

@@ -1,9 +1,13 @@
-package es.us.isa.botica.util.configuration;
+package es.us.isa.botica.util.configuration.jackson;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import es.us.isa.botica.util.configuration.Configuration;
+import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
+import es.us.isa.botica.util.configuration.ConfigurationLoadingException;
 import java.io.File;
+import java.nio.file.Files;
 
 /**
  * Configuration loader for YAML and JSON formats using Jackson.
@@ -25,13 +29,13 @@ public class JacksonConfigurationFileLoader implements ConfigurationFileLoader {
     }
 
     try {
-      return mapper.readValue(file, configurationFileClass);
+      return PropertyPlaceholderResolver.resolve(
+          mapper, Files.readString(file.toPath()), configurationFileClass);
     } catch (Exception e) {
-      // TODO: maybe implement syntax checking
       throw new ConfigurationLoadingException(
-          "Unable to read the configuration file at "
-              + file.getAbsolutePath()
-              + ". Please check for any syntax errors.");
+          String.format(
+              "Unable to read the configuration file at %s: %s",
+              file.getAbsolutePath(), e.getMessage()));
     }
   }
 }

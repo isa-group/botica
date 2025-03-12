@@ -12,7 +12,7 @@ import es.us.isa.botica.director.protocol.RabbitMqBoticaServer;
 import es.us.isa.botica.protocol.JacksonPacketConverter;
 import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
 import es.us.isa.botica.util.configuration.ConfigurationLoadingException;
-import es.us.isa.botica.util.configuration.JacksonConfigurationFileLoader;
+import es.us.isa.botica.util.configuration.jackson.JacksonConfigurationFileLoader;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import es.us.isa.botica.util.configuration.validate.Validator;
 import java.io.File;
