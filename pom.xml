@@ -6,7 +6,7 @@
 
   <groupId>io.github.isa-group.botica</groupId>
   <artifactId>botica-parent</artifactId>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <packaging>pom</packaging>
 
   <modules>
@@ -18,7 +18,10 @@
     <maven.compiler.source>11</maven.compiler.source>
     <maven.compiler.target>11</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
     <jackson.version>2.17.1</jackson.version>
+    <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
     <docker-java.version>3.4.0</docker-java.version>
   </properties>
 
@@ -28,13 +31,13 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.5.6</version>
+      <version>1.5.16</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.6</version>
+      <version>1.5.16</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
     <dependency>
@@ -74,6 +77,13 @@
         <groupId>org.json</groupId>
         <artifactId>json</artifactId>
         <version>20231013</version>
+      </dependency>
+
+      <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
+      <dependency>
+        <groupId>io.github.cdimascio</groupId>
+        <artifactId>dotenv-java</artifactId>
+        <version>3.2.0</version>
       </dependency>
 
       <!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
