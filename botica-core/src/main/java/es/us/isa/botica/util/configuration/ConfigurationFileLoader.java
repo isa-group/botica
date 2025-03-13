@@ -9,4 +9,6 @@ import java.io.File;
  */
 public interface ConfigurationFileLoader {
   <T extends Configuration> T load(File file, Class<T> configurationFileClass);
+
+  void write(Configuration configuration, File file);
 }

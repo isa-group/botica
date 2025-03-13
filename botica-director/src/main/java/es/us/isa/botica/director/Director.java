@@ -16,14 +16,18 @@ import es.us.isa.botica.util.configuration.jackson.JacksonConfigurationFileLoade
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import es.us.isa.botica.util.configuration.validate.Validator;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Director {
+  public static final Path DATA_DIRECTORY = Path.of(".botica");
+  public static final File RESOLVED_CONFIG_FILE = DATA_DIRECTORY.resolve("config.yml").toFile();
   private static final Logger log = LoggerFactory.getLogger(Director.class);
 
   private final File mainConfigurationFile;
+  private final ConfigurationFileLoader configurationFileLoader;
   private MainConfiguration mainConfiguration;
 
   private BoticaServer server;
@@ -34,7 +38,12 @@ public class Director {
   private boolean running = false;
 
   public Director(File mainConfigurationFile) {
+    this(mainConfigurationFile, new JacksonConfigurationFileLoader());
+  }
+
+  public Director(File mainConfigurationFile, ConfigurationFileLoader configurationFileLoader) {
     this.mainConfigurationFile = mainConfigurationFile;
+    this.configurationFileLoader = configurationFileLoader;
   }
 
   /** Starts this director instance. */
@@ -42,12 +51,12 @@ public class Director {
     this.running = true;
     log.info("Starting the botica environment!");
     this.loadConfiguration();
+    this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
 
     this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
     this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
     this.botDeploymentHandler =
-        new DockerJavaBotDeploymentHandler(
-            this, this.mainConfigurationFile, this.mainConfiguration);
+        new DockerJavaBotDeploymentHandler(this, RESOLVED_CONFIG_FILE, this.mainConfiguration);
     this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
 
     this.botDeploymentHandler.removePreviousDeployment();
@@ -58,15 +67,14 @@ public class Director {
     this.startServer();
     log.info("Deploying bots...");
     this.botDeploymentHandler.setupInfrastructure();
-    this.botManager.start();
+    this.botManager.deploy();
     log.info("Botica is running! Use the 'stop' command to shut down the environment.");
   }
 
   private void loadConfiguration() {
     try {
-      ConfigurationFileLoader configurationFileLoader = new JacksonConfigurationFileLoader();
       this.mainConfiguration =
-          configurationFileLoader.load(this.mainConfigurationFile, MainConfiguration.class);
+          this.configurationFileLoader.load(this.mainConfigurationFile, MainConfiguration.class);
       this.validateConfigurationFile();
     } catch (ConfigurationLoadingException e) {
       throw new DirectorException(e);

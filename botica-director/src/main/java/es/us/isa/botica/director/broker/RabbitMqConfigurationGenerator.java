@@ -1,5 +1,6 @@
 package es.us.isa.botica.director.broker;
 
+import static es.us.isa.botica.director.Director.DATA_DIRECTORY;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_BROADCAST_FORMAT;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_DISTRIBUTED_FORMAT;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.ORDER_EXCHANGE;
@@ -29,8 +30,9 @@ import org.stringtemplate.v4.STGroupFile;
  * @author Alberto Mimbrero
  */
 public class RabbitMqConfigurationGenerator {
-  public static final Path DEFINITIONS_TARGET_PATH = Path.of(".botica/rabbitmq/definitions.json");
   private static final String DEFINITIONS_TEMPLATE_PATH = "templates/rabbitmq/definitions.json.stg";
+  public static final Path DEFINITIONS_TARGET_PATH =
+      DATA_DIRECTORY.resolve("rabbitmq/definitions.json");
 
   private final MainConfiguration configuration;
 

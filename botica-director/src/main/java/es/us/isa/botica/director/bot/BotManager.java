@@ -50,7 +50,7 @@ public class BotManager {
     server.registerPacketListener(HeartbeatPacket.class, this::onBotHeartbeat);
   }
 
-  public void start() {
+  public void deploy() {
     MainConfiguration mainConfiguration = this.director.getMainConfiguration();
     for (BotTypeConfiguration typeConfiguration : mainConfiguration.getBotTypes().values()) {
       for (BotInstanceConfiguration botConfiguration : typeConfiguration.getInstances().values()) {
