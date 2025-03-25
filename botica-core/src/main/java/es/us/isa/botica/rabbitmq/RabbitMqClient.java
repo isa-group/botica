@@ -29,6 +29,7 @@ public class RabbitMqClient {
     factory.setHost(host);
     factory.setPort(port);
     factory.setAutomaticRecoveryEnabled(true);
+    factory.setExceptionHandler(new SilentExceptionHandler());
     this.connect(factory);
   }
 
