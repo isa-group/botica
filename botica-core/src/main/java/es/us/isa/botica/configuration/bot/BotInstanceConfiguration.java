@@ -11,7 +11,6 @@ import java.util.List;
 
 public class BotInstanceConfiguration implements Configuration {
   @JsonBackReference private BotTypeConfiguration typeConfiguration;
-
   private String id;
 
   @JsonProperty("lifecycle")

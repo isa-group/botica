@@ -35,9 +35,11 @@ public class MainConfigurationValidationTest {
 
   private static BotTypeConfiguration createBotType(String... botIds) {
     BotTypeConfiguration botTypeConfiguration = new BotTypeConfiguration();
-    botTypeConfiguration.setInstances(new LinkedHashMap<>());
+    botTypeConfiguration.setDeclaredInstances(new LinkedHashMap<>());
     for (String botId : botIds) {
-      botTypeConfiguration.getInstances().put(botId, new BotInstanceConfiguration());
+      BotInstanceConfiguration bot = new BotInstanceConfiguration();
+      bot.setId(botId);
+      botTypeConfiguration.getDeclaredInstances().put(botId, bot);
     }
     return botTypeConfiguration;
   }

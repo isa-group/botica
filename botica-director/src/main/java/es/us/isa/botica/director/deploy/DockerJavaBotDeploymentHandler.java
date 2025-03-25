@@ -74,7 +74,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
   private void removeBotContainers() {
     List<String> containerNames =
         this.mainConfiguration.getBotTypes().values().stream()
-            .flatMap(type -> type.getInstances().values().stream())
+            .flatMap(type -> type.buildInstances().stream())
             .map(BotInstanceConfiguration::getId)
             .map(this::buildContainerName)
             .collect(Collectors.toList());

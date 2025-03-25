@@ -53,7 +53,7 @@ public class BotManager {
   public void deploy() {
     MainConfiguration mainConfiguration = this.director.getMainConfiguration();
     for (BotTypeConfiguration typeConfiguration : mainConfiguration.getBotTypes().values()) {
-      for (BotInstanceConfiguration botConfiguration : typeConfiguration.getInstances().values()) {
+      for (BotInstanceConfiguration botConfiguration : typeConfiguration.buildInstances()) {
         Bot bot = new Bot(typeConfiguration, botConfiguration);
         this.register(bot);
         this.deploy(bot);

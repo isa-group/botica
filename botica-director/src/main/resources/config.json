@@ -8,6 +8,7 @@
   "bots": {
     "bot-type-name": {
       "image": "container-image",
+      "replicas": 2,
       "mount": [
         {
           "source": "path/to/host/file.extension",
@@ -19,13 +20,9 @@
           "createHostPath": true
         }
       ],
-      "environment": [
-        "KEY1=VALUE2",
-        "KEY2=VALUE2"
-      ],
       "publish": {
         "key": "sample_actions",
-        "order": "execute_something"
+        "defaultOrder": "execute_something"
       },
       "subscribe": [
         {
@@ -42,28 +39,14 @@
         "initialDelay": 60,
         "period": 60
       },
-      "instances": {
-        "bot-1": {
-          "environment": [
-            "KEY3=VALUE3"
-          ]
-        },
-        "bot-2": {
-          "lifecycle": {
-            "type": "proactive",
-            "initialDelay": 30,
-            "period": 30
-          },
-          "environment": [
-            "KEY3=VALUE4"
-          ]
-        },
-        "bot-3": {},
-        "bot-4": {}
-      }
+      "environment": [
+        "KEY1=VALUE2",
+        "KEY2=VALUE2"
+      ]
     },
     "other-bot-type": {
       "image": "other-container-image",
+      "replicas": 2,
       "mount": [
         {
           "source": "path/to/host/file.extension",
@@ -80,13 +63,26 @@
           "strategy": "broadcast"
         }
       ],
+      "environment": [
+        "KEY1=VALUE2",
+        "KEY2=VALUE2"
+      ],
       "instances": {
-        "other-bot-1": {},
-        "other-bot-2": {}
+        "other-bot-type-custom-instance-1": {
+          "environment": [
+            "KEY3=VALUE3"
+          ]
+        },
+        "other-bot-type-custom-instance-2": {
+          "environment": [
+            "KEY2=OVERRIDDEN_VALUE_FROM_TYPE"
+          ]
+        }
       }
     },
     "database-type": {
       "image": "my-database-image",
+      "replicas": 1,
       "mount": [
         {
           "source": "path/to/host/directory",
@@ -94,16 +90,12 @@
           "createHostPath": true
         }
       ],
-      "instances": {
-        "database": {
-          "environment": [
-            "KEY=VALUE"
-          ]
-        }
-      },
       "lifecycle": {
         "type": "unmanaged"
-      }
+      },
+      "environment": [
+        "KEY=VALUE"
+      ]
     }
   }
 }

@@ -1,11 +1,13 @@
 package es.us.isa.botica.configuration.bot;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
 import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,8 @@ public class BotTypeConfiguration implements Configuration {
   private BotLifecycleConfiguration lifecycleConfiguration =
       new ReactiveBotLifecycleConfiguration();
 
+  private int replicas;
+
   private List<String> environment = Collections.emptyList();
 
   @JsonManagedReference
@@ -36,15 +40,30 @@ public class BotTypeConfiguration implements Configuration {
   public void validate(ValidationReport report) {
     if (id == null || id.isBlank()) report.addError("id", "missing or empty id");
     if (image == null || image.isBlank()) report.addError("image", "missing or empty image");
-    if (instances.isEmpty()) {
-      report.addWarning("instances", "missing or empty instances");
-    } else {
-      instances.forEach((id, instance) -> report.registerChild("instances." + id, instance));
+    if (replicas < 0) {
+      report.addError("replicas", "negative number of replicas");
+    } else if (replicas == 0 && instances.isEmpty()) {
+      report.addWarning("replicas", "no replicas configured");
     }
+    instances.forEach((id, instance) -> report.registerChild("instances." + id, instance));
     report.registerChild("mounts", mounts);
     report.registerChild("publish", publishConfiguration);
     report.registerChild("subscribe", subscribeConfigurations);
     report.registerChild("lifecycle", lifecycleConfiguration);
+  }
+
+  @JsonIgnore
+  public List<BotInstanceConfiguration> buildInstances() {
+    List<BotInstanceConfiguration> typeInstances =
+        new ArrayList<>(this.getDeclaredInstances().values());
+
+    for (int i = 1; i <= this.replicas; i++) {
+      BotInstanceConfiguration botConfiguration = new BotInstanceConfiguration();
+      botConfiguration.setTypeConfiguration(this);
+      botConfiguration.setId(String.format("%s-%d", this.id, i));
+      typeInstances.add(botConfiguration);
+    }
+    return typeInstances;
   }
 
   public String getId() {
@@ -95,6 +114,14 @@ public class BotTypeConfiguration implements Configuration {
     this.subscribeConfigurations = subscribeConfigurations;
   }
 
+  public int getReplicas() {
+    return replicas;
+  }
+
+  public void setReplicas(int replicas) {
+    this.replicas = replicas;
+  }
+
   public List<String> getEnvironment() {
     return environment;
   }
@@ -103,11 +130,13 @@ public class BotTypeConfiguration implements Configuration {
     this.environment = environment;
   }
 
-  public Map<String, BotInstanceConfiguration> getInstances() {
+  @JsonProperty("instances")
+  public Map<String, BotInstanceConfiguration> getDeclaredInstances() {
     return instances;
   }
 
-  public void setInstances(Map<String, BotInstanceConfiguration> instances) {
+  @JsonProperty("instances")
+  public void setDeclaredInstances(Map<String, BotInstanceConfiguration> instances) {
     this.instances = instances;
     instances.forEach((id, instance) -> instance.setId(id));
   }
@@ -129,6 +158,8 @@ public class BotTypeConfiguration implements Configuration {
         + subscribeConfigurations
         + ", lifecycleConfiguration="
         + lifecycleConfiguration
+        + ", replicas="
+        + replicas
         + ", environment="
         + environment
         + ", instances="

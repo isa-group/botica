@@ -1,6 +1,7 @@
 package es.us.isa.botica.configuration;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.broker.BrokerConfiguration;
 import es.us.isa.botica.configuration.docker.DockerConfiguration;
@@ -50,7 +51,8 @@ public class MainConfiguration implements Configuration {
   private Set<String> getDuplicateBotIds() {
     Set<String> distinctBotIds = new HashSet<>();
     return this.botTypes.values().stream()
-        .flatMap(type -> type.getInstances().keySet().stream())
+        .flatMap(type -> type.buildInstances().stream())
+        .map(BotInstanceConfiguration::getId)
         .filter(id -> !distinctBotIds.add(id))
         .collect(Collectors.toCollection(LinkedHashSet::new));
   }
