@@ -1,10 +1,9 @@
-# Botica overview
+# Botica
 
 Botica is an advanced framework and platform designed to simplify the development, deployment, and
-management of automated processes using containerized bots. By leveraging modern containerization
-technologies and message brokering systems, Botica empowers developers to create scalable,
-parallelized workflows that can automate complex tasks across various environments with minimal
-overhead, with the following core goals:
+management of automated processes using containerized bots. Create scalable, parallelized workflows
+that can automate complex tasks across various environments with minimal overhead, with the
+following core goals:
 
 - **Ease of development**: Botica abstracts away the complexities of setting up and managing the
   underlying infrastructure required for bot communication, scheduling, and lifecycle management.
@@ -36,4 +35,4 @@ Botica operates with two primary components:
   reactively (in response to messages). Moreover, bots can publish and subscribe to multiple orders,
   allowing for complex inter-bot communication and orchestration.
 
-### Check out our documentation! [Get started](docs/getting-started.md).
+### Check out our documentation! [Get started](docs/0-getting-started.md).

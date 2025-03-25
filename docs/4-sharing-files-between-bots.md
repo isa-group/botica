@@ -30,4 +30,4 @@ directory without hardcoding the path.
 - **Clean up**: if your bots create temporary files, clean them up to avoid clutter in the shared
   directory.
 
-[<- Messaging between bots](messaging-between-bots.md) | [The infrastructure configuration file ->](the-infrastructure-configuration-file.md)
+[<- Messaging between bots](3-messaging-between-bots.md) | [The infrastructure configuration file ->](the-infrastructure-configuration-file.md)

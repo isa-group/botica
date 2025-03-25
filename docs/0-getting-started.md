@@ -21,12 +21,13 @@ Botica environment:
 
 ## Documentation
 
-1. [The concept of a bot](the-concept-of-a-bot.md)
-2. [Messaging between bots](messaging-between-bots.md)
-3. [Sharing files between bots](sharing-files-between-bots.md)
-4. [The infrastructure configuration file](the-infrastructure-configuration-file.md)
-5. [Example projects](example-projects.md)
-6. Botica internals
+1. [The concept of a bot](1-the-concept-of-a-bot)
+2. [Messaging between bots](2-process-chains.md)
+3. [Messaging between bots](3-messaging-between-bots)
+4. [Sharing files between bots](4-sharing-files-between-bots)
+5. [The infrastructure configuration file](the-infrastructure-configuration-file.md)
+6. [Example projects](example-projects.md)
+7. Botica internals
     1. [The botica protocol](protocol.md)
 
 ## Setting up your Botica environment
@@ -40,10 +41,16 @@ languages that simplify the process of creating bots.
 Currently, Botica offers libraries for the following languages:
 
 - **Java**: through the [botica-lib-java](https://github.com/isa-group/botica-lib-java/) library.
-  [Seed available here](https://github.com/isa-group/botica-seed-java/).
+
+  Use the [seed available here](https://github.com/isa-group/botica-seed-java/) as a template to
+  initialize your project.
+
+
 - **Node.js**: through [botica-lib-node](https://github.com/isa-group/botica-lib-node/) library.
   Contains definitions for Typescript projects.
-  [Seed available here](https://github.com/isa-group/botica-seed-node/).
+
+  Use the [seed available here](https://github.com/isa-group/botica-seed-node/) as a template to
+  initialize your project.
 
 To get started with your bot development:
 
@@ -55,14 +62,14 @@ To get started with your bot development:
 ### Step 2: create your infrastructure
 
 With your bots ready, the next step is to create the infrastructure that will host and manage these
-bots. Botica provides an
+bots.
+
+Botica provides an
 [official infrastructure template](https://github.com/isa-group/botica-infrastructure/) to
-streamline the setup process.
+streamline the setup process. This template contains:
 
-This template contains:
-
-- **The infrastructure configuration file**: The `config.yml` file that defines the bot types,
-  instances, and other configurations specific to your environment.
+- **The infrastructure configuration file**: The `config.yml` file that defines the bot types
+  and other configurations specific to your environment.
 - **Assets**: directories and files to be mounted into the bots as defined in the configuration.
 - **Deployment script**: a script that downloads the latest version of the Botica Director and runs
   the environment based on the infrastructure configuration.
@@ -86,4 +93,4 @@ languages, further expanding the platform's versatility.
 For detailed documentation on specific language seeds and how to use them, please refer to the
 respective documentation links provided in the seed repositories.
 
-[The concept of a bot ->](the-concept-of-a-bot.md)
+[The concept of a bot ->](1-the-concept-of-a-bot.md)

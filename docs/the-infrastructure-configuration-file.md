@@ -12,13 +12,15 @@
 5. [Bots top-level element](#bots-top-level-element)
 6. [Bot type object](#bot-type-object)
     1. [image](#image)
-    2. [mount](#mount)
-    3. [publish](#publish)
-    4. [subscribe](#subscribe)
-    5. [lifecycle](#lifecycle)
-    6. [instances](#instances)
-        1. [lifecycle](#lifecycle-1)
-        2. [environment](#environment)
+    2. [replicas](#replicas)
+    3. [mount](#mount-optional)
+    4. [publish](#publish-optional)
+    5. [subscribe](#subscribe-optional)
+    6. [lifecycle](#lifecycle-optional-defaults-to-reactive)
+    7. [environment](#environment-optional)
+    8. [instances](#instances-optional)
+        1. [lifecycle](#lifecycle-optional-1)
+        2. [environment](#environment-optional-1)
 
 ## Overview
 
@@ -132,6 +134,17 @@ bots:
     image: "container_image"
 ```
 
+### replicas
+
+The number of bots of this type to deploy. The bot instances will be named
+`bot type`-`replica number` (e.g.: `bot_name-1`, `bot_name-2`, `bot_name-3`)
+
+```yaml
+bots:
+  bot_name:
+    replicas: 3
+```
+
 ### mount (optional)
 
 The list of the directories or files from the host system to mount on the file systems of the
@@ -177,7 +190,7 @@ The key to subscribe to.
 The strategy defines how orders are delivered to the bots. Defaults to `distributed`.
 `distributed` subscriptions will deliver every new order to only one random available instance of
 the bot type, while `broadcast` subscriptions will deliver every new order to each instance. Learn
-more in [this page](messaging-between-bots.md).
+more in [this page](3-messaging-between-bots.md).
 
 ### lifecycle (optional, defaults to reactive)
 
@@ -235,34 +248,79 @@ bots:
       order: "default_publish_order"
 ```
 
-### instances
+### environment (optional)
 
-The instances of this bot type that Botica will deploy.
+The list of the environment variables to pass to the bot containers.
 
 ```yaml
 bots:
   bot_name:
+    environment:
+      - KEY1=VALUE1
+      - KEY2=VALUE2
+```
+
+### instances (optional)
+
+The `instances` property allows, in contrast to the [replicas property](#replicas), to have custom
+instances of any bot type overriding or adding some additional configuration.
+
+These can be combined with the `replicas` property. Keep in mind that having 2 instances with the
+same name, even instances from different bot types, will throw an error.
+
+```yaml
+bots:
+  bot_name:
+    replicas: 3
+    environment:
+      - KEY1=VALUE1
+      - KEY2=VALUE2
     instances:
-      bot_1:
+      bot-4: # bot-1, bot-2 and bot-3 will be created (see replicas above)
         environment:
-          - KEY=VALUE
-      bot_2:
-        lifecycle:
-          type: proactive
-          initialDelay: 30
-          period: 30
+          - KEY3=VALUE3 # added "KEY3" variable
+      bot-5:
         environment:
-          - KEY=VALUE
-      bot_3: { }
-      bot_4: { }
+          - KEY2=OVERRIDEN_VALUE_FROM_TYPE # overridden "KEY2" variable
 ```
 
 #### lifecycle
 
-Option to override the [lifecycle configuration of the bot's type](#lifecycle).
+Option to override
+the [lifecycle configuration of the bot's type](#lifecycle-optional-defaults-to-reactive).
+
+```yaml
+bots:
+  bot_name:
+    lifecycle:
+      type: proactive
+      initialDelay: 10
+      period: 60
+    instances:
+      bot_1:
+        lifecycle:
+          type: proactive
+          initialDelay: 20 # overriding initialDelay from parent
+          period: 120 # overriding period from parent
+```
 
 #### environment
 
-The list of the environment variables to pass to the bot's container.
+Option to add or override [environment variables](#environment-optional) from parent.
 
-[<- Sharing files between bots](sharing-files-between-bots.md) | [Example projects ->](example-projects.md)
+```yaml
+bots:
+  bot_name:
+    environment:
+      - KEY1=VALUE1
+      - KEY2=VALUE2
+    instances:
+      bot_1:
+        environment:
+          - KEY3=VALUE3 # added "KEY3" variable
+      bot_2:
+        environment:
+          - KEY2=OVERRIDEN_VALUE_FROM_TYPE # overridden "KEY2" variable
+```
+
+[<- Sharing files between bots](4-sharing-files-between-bots.md) | [Example projects ->](example-projects.md)

@@ -1,5 +1,8 @@
 # The botica protocol
 
+> [!WARNING]
+> This page is outdated.
+
 The **Botica Protocol** is a communication protocol used by the Botica Director and its bots to
 exchange messages. The protocol defines how bots communicate with the Director to ensure proper
 coordination of tasks such as heartbeat checks, shutdown requests, and status updates. The current

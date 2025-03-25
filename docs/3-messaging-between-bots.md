@@ -115,13 +115,13 @@ await bot.publish({id: 123, payload: "data"}, "tasks", "process_data");
 Here, the bot publishes a message with the `tasks` key and the `process_data` order, sending
 along some data in JSON format.
 
-### Simplifying development with defaults
+## Advanced: Simplifying development with defaults
 
 To streamline the development process, Botica allows you to configure default keys and orders in the
 bot's configuration. These defaults can be used to simplify the code by eliminating the need to
 repeatedly specify the key and order.
 
-#### Registering an order listener with defaults
+### Registering an order listener with defaults
 
 You can configure the bot to use a default order for its listeners, allowing you to write cleaner,
 simpler code.
@@ -134,7 +134,7 @@ bots:
         strategy: distributed
     lifecycle:
       type: reactive
-      order: "process_data" # default order for listeners
+      defaultOrder: "process_data" # default order for listeners
     { ... }
 ```
 
@@ -147,7 +147,7 @@ bot.onOrderReceived((message) => {
 });
 ```
 
-#### Publishing messages with defaults
+### Publishing messages with defaults
 
 Similarly, you can configure default key and order values for publishing messages. This allows you
 to publish messages without specifying these details every time.
@@ -171,4 +171,4 @@ await bot.publish({id: 123, payload: "data"});
 In this example, the bot will automatically use the `task_updates` key and the `process_data` order
 when publishing messages.
 
-[<- The concept of a bot](the-concept-of-a-bot.md) | [Sharing files between bots ->](sharing-files-between-bots.md)
+[<- Creating process chains](2-process-chains.md) | [Sharing files between bots ->](4-sharing-files-between-bots.md)
