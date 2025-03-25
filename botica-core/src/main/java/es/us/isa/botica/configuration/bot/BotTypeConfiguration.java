@@ -1,5 +1,6 @@
 package es.us.isa.botica.configuration.bot;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
@@ -26,6 +27,9 @@ public class BotTypeConfiguration implements Configuration {
   private BotLifecycleConfiguration lifecycleConfiguration =
       new ReactiveBotLifecycleConfiguration();
 
+  private List<String> environment = Collections.emptyList();
+
+  @JsonManagedReference
   private Map<String, BotInstanceConfiguration> instances = Collections.emptyMap();
 
   @Override
@@ -91,6 +95,14 @@ public class BotTypeConfiguration implements Configuration {
     this.subscribeConfigurations = subscribeConfigurations;
   }
 
+  public List<String> getEnvironment() {
+    return environment;
+  }
+
+  public void setEnvironment(List<String> environment) {
+    this.environment = environment;
+  }
+
   public Map<String, BotInstanceConfiguration> getInstances() {
     return instances;
   }
@@ -117,6 +129,8 @@ public class BotTypeConfiguration implements Configuration {
         + subscribeConfigurations
         + ", lifecycleConfiguration="
         + lifecycleConfiguration
+        + ", environment="
+        + environment
         + ", instances="
         + instances
         + '}';

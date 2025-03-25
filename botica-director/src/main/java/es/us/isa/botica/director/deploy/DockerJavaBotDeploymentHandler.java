@@ -117,7 +117,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
     return this.dockerClient
         .createContainerCmd(bot.getTypeConfiguration().getImage())
         .withName(this.buildContainerName(bot.getId()))
-        .withEnv(this.buildEnvironmentVariables(bot.getTypeConfiguration(), bot.getConfiguration()))
+        .withEnv(this.buildEnvironmentVariables(bot.getConfiguration()))
         .withHostConfig(
             new HostConfig()
                 .withNetworkMode(this.buildNetworkName())
@@ -127,10 +127,9 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
         .getId();
   }
 
-  private List<String> buildEnvironmentVariables(
-      BotTypeConfiguration typeConfiguration, BotInstanceConfiguration botConfiguration) {
+  private List<String> buildEnvironmentVariables(BotInstanceConfiguration botConfiguration) {
     List<String> env = new ArrayList<>();
-    env.add(buildEnv(BOT_TYPE_ENV, typeConfiguration.getId()));
+    env.add(buildEnv(BOT_TYPE_ENV, botConfiguration.getTypeConfiguration().getId()));
     env.add(buildEnv(BOT_ID_ENV, botConfiguration.getId()));
     env.addAll(botConfiguration.getEnvironment());
     return env;
