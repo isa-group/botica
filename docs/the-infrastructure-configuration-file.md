@@ -13,14 +13,14 @@
 6. [Bot type object](#bot-type-object)
     1. [image](#image)
     2. [replicas](#replicas)
-    3. [mount](#mount-optional)
-    4. [publish](#publish-optional)
-    5. [subscribe](#subscribe-optional)
-    6. [lifecycle](#lifecycle-optional-defaults-to-reactive)
-    7. [environment](#environment-optional)
-    8. [instances](#instances-optional)
-        1. [lifecycle](#lifecycle-optional-1)
-        2. [environment](#environment-optional-1)
+    3. [mount (optional)](#mount-optional)
+    4. [publish (optional)](#publish-optional)
+    5. [subscribe (optional)](#subscribe-optional)
+    6. [lifecycle (optional)](#lifecycle-optional-defaults-to-reactive)
+    7. [environment (optional)](#environment-optional)
+    8. [instances (optional)](#instances-optional)
+        1. [lifecycle](#lifecycle)
+        2. [environment](#environment)
 
 ## Overview
 
@@ -34,9 +34,12 @@ You can see the full example configuration files here:
 * [YAML](../botica-director/src/main/resources/config.yml) - with comments for every section
 * [JSON](../botica-director/src/main/resources/config.json)
 
+---
+
 ## Docker top-level element
 
-The top-level `docker` property allows configuring the docker host URI.
+The top-level `docker` property allows configuring the docker host URI. If missing, the default
+values will be used.
 
 ### host
 
@@ -53,9 +56,19 @@ Defaults:
 - Unix: `unix:///var/run/docker.sock`
 - Windows: `npipe:////./pipe/docker_engine`
 
+---
+
 ## Broker top-level element
 
 The top-level `broker` property specifies the broker type and configuration to use.
+
+> [!NOTE]
+> The broker instance is provided and deployed by Botica: your system does not need to have a
+> running broker instance, and the configuration (authentication, port...) doesn't have to (and, in
+> case of `port`, should not) match them.
+
+If the `broker` property is missing in the configuration file, `rabbitmq` will be used by default
+with random values for username and password.
 
 ### type
 
@@ -67,10 +80,6 @@ broker:
 ```
 
 The remaining `broker` properties vary depending on the broker technology selected.
-> [!NOTE]
-> The broker instance is provided and deployed by Botica: your system does not need to have a
-> running broker instance, and the configuration (authentication, port...) doesn't have to (and, in
-> case of `port`, should not) match them.
 
 ### RabbitMQ configuration properties
 
@@ -98,17 +107,26 @@ The port to expose the provided broker instance to your host system. Defaults to
 port: 5672
 ```
 
+---
+
 ## Shutdown top-level element
 
 ### timeout
 
-The amount of time, in milliseconds, the director waits before considering that a bot has timed out
-in responding to a shutdown request. Defaults to `10000` milliseconds (10 seconds).
+The amount of time, in milliseconds, that the director waits before considering that a bot has timed
+out in responding to a shutdown request.
+
+A bot may take some time to respond to a shutdown request if it needs to save data to a file or
+database before shutting down.
+
+Defaults to `5000` milliseconds (5 seconds).
 
 ```yaml
 shutdown:
-  timeout: 10000
+  timeout: 5000
 ```
+
+---
 
 ## Bots top-level element
 
@@ -121,6 +139,8 @@ bots:
   bot_2: { ... }
   bot_3: { ... }
 ```
+
+---
 
 ## Bot type object
 
