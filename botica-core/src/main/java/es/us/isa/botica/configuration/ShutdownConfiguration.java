@@ -4,7 +4,7 @@ import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 
 public class ShutdownConfiguration implements Configuration {
-  private long timeout = 10000;
+  private long timeout = 5000;
 
   @Override
   public void validate(ValidationReport report) {}

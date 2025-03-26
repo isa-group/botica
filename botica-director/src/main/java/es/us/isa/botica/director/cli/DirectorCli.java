@@ -104,8 +104,7 @@ public class DirectorCli {
 
   private void handleUserInterrupt() {
     if (this.userInterrupts == 0) {
-      log.info(
-          "Requesting bots to shut down... Press CTRL+C again to force the system to shut down.");
+      log.info("Sending shutdown signal... Press CTRL+C again to force the system to shut down.");
       new Thread(() -> this.director.shutdown(ShutdownMode.FORCE, () -> System.exit(0))).start();
     } else if (this.userInterrupts == 1) {
       log.info("Forcing system shutdown...");

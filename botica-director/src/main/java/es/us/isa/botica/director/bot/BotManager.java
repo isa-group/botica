@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public class BotManager {
   private static final Logger log = LoggerFactory.getLogger(BotManager.class);
-  private static final long BOT_TIMEOUT_SECONDS = 15;
-  private static final long HEARTBEAT_RATE_SECONDS = 5;
+  private static final long BOT_TIMEOUT_SECONDS = 5;
+  private static final long HEARTBEAT_RATE_SECONDS = 2;
 
   private final Director director;
   private final BotDeploymentHandler deploymentHandler;
