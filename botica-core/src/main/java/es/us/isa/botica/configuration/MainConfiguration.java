@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.broker.BrokerConfiguration;
+import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.configuration.docker.DockerConfiguration;
 import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
@@ -13,13 +14,17 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MainConfiguration implements Configuration {
+  private static final Logger log = LoggerFactory.getLogger(MainConfiguration.class);
+
   @JsonProperty("docker")
   private DockerConfiguration dockerConfiguration = new DockerConfiguration();
 
   @JsonProperty("broker")
-  private BrokerConfiguration brokerConfiguration;
+  private BrokerConfiguration brokerConfiguration = new RabbitMqConfiguration();
 
   @JsonProperty("bots")
   private Map<String, BotTypeConfiguration> botTypes = Collections.emptyMap();
@@ -29,9 +34,7 @@ public class MainConfiguration implements Configuration {
 
   @Override
   public void validate(ValidationReport report) {
-    if (brokerConfiguration == null) {
-      report.addError("broker", "missing broker configuration");
-    } else {
+    if (brokerConfiguration != null) {
       report.registerChild("broker", brokerConfiguration);
     }
 

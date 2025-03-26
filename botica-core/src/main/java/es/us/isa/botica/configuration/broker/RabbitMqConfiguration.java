@@ -1,21 +1,15 @@
 package es.us.isa.botica.configuration.broker;
 
+import es.us.isa.botica.util.StringUtils;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 
 public class RabbitMqConfiguration implements BrokerConfiguration {
-  private String username;
-  private String password;
+  private String username = StringUtils.random(32);
+  private String password = StringUtils.random(32);
   private int port = 5672;
 
   @Override
-  public void validate(ValidationReport report) {
-    if (username == null || username.isBlank()) {
-        report.addError("username", "missing or empty username");
-    }
-    if (password == null || password.isBlank()) {
-        report.addError("password", "missing or empty password");
-    }
-  }
+  public void validate(ValidationReport report) {}
 
   public String getUsername() {
     return username;
