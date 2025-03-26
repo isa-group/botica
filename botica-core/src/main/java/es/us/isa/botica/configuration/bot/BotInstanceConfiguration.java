@@ -1,6 +1,7 @@
 package es.us.isa.botica.configuration.bot;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 import es.us.isa.botica.util.configuration.Configuration;
@@ -42,30 +43,36 @@ public class BotInstanceConfiguration implements Configuration {
     this.id = id;
   }
 
+  @JsonIgnore
   public BotLifecycleConfiguration getLifecycleConfiguration() {
     return lifecycleConfiguration != null
         ? lifecycleConfiguration
         : typeConfiguration.getLifecycleConfiguration();
   }
 
+  @JsonProperty("lifecycle")
   public BotLifecycleConfiguration getOwnLifecycleConfiguration() {
     return lifecycleConfiguration;
   }
 
+  @JsonProperty("lifecycle")
   public void setOwnLifecycleConfiguration(BotLifecycleConfiguration lifecycleConfiguration) {
     this.lifecycleConfiguration = lifecycleConfiguration;
   }
 
+  @JsonIgnore
   public List<String> getEnvironment() {
     ArrayList<String> env = new ArrayList<>(typeConfiguration.getEnvironment());
     env.addAll(environment);
     return env;
   }
 
+  @JsonProperty("environment")
   public List<String> getOwnEnvironment() {
     return environment;
   }
 
+  @JsonProperty("environment")
   public void setOwnEnvironment(List<String> environment) {
     this.environment = environment;
   }
