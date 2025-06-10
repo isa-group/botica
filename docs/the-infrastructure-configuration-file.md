@@ -12,15 +12,17 @@
 5. [Bots top-level element](#bots-top-level-element)
 6. [Bot type object](#bot-type-object)
     1. [image](#image)
-    2. [replicas](#replicas)
+    2. [replicas (optional)](#replicas-optional)
     3. [mount (optional)](#mount-optional)
     4. [publish (optional)](#publish-optional)
     5. [subscribe (optional)](#subscribe-optional)
     6. [lifecycle (optional)](#lifecycle-optional-defaults-to-reactive)
-    7. [environment (optional)](#environment-optional)
-    8. [instances (optional)](#instances-optional)
-        1. [lifecycle](#lifecycle)
-        2. [environment](#environment)
+    7. [ports (optional)](#ports-optional)
+    8. [environment (optional)](#environment-optional)
+    9. [instances (optional)](#instances-optional)
+        1. [lifecycle (optional)](#lifecycle-optional)
+        2. [ports (optional)](#ports-optional-1)
+        3. [environment (optional)](#environment-optional-1)
 
 ## Overview
 
@@ -135,9 +137,9 @@ launch Botica.
 
 ```yaml
 bots:
-  bot_1: { ... }
-  bot_2: { ... }
-  bot_3: { ... }
+  bot_type_1: { ... }
+  bot_type_2: { ... }
+  bot_type_3: { ... }
 ```
 
 ---
@@ -150,18 +152,20 @@ The container image of the bot type.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     image: "container_image"
 ```
 
-### replicas
+### replicas (optional)
 
 The number of bots of this type to deploy. The bot instances will be named
-`bot type`-`replica number` (e.g.: `bot_name-1`, `bot_name-2`, `bot_name-3`)
+`%bot_type%-%replica_number%` (e.g.: `my_bot_type-1`, `my_bot_type-2`, `my_bot_type-3`). Defaults to `1` if
+no
+[instances](#instances-optional) are defined.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     replicas: 3
 ```
 
@@ -175,7 +179,7 @@ be created.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     mount:
       - source: "path/to/host/file.extension"
         target: "path/to/container/file.extension"
@@ -191,7 +195,7 @@ not need to subscribe to any key, you can skip this section.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     subscribe:
       - key: "a_distributed_key"
         strategy: distributed
@@ -224,7 +228,7 @@ The type of the lifecycle. Supported values:
   seconds:
     ```yaml
     bots:
-      bot_name:
+      my_bot_type:
         lifecycle:
           type: proactive
           initialDelay: 10 # defaults to 0
@@ -238,7 +242,7 @@ The type of the lifecycle. Supported values:
   subscribed `keys`. This is the default value if the whole lifecycle section is missing.
     ```yaml
     bots:
-      bot_name:
+      my_bot_type:
         lifecycle:
           type: reactive
           defaultOrder: "subscribe_order"  # (optional) default value for order subscriptions if not specified in code
@@ -248,12 +252,12 @@ The type of the lifecycle. Supported values:
   try to communicate with this container, but it will be connected to the same network as the other
   bots.
 
-```yaml
-bots:
-  bot_name:
-    lifecycle:
-      type: unmanaged
-```
+    ```yaml
+    bots:
+      my_bot_type:
+        lifecycle:
+          type: unmanaged
+    ```
 
 ### publish (optional)
 
@@ -262,10 +266,38 @@ specifying key or order, they will be taken from this section.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     publish:
       key: "default_publish_key"
       order: "default_publish_order"
+```
+
+### ports (optional)
+
+Exposes container ports to the host machine. This is a list of strings, where each string specifies
+a port mapping.
+
+> [!WARNING]
+> The underlying `docker-java` library supports a subset of the formats accepted by the Docker CLI.
+> **Port ranges (e.g., `3000-3005`) are not supported.**
+
+The supported formats are:
+
+- `<containerPort>` (e.g., `"3000"`)
+- `<hostPort>:<containerPort>` (e.g., `"8080:80"`)
+- `<ip>::<containerPort>` (e.g., `"127.0.0.1::80"`)
+- `<ip>:<hostPort>:<containerPort>` (e.g., `"127.0.0.1:8080:80"`)
+
+You can also specify the protocol (defaults to `tcp`):
+
+- `<port>:<port>/udp` (e.g., `"6060:6060/udp"`)
+
+```yaml
+bots:
+  my_bot_type:
+    ports:
+      - "8080:80"
+      - "6060:6060/udp"
 ```
 
 ### environment (optional)
@@ -274,7 +306,7 @@ The list of the environment variables to pass to the bot containers.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     environment:
       - KEY1=VALUE1
       - KEY2=VALUE2
@@ -282,36 +314,37 @@ bots:
 
 ### instances (optional)
 
-The `instances` property allows, in contrast to the [replicas property](#replicas), to have custom
-instances of any bot type overriding or adding some additional configuration.
+The `instances` property allows you to define distinct bot configurations beyond those managed by
+the [replicas property](#replicas-optional). It is used to create custom, individually configured
+instances of any bot type, either to override default settings or to add unique configurations.
 
-These can be combined with the `replicas` property. Keep in mind that having 2 instances with the
+These can be combined with the `replicas` property. Keep in mind that having two instances with the
 same name, even instances from different bot types, will throw an error.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     replicas: 3
     environment:
       - KEY1=VALUE1
       - KEY2=VALUE2
     instances:
-      bot-4: # bot-1, bot-2 and bot-3 will be created (see replicas above)
+      my_bot_type-4: # my_bot_type-1, my_bot_type-2 and my_bot_type-3 will be created (see replicas above)
         environment:
           - KEY3=VALUE3 # added "KEY3" variable
-      bot-5:
+      my_bot_type-5:
         environment:
           - KEY2=OVERRIDEN_VALUE_FROM_TYPE # overridden "KEY2" variable
 ```
 
-#### lifecycle
+#### lifecycle (optional)
 
-Option to override
-the [lifecycle configuration of the bot's type](#lifecycle-optional-defaults-to-reactive).
+Overrides the [lifecycle configuration of the bot's type](#lifecycle-optional-defaults-to-reactive)
+for this specific instance.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
     lifecycle:
       type: proactive
       initialDelay: 10
@@ -324,13 +357,31 @@ bots:
           period: 120 # overriding period from parent
 ```
 
-#### environment
+#### ports (optional)
 
-Option to add or override [environment variables](#environment-optional) from parent.
+Overrides the [ports configuration](#ports-optional) for this specific instance. The list of ports
+defined here will be appended to the list defined at the bot type level.
 
 ```yaml
 bots:
-  bot_name:
+  my_bot_type:
+    # All instances of this type will expose port 8080 on the host, mapped to container port 80
+    ports:
+      - "8080:80"
+    instances:
+      bot_1:
+        # This instance will expose both ports 8080 and 9090 on the host, mapping to container ports 80 and 90.
+        ports:
+          - "9090:90"
+```
+
+#### environment (optional)
+
+Adds to or overrides the list of [environment variables](#environment-optional) from the bot type.
+
+```yaml
+bots:
+  my_bot_type:
     environment:
       - KEY1=VALUE1
       - KEY2=VALUE2
