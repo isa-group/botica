@@ -29,7 +29,7 @@ public class BotTypeConfiguration implements Configuration {
   private BotLifecycleConfiguration lifecycleConfiguration =
       new ReactiveBotLifecycleConfiguration();
 
-  private int replicas;
+  private int replicas = 1;
 
   private List<String> environment = Collections.emptyList();
 
@@ -42,8 +42,6 @@ public class BotTypeConfiguration implements Configuration {
     if (image == null || image.isBlank()) report.addError("image", "missing or empty image");
     if (replicas < 0) {
       report.addError("replicas", "negative number of replicas");
-    } else if (replicas == 0 && instances.isEmpty()) {
-      report.addWarning("replicas", "no replicas configured");
     }
     instances.forEach((id, instance) -> report.registerChild("instances." + id, instance));
     report.registerChild("mounts", mounts);
