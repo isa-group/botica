@@ -63,6 +63,7 @@ public class PropertyPlaceholderResolver {
                 + "value. Ensure it is set in the system environment or provide a default in the "
                 + "configuration file.",
             propertyName);
+        continue;
       }
       String value = propertyValue != null ? propertyValue : defaultValue;
       matcher.appendReplacement(result, Matcher.quoteReplacement(value));
