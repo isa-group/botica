@@ -53,6 +53,9 @@
           "target": "path/to/container/file.extension"
         }
       ],
+      "ports": [
+        "8000:8000"
+      ],
       "subscribe": [
         {
           "key": "subscribe_key_1",

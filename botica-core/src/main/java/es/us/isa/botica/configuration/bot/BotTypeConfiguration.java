@@ -19,6 +19,8 @@ public class BotTypeConfiguration implements Configuration {
   @JsonProperty("mount")
   private List<BotMountConfiguration> mounts = Collections.emptyList();
 
+  private List<String> ports = new ArrayList<>();
+
   @JsonProperty("publish")
   private BotPublishConfiguration publishConfiguration = new BotPublishConfiguration();
 
@@ -88,6 +90,14 @@ public class BotTypeConfiguration implements Configuration {
     this.mounts = mounts;
   }
 
+  public List<String> getPorts() {
+    return ports;
+  }
+
+  public void setPorts(List<String> ports) {
+    this.ports = ports;
+  }
+
   public BotLifecycleConfiguration getLifecycleConfiguration() {
     return lifecycleConfiguration;
   }
@@ -150,6 +160,8 @@ public class BotTypeConfiguration implements Configuration {
         + '\''
         + ", mounts="
         + mounts
+        + ", ports="
+        + ports
         + ", publishConfiguration="
         + publishConfiguration
         + ", subscribeConfigurations="

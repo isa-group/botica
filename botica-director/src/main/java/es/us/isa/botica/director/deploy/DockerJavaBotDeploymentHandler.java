@@ -10,6 +10,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
+import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.RestartPolicy;
 import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
@@ -114,14 +115,18 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
     if (!this.director.isRunning()) {
       return null;
     }
+    List<PortBinding> portBindings = buildPorts(bot);
     return this.dockerClient
         .createContainerCmd(bot.getTypeConfiguration().getImage())
         .withName(this.buildContainerName(bot.getId()))
         .withEnv(this.buildEnvironmentVariables(bot.getConfiguration()))
+        .withExposedPorts(
+            portBindings.stream().map(PortBinding::getExposedPort).collect(Collectors.toList()))
         .withHostConfig(
             new HostConfig()
                 .withNetworkMode(this.buildNetworkName())
                 .withMounts(this.buildMounts(bot.getTypeConfiguration()))
+                .withPortBindings(portBindings)
                 .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
         .exec()
         .getId();
@@ -140,6 +145,12 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
     mounts.add(this.buildSharedVolumeMount());
     mounts.add(this.buildConfigurationFileMount());
     return mounts;
+  }
+
+  private static List<PortBinding> buildPorts(Bot bot) {
+    return bot.getConfiguration().getPorts().stream()
+        .map(PortBinding::parse)
+        .collect(Collectors.toList());
   }
 
   private List<Mount> buildMountsFromConfiguration(BotTypeConfiguration typeConfiguration) {

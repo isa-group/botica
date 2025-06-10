@@ -11,8 +11,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class BotInstanceConfiguration implements Configuration {
-  @JsonBackReference private BotTypeConfiguration typeConfiguration;
   private String id;
+  @JsonBackReference private BotTypeConfiguration typeConfiguration;
+  private List<String> ports = new ArrayList<>();
 
   @JsonProperty("lifecycle")
   private BotLifecycleConfiguration lifecycleConfiguration;
@@ -27,6 +28,14 @@ public class BotInstanceConfiguration implements Configuration {
     }
   }
 
+  public String getId() {
+    return id;
+  }
+
+  public void setId(String id) {
+    this.id = id;
+  }
+
   public BotTypeConfiguration getTypeConfiguration() {
     return typeConfiguration;
   }
@@ -35,12 +44,21 @@ public class BotInstanceConfiguration implements Configuration {
     this.typeConfiguration = typeConfiguration;
   }
 
-  public String getId() {
-    return id;
+  @JsonIgnore
+  public List<String> getPorts() {
+    List<String> ports = new ArrayList<>(this.getTypeConfiguration().getPorts());
+    ports.addAll(this.ports);
+    return ports;
   }
 
-  public void setId(String id) {
-    this.id = id;
+  @JsonProperty("ports")
+  public List<String> getOwnPorts() {
+    return ports;
+  }
+
+  @JsonProperty("ports")
+  public void setOwnPorts(List<String> ports) {
+    this.ports = ports;
   }
 
   @JsonIgnore
