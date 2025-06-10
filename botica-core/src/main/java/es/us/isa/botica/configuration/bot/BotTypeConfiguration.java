@@ -42,11 +42,8 @@ public class BotTypeConfiguration implements Configuration {
   public void validate(ValidationReport report) {
     if (id == null || id.isBlank()) report.addError("id", "missing or empty id");
     if (image == null || image.isBlank()) report.addError("image", "missing or empty image");
-    if (replicas < 0) {
+    if (this.getReplicas() < 0) {
       report.addError("replicas", "negative number of replicas");
-    }
-    if (replicas == null && instances.isEmpty()) {
-      replicas = 1;
     }
     instances.forEach((id, instance) -> report.registerChild("instances." + id, instance));
     report.registerChild("mounts", mounts);
@@ -60,7 +57,7 @@ public class BotTypeConfiguration implements Configuration {
     List<BotInstanceConfiguration> typeInstances =
         new ArrayList<>(this.getDeclaredInstances().values());
 
-    for (int i = 1; i <= this.replicas; i++) {
+    for (int i = 1; i <= this.getReplicas(); i++) {
       BotInstanceConfiguration botConfiguration = new BotInstanceConfiguration();
       botConfiguration.setTypeConfiguration(this);
       botConfiguration.setId(String.format("%s-%d", this.id, i));
@@ -126,7 +123,7 @@ public class BotTypeConfiguration implements Configuration {
   }
 
   public int getReplicas() {
-    return replicas;
+    return replicas == null ? instances.isEmpty() ? 1 : 0 : replicas;
   }
 
   public void setReplicas(int replicas) {
