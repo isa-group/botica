@@ -16,6 +16,8 @@ import es.us.isa.botica.util.configuration.jackson.JacksonConfigurationFileLoade
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 import es.us.isa.botica.util.configuration.validate.Validator;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -47,10 +49,12 @@ public class Director {
   }
 
   /** Starts this director instance. */
-  public void start() {
+  public void start() throws IOException {
     this.running = true;
     log.info("Starting the botica environment!");
+
     this.loadConfiguration();
+    Files.createDirectories(DATA_DIRECTORY);
     this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
 
     this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
