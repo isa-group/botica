@@ -14,6 +14,7 @@ import es.us.isa.botica.protocol.query.RequestPacket;
 import es.us.isa.botica.protocol.query.ResponsePacket;
 import es.us.isa.botica.rabbitmq.RabbitMqClient;
 import es.us.isa.botica.util.ExecutorUtils;
+import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,14 +46,26 @@ public class RabbitMqBoticaServer implements BoticaServer {
 
   public RabbitMqBoticaServer(
       MainConfiguration mainConfiguration, PacketConverter packetConverter) {
+    this(
+        mainConfiguration,
+        packetConverter,
+        new ThreadPoolExecutor(
+            0, MAX_THREAD_POOL_SIZE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>()),
+        new QueryHandler(ExecutorUtils.newDaemonSingleThreadScheduledExecutor()),
+        new RabbitMqClient());
+  }
+
+  public RabbitMqBoticaServer(
+      MainConfiguration mainConfiguration,
+      PacketConverter packetConverter,
+      ExecutorService executorService,
+      QueryHandler queryHandler,
+      RabbitMqClient rabbitClient) {
     this.mainConfiguration = mainConfiguration;
     this.packetConverter = packetConverter;
-    this.executorService =
-        new ThreadPoolExecutor(
-            0, MAX_THREAD_POOL_SIZE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>());
-
-    this.queryHandler = new QueryHandler(ExecutorUtils.newDaemonSingleThreadScheduledExecutor());
-    this.rabbitClient = new RabbitMqClient();
+    this.executorService = executorService;
+    this.queryHandler = queryHandler;
+    this.rabbitClient = rabbitClient;
   }
 
   @Override
@@ -77,7 +90,8 @@ public class RabbitMqBoticaServer implements BoticaServer {
   }
 
   @SuppressWarnings("unchecked")
-  private <P extends Packet> void callPacketListeners(String rawPacket) {
+  @VisibleForTesting
+  <P extends Packet> void callPacketListeners(String rawPacket) {
     BotPacket wrapper = (BotPacket) this.packetConverter.deserialize(rawPacket);
     String botId = wrapper.getBotId();
     Packet packet = wrapper.getPacket();
@@ -119,6 +133,11 @@ public class RabbitMqBoticaServer implements BoticaServer {
             log.error(e.getMessage());
           }
         });
+  }
+
+  @VisibleForTesting
+  Map<Class<?>, List<PacketListener<?>>> getPacketListeners() {
+    return packetListeners;
   }
 
   @Override
