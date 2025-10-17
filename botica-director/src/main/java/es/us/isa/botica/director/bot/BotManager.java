@@ -13,6 +13,7 @@ import es.us.isa.botica.director.protocol.BoticaServer;
 import es.us.isa.botica.protocol.HeartbeatPacket;
 import es.us.isa.botica.protocol.client.ReadyPacket;
 import es.us.isa.botica.util.ExecutorUtils;
+import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Collection;
@@ -50,6 +51,23 @@ public class BotManager {
     server.registerPacketListener(HeartbeatPacket.class, this::onBotHeartbeat);
   }
 
+  @VisibleForTesting
+  BotManager(
+      Director director,
+      BotDeploymentHandler deploymentHandler,
+      BoticaServer server,
+      ScheduledExecutorService executorService,
+      ShutdownHandler shutdownHandler) {
+    this.director = director;
+    this.deploymentHandler = deploymentHandler;
+    this.server = server;
+    this.executorService = executorService;
+    this.shutdownHandler = shutdownHandler;
+
+    server.registerPacketListener(ReadyPacket.class, this::onBotReady);
+    server.registerPacketListener(HeartbeatPacket.class, this::onBotHeartbeat);
+  }
+
   public void deploy() {
     MainConfiguration mainConfiguration = this.director.getMainConfiguration();
     for (BotTypeConfiguration typeConfiguration : mainConfiguration.getBotTypes().values()) {
@@ -60,6 +78,11 @@ public class BotManager {
       }
     }
 
+    this.startHeartbeatScheduler();
+  }
+
+  @VisibleForTesting
+  void startHeartbeatScheduler() {
     this.executorService.scheduleAtFixedRate(
         this::heartbeat, HEARTBEAT_RATE_SECONDS, HEARTBEAT_RATE_SECONDS, TimeUnit.SECONDS);
   }
@@ -124,8 +147,6 @@ public class BotManager {
         this.deploymentHandler.stopContainer(bot.getContainerId());
         bot.setLastKnownStatus(BotStatus.STOPPED);
         break;
-      default:
-        throw new UnsupportedOperationException("Unsupported shutdown mode: " + mode);
     }
 
     if (this.systemShutdownCallback != null
