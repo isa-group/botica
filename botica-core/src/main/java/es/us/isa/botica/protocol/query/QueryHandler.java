@@ -1,6 +1,7 @@
 package es.us.isa.botica.protocol.query;
 
 import es.us.isa.botica.util.StringUtils;
+import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
@@ -9,7 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class QueryHandler {
-  private static final int REQUEST_ID_LENGTH = 8;
+  @VisibleForTesting static final int REQUEST_ID_LENGTH = 8;
 
   private final ScheduledExecutorService executorService;
 
@@ -56,5 +57,15 @@ public class QueryHandler {
     if (timeoutFuture != null) timeoutFuture.cancel(false);
 
     callback.accept(packet);
+  }
+
+  @VisibleForTesting
+  Map<String, Consumer<ResponsePacket>> getCallbacks() {
+    return callbacks;
+  }
+
+  @VisibleForTesting
+  Map<String, ScheduledFuture<?>> getTimeoutFutures() {
+    return timeoutFutures;
   }
 }
