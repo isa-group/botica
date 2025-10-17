@@ -21,6 +21,11 @@
       <artifactId>docker-java-transport-httpclient5</artifactId>
     </dependency>
 
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+    </dependency>
+
     <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
     <dependency>
       <groupId>info.picocli</groupId>
