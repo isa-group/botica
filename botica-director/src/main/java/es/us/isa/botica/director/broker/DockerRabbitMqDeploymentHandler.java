@@ -14,6 +14,7 @@ import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports.Binding;
 import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
+import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.io.IOException;
 import java.util.List;
 import org.slf4j.Logger;
@@ -42,6 +43,16 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
     this.rabbitMqConfiguration = (RabbitMqConfiguration) mainConfiguration.getBrokerConfiguration();
   }
 
+  @VisibleForTesting
+  DockerRabbitMqDeploymentHandler(
+      DockerClient dockerClient,
+      RabbitMqConfigurationGenerator configurationGenerator,
+      RabbitMqConfiguration rabbitMqConfiguration) {
+    this.dockerClient = dockerClient;
+    this.configurationGenerator = configurationGenerator;
+    this.rabbitMqConfiguration = rabbitMqConfiguration;
+  }
+
   @Override
   public void deploy() {
     try {
@@ -58,7 +69,8 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
     this.dockerClient.startContainerCmd(containerId).exec();
   }
 
-  private void removePreviousDeployment() {
+  @VisibleForTesting
+  void removePreviousDeployment() {
     this.dockerClient
         .listContainersCmd()
         .withShowAll(true)
