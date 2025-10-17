@@ -49,6 +49,10 @@ public class Bot {
     return lastHeartbeat;
   }
 
+  public void setLastHeartbeat(Instant lastHeartbeat) {
+    this.lastHeartbeat = lastHeartbeat;
+  }
+
   public void updateLastHeartbeat() {
     this.lastHeartbeat = Instant.now();
   }

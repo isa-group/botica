@@ -8,13 +8,14 @@ import es.us.isa.botica.director.bot.BotStatus;
 import es.us.isa.botica.director.protocol.BoticaServer;
 import es.us.isa.botica.protocol.client.ShutdownResponsePacket;
 import es.us.isa.botica.protocol.server.ShutdownRequestPacket;
+import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ShutdownHandler {
   private static final Logger log = LoggerFactory.getLogger(ShutdownHandler.class);
-  private static final int FORCE_DELAY_MILLISECONDS = 3000;
+  @VisibleForTesting static final long FORCE_DELAY_MILLISECONDS = 3000;
 
   private final Director director;
   private final BotManager botManager;
