@@ -54,26 +54,31 @@ public class Director {
     this.running = true;
     log.info("Starting the botica environment!");
 
-    this.loadConfiguration();
-    Files.createDirectories(DATA_DIRECTORY);
-    this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
+    try {
+      this.loadConfiguration();
+      Files.createDirectories(DATA_DIRECTORY);
+      this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
 
-    this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
-    this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
-    this.botDeploymentHandler =
-        new DockerJavaBotDeploymentHandler(this, RESOLVED_CONFIG_FILE, this.mainConfiguration);
-    this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
+      this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
+      this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
+      this.botDeploymentHandler =
+          new DockerJavaBotDeploymentHandler(this, RESOLVED_CONFIG_FILE, this.mainConfiguration);
+      this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
 
-    this.botDeploymentHandler.removePreviousDeployment();
+      this.botDeploymentHandler.removePreviousDeployment();
 
-    log.info("Deploying the internal message broker...");
-    this.brokerDeploymentHandler.deploy();
-    log.info("Starting the server...");
-    this.startServer();
-    log.info("Deploying bots...");
-    this.botDeploymentHandler.setupInfrastructure();
-    this.botManager.deploy();
-    log.info("Botica is running! Use the 'stop' command to shut down the environment.");
+      log.info("Deploying the internal message broker...");
+      this.brokerDeploymentHandler.deploy();
+      log.info("Starting the server...");
+      this.startServer();
+      log.info("Deploying bots...");
+      this.botDeploymentHandler.setupInfrastructure();
+      this.botManager.deploy();
+      log.info("Botica is running! Use the 'stop' command to shut down the environment.");
+    } catch (Exception e) {
+      this.running = false;
+      throw e;
+    }
   }
 
   private void loadConfiguration() {
