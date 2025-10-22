@@ -44,7 +44,8 @@ public class JacksonConfigurationFileLoader implements ConfigurationFileLoader {
       throw new ConfigurationLoadingException(
           String.format(
               "Unable to read the configuration file at %s: %s",
-              file.getAbsolutePath(), e.getMessage()));
+              file.getAbsolutePath(), e.getMessage()),
+          e);
     }
   }
 
