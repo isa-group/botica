@@ -1,0 +1,3 @@
+# This is a dummy fallback configuration for testing DirectorBootstrap
+broker:
+  type: dummy
