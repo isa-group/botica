@@ -33,8 +33,9 @@
 
 You can see the full example configuration files here:
 
-* [YAML](../botica-director/src/main/resources/config.yml) - with comments for every section
-* [JSON](../botica-director/src/main/resources/config.json)
+* [YAML](../botica-director/src/main/resources/example-environment-file.yml) - with comments for
+  every section
+* [JSON](../botica-director/src/main/resources/example-environment-file.json)
 
 ---
 
@@ -159,9 +160,8 @@ bots:
 ### replicas (optional)
 
 The number of bots of this type to deploy. The bot instances will be named
-`%bot_type%-%replica_number%` (e.g.: `my_bot_type-1`, `my_bot_type-2`, `my_bot_type-3`). Defaults to `1` if
-no
-[instances](#instances-optional) are defined.
+`%bot_type%-%replica_number%` (e.g.: `my_bot_type-1`, `my_bot_type-2`, `my_bot_type-3`). Defaults to
+`1` if no [instances](#instances-optional) are defined.
 
 ```yaml
 bots:

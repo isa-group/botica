@@ -25,7 +25,8 @@ import org.slf4j.LoggerFactory;
 
 public class Director {
   public static final Path DATA_DIRECTORY = Path.of(".botica");
-  public static final File RESOLVED_CONFIG_FILE = DATA_DIRECTORY.resolve("config.yml").toFile();
+  public static final File RESOLVED_CONFIG_FILE =
+      DATA_DIRECTORY.resolve("environment.yml").toFile();
   private static final Logger log = LoggerFactory.getLogger(Director.class);
 
   private final File mainConfigurationFile;

@@ -1,15 +1,6 @@
-docker: # Optional section
-  host: "unix:///var/run/docker.sock" # Optional - uses OS defaults; recommended to remove this section
-
-broker: # Check file documentation
-  type: rabbitmq
-  username: "username"
-  password: "password"
-  port: 5672
-
 bots:
-  bot-type-name:
-    image: "container-image"
+  my-bot:
+    image: "my-bot-container-image:latest"
     replicas: 2
     mount: # Optional section
       - source: "path/to/host/file.extension"
@@ -17,52 +8,37 @@ bots:
       - source: "path/to/host/directory"
         target: "path/to/container/directory"
         createHostPath: true # This creates "path/to/host/directory" if it does not exist
-    publish: # Default publish values if not specified in the code (optional section)
-      key: "sample_actions"
-      defaultOrder: "execute_something"
-    subscribe: # Optional section
-      - key: "subscribe_key_1"
-        strategy: distributed # Each message sent to this key will be received by only one random available instance of this bot type
-      - key: "subscribe_key_2"
-        strategy: broadcast # Each message sent to this key will be received by all instances of this bot type
-    lifecycle: # Optional section; default type is "reactive"
+    lifecycle: # Optional section
       type: proactive
-      initialDelay: 60
-      period: 60
+      period: 60 # In seconds
     environment: # Optional section
       - KEY1=VALUE2
       - KEY2=VALUE2
 
-  other-bot-type:
-    image: "other-container-image"
-    replicas: 2
-    mount: # Optional section
-      - source: "path/to/host/file.extension"
-        target: "path/to/container/file.extension"
+  my-other-bot:
+    image: "my-other-bot-container-image:latest"
     ports:
       - "8000:8000"
     subscribe: # Optional section
-      - key: "subscribe_key_1"
+      - key: "tasks"
         strategy: distributed # Each message sent to this key will be received by only one random available instance of this bot type
-      - key: "subscribe_key_2"
+      - key: "news"
         strategy: broadcast # Each message sent to this key will be received by all instances of this bot type
     # Missing lifecycle section - default is "reactive"
-    environment: # Optional section - not implemented at the bot type level at the moment, only at the instance level
+    environment: # Optional section
       - KEY1=VALUE2
       - KEY2=VALUE2
-    instances:
-      bot-1:
+    instances: # Instead of "replicas: 3"
+      my-other-bot-1:
         environment:
           - KEY3=VALUE3
-      bot-2:
+      my-other-bot-2:
         environment:
-          - KEY2=OVERRIDEN_VALUE_FROM_TYPE
-      bot-3: { } # Empty instance
-      bot-4: { } # Empty instance
+          - KEY2=OVERRIDEN_VALUE
+      my-other-bot-3: { }
 
-  database-type:
-    image: "my-database-image"
-    replicas: 1
+  database:
+    image: "my-database-image:latest"
     mount: # Optional section
       - source: "path/to/host/directory"
         target: "path/to/container/directory"
@@ -74,8 +50,10 @@ bots:
       # Just use the corresponding method to resolve the container hostname from your programming language's Botica library.
       #
       # Examples:
-      #   - Java: this.getBotHostname("database"); (inside AbstractBotApplication)
+      #   - Java: this.getBotHostname("database"); (inside BaseBot)
       #   - Node.js: bot.getBotHostname("database");
       type: unmanaged
     environment:
       - KEY=VALUE
+    instances:
+      database: { }
