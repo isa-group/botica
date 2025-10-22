@@ -8,75 +8,135 @@ import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.InvalidBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ProactiveBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.ReactiveBotLifecycleConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.UnmanagedBotLifecycleConfiguration;
 import es.us.isa.botica.configuration.broker.BrokerConfiguration;
 import es.us.isa.botica.configuration.broker.InvalidBrokerConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-public class MainConfigurationDeserializationTest {
+@DisplayName("Configuration Deserialization Tests")
+class MainConfigurationDeserializationTest {
+  private ObjectMapper objectMapper;
+
+  @BeforeEach
+  void setUp() {
+    objectMapper = new ObjectMapper();
+  }
+
+  // --- BrokerConfiguration Deserialization Tests ---
 
   @Test
-  void name() {
-    System.out.println(byte.class.equals(byte.class.getComponentType()));
+  @DisplayName("Should deserialize into InvalidBrokerConfiguration for an unknown broker type")
+  void deserialize_unknownBrokerType_returnsInvalidBrokerConfiguration() throws JsonProcessingException {
+    // Arrange
+    String json = "{\"type\": \"unknown-broker\"}";
+
+    // Act
+    BrokerConfiguration result = objectMapper.readValue(json, BrokerConfiguration.class);
+
+    // Assert
+    assertThat(result).isInstanceOf(InvalidBrokerConfiguration.class);
   }
 
   @Test
-  void testLoadBrokerConfigurationInvalidType() throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-
-    String json = "{'type': 'foo'}".replace("'", "\"");
-    assertThat(mapper.readValue(json, BrokerConfiguration.class))
-        .isInstanceOf(InvalidBrokerConfiguration.class);
-  }
-
-  @Test
-  void testLoadBrokerConfigurationRabbitMq() throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
-
+  @DisplayName("Should correctly deserialize into RabbitMqConfiguration with all properties")
+  void deserialize_rabbitMqBrokerType_returnsPopulatedRabbitMqConfiguration()
+      throws JsonProcessingException {
+    // Arrange
     String json =
-        "{'type': 'rabbitmq', 'username': 'username', 'password': 'password', 'port': 5672}"
-            .replace("'", "\"");
-    assertThat(mapper.readValue(json, BrokerConfiguration.class))
+        "{\"type\": \"rabbitmq\", \"username\": \"user\", \"password\": \"pass\", \"port\": 5672}";
+
+    // Act
+    BrokerConfiguration result = objectMapper.readValue(json, BrokerConfiguration.class);
+
+    // Assert
+    assertThat(result)
         .isInstanceOf(RabbitMqConfiguration.class)
         .satisfies(
             broker -> {
-              assertThat(broker).extracting("username").isEqualTo("username");
-              assertThat(broker).extracting("password").isEqualTo("password");
-              assertThat(broker).extracting("port").isEqualTo(5672);
+              RabbitMqConfiguration rabbitConfig = (RabbitMqConfiguration) broker;
+              assertThat(rabbitConfig.getUsername()).isEqualTo("user");
+              assertThat(rabbitConfig.getPassword()).isEqualTo("pass");
+              assertThat(rabbitConfig.getPort()).isEqualTo(5672);
             });
   }
 
-  @Test
-  void testLoadBotLifecycleConfigurationInvalidType() throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
+  // --- BotLifecycleConfiguration Deserialization Tests ---
 
-    String json = "{'type': 'foo'}".replace("'", "\"");
-    assertThat(mapper.readValue(json, BotLifecycleConfiguration.class))
-            .isInstanceOf(InvalidBotLifecycleConfiguration.class);
+  @Test
+  @DisplayName("Should deserialize into InvalidBotLifecycleConfiguration for an unknown lifecycle type")
+  void deserialize_unknownLifecycleType_returnsInvalidBotLifecycleConfiguration()
+      throws JsonProcessingException {
+    // Arrange
+    String json = "{\"type\": \"unknown-lifecycle\"}";
+
+    // Act
+    BotLifecycleConfiguration result =
+        objectMapper.readValue(json, BotLifecycleConfiguration.class);
+
+    // Assert
+    assertThat(result).isInstanceOf(InvalidBotLifecycleConfiguration.class);
   }
 
   @Test
-  void testLoadBotLifecycleConfigurationProactive() throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
+  @DisplayName("Should correctly deserialize into ProactiveBotLifecycleConfiguration")
+  void deserialize_proactiveLifecycleType_returnsPopulatedProactiveConfiguration()
+      throws JsonProcessingException {
+    // Arrange
+    String json = "{\"type\": \"proactive\", \"initialDelay\": 120, \"period\": 300}";
 
-    String json = "{'type': 'proactive', 'initialDelay': 60, 'period': 60}".replace("'", "\"");
-    assertThat(mapper.readValue(json, BotLifecycleConfiguration.class))
+    // Act
+    BotLifecycleConfiguration result =
+        objectMapper.readValue(json, BotLifecycleConfiguration.class);
+
+    // Assert
+    assertThat(result)
         .isInstanceOf(ProactiveBotLifecycleConfiguration.class)
         .satisfies(
             lifecycle -> {
-              assertThat(lifecycle).extracting("initialDelay").isEqualTo(60L);
-              assertThat(lifecycle).extracting("period").isEqualTo(60L);
+              ProactiveBotLifecycleConfiguration proactiveConfig =
+                  (ProactiveBotLifecycleConfiguration) lifecycle;
+              assertThat(proactiveConfig.getInitialDelay()).isEqualTo(120L);
+              assertThat(proactiveConfig.getPeriod()).isEqualTo(300L);
             });
   }
 
   @Test
-  void testLoadBotLifecycleConfigurationReactive() throws JsonProcessingException {
-    ObjectMapper mapper = new ObjectMapper();
+  @DisplayName("Should correctly deserialize into ReactiveBotLifecycleConfiguration")
+  void deserialize_reactiveLifecycleType_returnsPopulatedReactiveConfiguration()
+      throws JsonProcessingException {
+    // Arrange
+    String json = "{\"type\": \"reactive\", \"order\": \"some-order\"}";
 
-    String json = "{'type': 'reactive', 'order': 'order'}".replace("'", "\"");
-    assertThat(mapper.readValue(json, BotLifecycleConfiguration.class))
+    // Act
+    BotLifecycleConfiguration result =
+        objectMapper.readValue(json, BotLifecycleConfiguration.class);
+
+    // Assert
+    assertThat(result)
         .isInstanceOf(ReactiveBotLifecycleConfiguration.class)
-        .extracting("order")
-        .isEqualTo("order");
+        .satisfies(
+            lifecycle -> {
+              ReactiveBotLifecycleConfiguration reactiveConfig =
+                  (ReactiveBotLifecycleConfiguration) lifecycle;
+              assertThat(reactiveConfig.getOrder()).isEqualTo("some-order");
+            });
+  }
+
+  @Test
+  @DisplayName("Should correctly deserialize into UnmanagedBotLifecycleConfiguration")
+  void deserialize_unmanagedLifecycleType_returnsUnmanagedConfiguration()
+      throws JsonProcessingException {
+    // Arrange
+    String json = "{\"type\": \"unmanaged\"}";
+
+    // Act
+    BotLifecycleConfiguration result =
+        objectMapper.readValue(json, BotLifecycleConfiguration.class);
+
+    // Assert
+    assertThat(result).isInstanceOf(UnmanagedBotLifecycleConfiguration.class);
   }
 }
