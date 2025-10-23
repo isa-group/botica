@@ -1,11 +1,9 @@
 package es.us.isa.botica.configuration.bot.lifecycle;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 
 public class ReactiveBotLifecycleConfiguration implements BotLifecycleConfiguration {
-  @JsonAlias({"mainOrder", "defaultOrder"})
-  private String order;
+  private String defaultAction;
 
   @Override
   public void validate(ValidationReport report) {}
@@ -15,16 +13,16 @@ public class ReactiveBotLifecycleConfiguration implements BotLifecycleConfigurat
     return BotLifecycleType.REACTIVE;
   }
 
-  public String getOrder() {
-    return order;
+  public String getDefaultAction() {
+    return defaultAction;
   }
 
-  public void setOrder(String order) {
-    this.order = order;
+  public void setDefaultAction(String defaultAction) {
+    this.defaultAction = defaultAction;
   }
 
   @Override
   public String toString() {
-    return "ReactiveBotLifecycleConfiguration{" + "order='" + order + '\'' + '}';
+    return "ReactiveBotLifecycleConfiguration{" + "defaultAction='" + defaultAction + '\'' + '}';
   }
 }

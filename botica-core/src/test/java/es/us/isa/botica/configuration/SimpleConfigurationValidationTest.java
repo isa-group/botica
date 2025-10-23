@@ -55,12 +55,12 @@ class SimpleConfigurationValidationTest {
   @DisplayName("for BotPublishConfiguration")
   class BotPublishConfigurationTest {
     @Test
-    @DisplayName("validate should be clean if both key and order are set")
+    @DisplayName("validate should be clean if both key and action are set")
     void validate_bothSet_isClean() {
       // Arrange
       BotPublishConfiguration config = new BotPublishConfiguration();
-      config.setKey("key");
-      config.setOrder("order");
+      config.setDefaultKey("key");
+      config.setDefaultAction("action");
       ValidationReport report = new ValidationReport();
 
       // Act & Assert
@@ -69,7 +69,7 @@ class SimpleConfigurationValidationTest {
     }
 
     @Test
-    @DisplayName("validate should be clean if neither key nor order are set")
+    @DisplayName("validate should be clean if neither key nor action are set")
     void validate_neitherSet_isClean() {
       // Arrange
       BotPublishConfiguration config = new BotPublishConfiguration();
@@ -85,7 +85,7 @@ class SimpleConfigurationValidationTest {
     void validate_onlyKeySet_reportsError() {
       // Arrange
       BotPublishConfiguration config = new BotPublishConfiguration();
-      config.setKey("key");
+      config.setDefaultKey("key");
       ValidationReport report = new ValidationReport();
 
       // Act
@@ -93,16 +93,16 @@ class SimpleConfigurationValidationTest {
 
       // Assert
       assertThat(report.hasErrors()).isTrue();
-      assertThat(report.getResults("order")).hasSize(1);
+      assertThat(report.getResults("defaultAction")).hasSize(1);
       assertThat(report.getResults("key")).isNullOrEmpty();
     }
 
     @Test
-    @DisplayName("validate should report error if only order is set")
-    void validate_onlyOrderSet_reportsError() {
+    @DisplayName("validate should report error if only defaultAction is set")
+    void validate_onlyActionSet_reportsError() {
       // Arrange
       BotPublishConfiguration config = new BotPublishConfiguration();
-      config.setOrder("order");
+      config.setDefaultAction("defaultAction");
       ValidationReport report = new ValidationReport();
 
       // Act
@@ -110,8 +110,8 @@ class SimpleConfigurationValidationTest {
 
       // Assert
       assertThat(report.hasErrors()).isTrue();
-      assertThat(report.getResults("key")).hasSize(1);
-      assertThat(report.getResults("order")).isNullOrEmpty();
+      assertThat(report.getResults("defaultKey")).hasSize(1);
+      assertThat(report.getResults("defaultAction")).isNullOrEmpty();
     }
   }
 

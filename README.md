@@ -32,7 +32,7 @@ Botica operates with two primary components:
 - **Bots**: these are the worker units within Botica, designed and implemented by developers. Each
   bot runs inside a container and communicates with the Botica Director and other bots using the
   message broker. Bots can be configured to perform tasks either proactively (on a schedule) or
-  reactively (in response to messages). Moreover, bots can publish and subscribe to multiple orders,
+  reactively (in response to orders). Moreover, bots can publish and subscribe to multiple orders,
   allowing for complex inter-bot communication and orchestration.
 
 ### Check out our documentation! [Get started](docs/0-getting-started.md).

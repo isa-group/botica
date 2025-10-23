@@ -16,11 +16,11 @@ Bots in Botica can perform a wide variety of tasks, ranging from simple operatio
 or sending notifications to complex processes involving data transformation, machine learning
 inference, or multi-step workflows. These bots are able to:
 
-- **Publish messages**: bots can publish messages to the message broker, which can trigger actions
-  in other bots.
+- **Publish orders**: bots can publish messages (called orders) to the message broker, which can
+  trigger actions in other bots.
 
-- **Subscribe to multiple orders**: bots can subscribe to multiple keys and orders, allowing them to
-  listen for and respond to different types of messages. This capability is crucial for building
+- **Subscribe to multiple actions**: bots can subscribe to multiple keys and actions, allowing them
+  to listen for and respond to different orders. This capability is crucial for building
   complex workflows where a bot may need to react to various events or data inputs.
 
 - **Mounting file systems**: bots can mount any part of the host's file system, giving them access
@@ -41,7 +41,7 @@ Bots in Botica can exhibit different behaviors depending on their lifecycle conf
   as data generation or regular maintenance jobs.
   While primarily time-driven, proactive bots can also listen to and respond to incoming orders.
 
-- **Reactive lifecycle**: reactive bots are triggered by specific events or messages. They listen
+- **Reactive lifecycle**: reactive bots are triggered by specific events or orders. They listen
   for orders sent through the message broker and respond accordingly, making them perfect for tasks
   that need to be executed based on certain conditions or data availability.
 
@@ -62,7 +62,7 @@ orchestrating bot communication.
 
 Creating a bot in Botica involves defining its behavior, lifecycle, and interaction with other bots
 through a configuration file. Developers specify the bot's container image, environment variables,
-and how it should publish or subscribe to messages. Botica’s libraries provide the necessary
+and how it should publish or subscribe to orders. Botica’s libraries provide the necessary
 abstractions, allowing developers to focus on the logic of their bots rather than the underlying
 infrastructure.
 

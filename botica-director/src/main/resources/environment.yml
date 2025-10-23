@@ -21,9 +21,9 @@ bots:
       - "8000:8000"
     subscribe: # Optional section
       - key: "tasks"
-        strategy: distributed # Each message sent to this key will be received by only one random available instance of this bot type
+        strategy: distributed # Each order sent to this key will be received by only one random available instance of this bot type
       - key: "news"
-        strategy: broadcast # Each message sent to this key will be received by all instances of this bot type
+        strategy: broadcast # Each order sent to this key will be received by all instances of this bot type
     # Missing lifecycle section - default is "reactive"
     environment: # Optional section
       - KEY1=VALUE2

@@ -38,7 +38,7 @@ an order is received, they take the generated test classes, run them against the
 results. Finally, reporter bots compare the actual results with the expected outcomes, generate
 detailed analytics, and produce an Allure dashboard for visualization.
 
-A key feature of this infrastructure is that the executor and reporter bots listen to message keys
+A key feature of this infrastructure is that the executor and reporter bots listen to order keys
 using the distributed strategy. This means that each bot instance takes a message from the queue as
 soon as it becomes available, ensuring that tasks are evenly distributed among the available bot
 instances. This approach allows the infrastructure to handle a large volume of tasks efficiently by

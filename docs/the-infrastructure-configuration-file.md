@@ -238,14 +238,14 @@ The type of the lifecycle. Supported values:
   down if there are no active user threads remaining.
 
 
-* `reactive`: the bot will run when it receives a message with the given `order` to one of the
+* `reactive`: the bot will run when it receives an order with the given `action` to one of the
   subscribed `keys`. This is the default value if the whole lifecycle section is missing.
     ```yaml
     bots:
       my_bot_type:
         lifecycle:
           type: reactive
-          defaultOrder: "subscribe_order"  # (optional) default value for order subscriptions if not specified in code
+          defaultAction: "subscribe_order"  # (optional) default value for order subscriptions if not specified in code
     ```
 
 * `unmanaged`: the image is not a Botica bot and manages its own lifecycle. The director will not
@@ -261,15 +261,15 @@ The type of the lifecycle. Supported values:
 
 ### publish (optional)
 
-The optional default publish configuration for the bot type. If your bot publishes a message without
-specifying key or order, they will be taken from this section.
+The optional default publish configuration for the bot type. If your bot publishes an order without
+specifying key or action, they will be taken from this section.
 
 ```yaml
 bots:
   my_bot_type:
     publish:
-      key: "default_publish_key"
-      order: "default_publish_order"
+      defaultKey: "default_publish_key"
+      defaultAction: "default_publish_order"
 ```
 
 ### ports (optional)

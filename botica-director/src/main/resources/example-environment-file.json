@@ -21,8 +21,8 @@
         }
       ],
       "publish": {
-        "key": "sample_actions",
-        "defaultOrder": "execute_something"
+        "defaultKey": "sample_actions",
+        "defaultAction": "execute_something"
       },
       "subscribe": [
         {

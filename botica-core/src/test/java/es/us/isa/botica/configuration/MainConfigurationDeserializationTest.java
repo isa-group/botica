@@ -29,7 +29,8 @@ class MainConfigurationDeserializationTest {
 
   @Test
   @DisplayName("Should deserialize into InvalidBrokerConfiguration for an unknown broker type")
-  void deserialize_unknownBrokerType_returnsInvalidBrokerConfiguration() throws JsonProcessingException {
+  void deserialize_unknownBrokerType_returnsInvalidBrokerConfiguration()
+      throws JsonProcessingException {
     // Arrange
     String json = "{\"type\": \"unknown-broker\"}";
 
@@ -66,7 +67,8 @@ class MainConfigurationDeserializationTest {
   // --- BotLifecycleConfiguration Deserialization Tests ---
 
   @Test
-  @DisplayName("Should deserialize into InvalidBotLifecycleConfiguration for an unknown lifecycle type")
+  @DisplayName(
+      "Should deserialize into InvalidBotLifecycleConfiguration for an unknown lifecycle type")
   void deserialize_unknownLifecycleType_returnsInvalidBotLifecycleConfiguration()
       throws JsonProcessingException {
     // Arrange
@@ -108,7 +110,7 @@ class MainConfigurationDeserializationTest {
   void deserialize_reactiveLifecycleType_returnsPopulatedReactiveConfiguration()
       throws JsonProcessingException {
     // Arrange
-    String json = "{\"type\": \"reactive\", \"order\": \"some-order\"}";
+    String json = "{\"type\": \"reactive\", \"defaultAction\": \"some-action\"}";
 
     // Act
     BotLifecycleConfiguration result =
@@ -121,7 +123,7 @@ class MainConfigurationDeserializationTest {
             lifecycle -> {
               ReactiveBotLifecycleConfiguration reactiveConfig =
                   (ReactiveBotLifecycleConfiguration) lifecycle;
-              assertThat(reactiveConfig.getOrder()).isEqualTo("some-order");
+              assertThat(reactiveConfig.getDefaultAction()).isEqualTo("some-action");
             });
   }
 

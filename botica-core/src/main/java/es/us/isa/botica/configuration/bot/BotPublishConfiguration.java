@@ -4,37 +4,44 @@ import es.us.isa.botica.util.configuration.Configuration;
 import es.us.isa.botica.util.configuration.validate.ValidationReport;
 
 public class BotPublishConfiguration implements Configuration {
-  private String key;
-  private String order;
+  private String defaultKey;
+  private String defaultAction;
 
   @Override
   public void validate(ValidationReport report) {
-    boolean missingKey = key == null || key.isBlank();
-    boolean missingOrder = order == null || order.isBlank();
-    if (missingKey ^ missingOrder) {
-      if (missingKey) report.addError("key", "missing or empty key");
-      if (missingOrder) report.addError("order", "missing or empty order");
+    boolean missingKey = defaultKey == null || defaultKey.isBlank();
+    boolean missingAction = defaultAction == null || defaultAction.isBlank();
+    if (missingKey ^ missingAction) {
+      if (missingKey) report.addError("defaultKey", "missing or empty default key");
+      if (missingAction) report.addError("defaultAction", "missing or empty default action");
     }
   }
 
-  public String getKey() {
-    return key;
+  public String getDefaultKey() {
+    return defaultKey;
   }
 
-  public void setKey(String key) {
-    this.key = key;
+  public void setDefaultKey(String defaultKey) {
+    this.defaultKey = defaultKey;
   }
 
-  public String getOrder() {
-    return order;
+  public String getDefaultAction() {
+    return defaultAction;
   }
 
-  public void setOrder(String order) {
-    this.order = order;
+  public void setDefaultAction(String defaultAction) {
+    this.defaultAction = defaultAction;
   }
 
   @Override
   public String toString() {
-    return "BotPublishConfiguration{" + "key='" + key + '\'' + ", order='" + order + '\'' + '}';
+    return "BotPublishConfiguration{"
+        + "defaultKey='"
+        + defaultKey
+        + '\''
+        + ", defaultAction='"
+        + defaultAction
+        + '\''
+        + '}';
   }
 }

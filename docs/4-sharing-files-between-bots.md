@@ -2,7 +2,7 @@
 
 Botica makes it easy to share files and data between bots by providing a default `/shared`
 directory, accessible to all bot containers. This shared directory is especially useful for handling
-large files, binaries, or any data that’s not practical to send through messaging orders.
+large files, binaries, or any data that’s not practical to send through orders.
 
 ## The shared directory
 

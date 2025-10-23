@@ -8,7 +8,7 @@ allows for the automation of complex, multi-step processes, with each bot handli
 of the task.
 
 Bots in Botica can subscribe to different keys, with various strategies that dictate how the
-messages are delivered:
+orders are delivered:
 
 - **Distributed strategy**: with this strategy, each new order is delivered to one instance of the
   bot type that is subscribed to the key and available to process a new task. Bots request new

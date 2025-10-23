@@ -18,8 +18,8 @@ bots:
         target: "path/to/container/directory"
         createHostPath: true # This creates "path/to/host/directory" if it does not exist
     publish: # Default publish values if not specified in the code (optional section)
-      key: "sample_actions"
-      defaultOrder: "execute_something"
+      defaultKey: "sample_actions"
+      defaultAction: "execute_something"
     subscribe: # Optional section
       - key: "subscribe_key_1"
         strategy: distributed # Each message sent to this key will be received by only one random available instance of this bot type
