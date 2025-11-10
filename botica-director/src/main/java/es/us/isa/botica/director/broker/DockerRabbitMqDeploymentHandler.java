@@ -89,7 +89,7 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
 
   private void pullImage() {
     try {
-      log.info("Downloading {}...", RABBITMQ_IMAGE);
+      log.info("Fetching {}...", RABBITMQ_IMAGE);
       this.dockerClient.pullImageCmd(RABBITMQ_IMAGE).start().awaitCompletion();
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
