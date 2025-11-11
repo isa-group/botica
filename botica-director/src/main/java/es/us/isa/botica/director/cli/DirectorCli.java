@@ -44,7 +44,8 @@ public class DirectorCli {
       commands.addSubcommand(this.shutdownCommand);
 
       PicocliCommands picocliCommands = new PicocliCommands(commands);
-      Terminal terminal = TerminalBuilder.builder().system(true).build();
+      Terminal terminal =
+          TerminalBuilder.builder().system(true).provider("jansi").dumb(true).build();
       Parser parser = new DefaultParser();
 
       SystemRegistry systemRegistry =
