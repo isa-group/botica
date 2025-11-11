@@ -23,17 +23,35 @@
 
     <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
     <jackson.version>2.17.1</jackson.version>
-    <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
-    <docker-java.version>3.4.0</docker-java.version>
   </properties>
 
   <dependencies>
+    <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.2.0</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/org.json/json -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20231013</version>
+    </dependency>
+
+    <!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
+    <dependency>
+      <groupId>com.rabbitmq</groupId>
+      <artifactId>amqp-client</artifactId>
+      <version>5.19.0</version>
+    </dependency>
+
     <!-- Logging -->
     <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-core -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.5.16</version>
+      <version>1.5.20</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
     <dependency>
@@ -46,6 +64,20 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
       <version>2.0.13</version>
+    </dependency>
+
+    <!-- Jackson -->
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-yaml</artifactId>
+      <version>${jackson.version}</version>
+    </dependency>
+    <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
     </dependency>
 
     <!-- Testing -->
@@ -90,66 +122,6 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
-  <dependencyManagement>
-    <dependencies>
-      <!-- https://mvnrepository.com/artifact/org.antlr/ST4 -->
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>ST4</artifactId>
-        <version>4.3.4</version>
-      </dependency>
-
-      <!-- https://mvnrepository.com/artifact/org.json/json -->
-      <dependency>
-        <groupId>org.json</groupId>
-        <artifactId>json</artifactId>
-        <version>20231013</version>
-      </dependency>
-
-      <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
-      <dependency>
-        <groupId>io.github.cdimascio</groupId>
-        <artifactId>dotenv-java</artifactId>
-        <version>3.2.0</version>
-      </dependency>
-
-      <!-- https://mvnrepository.com/artifact/com.rabbitmq/amqp-client -->
-      <dependency>
-        <groupId>com.rabbitmq</groupId>
-        <artifactId>amqp-client</artifactId>
-        <version>5.19.0</version>
-      </dependency>
-
-      <!-- Jackson -->
-      <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.dataformat/jackson-dataformat-yaml -->
-      <dependency>
-        <groupId>com.fasterxml.jackson.dataformat</groupId>
-        <artifactId>jackson-dataformat-yaml</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-      <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
-      <dependency>
-        <groupId>com.fasterxml.jackson.core</groupId>
-        <artifactId>jackson-databind</artifactId>
-        <version>${jackson.version}</version>
-      </dependency>
-
-      <!-- docker-java -->
-      <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
-      <dependency>
-        <groupId>com.github.docker-java</groupId>
-        <artifactId>docker-java</artifactId>
-        <version>${docker-java.version}</version>
-      </dependency>
-      <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java-transport-httpclient5 -->
-      <dependency>
-        <groupId>com.github.docker-java</groupId>
-        <artifactId>docker-java-transport-httpclient5</artifactId>
-        <version>${docker-java.version}</version>
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
 
   <build>
     <defaultGoal>clean install</defaultGoal>

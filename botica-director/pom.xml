@@ -11,21 +11,34 @@
 
   <artifactId>botica-director</artifactId>
 
+  <properties>
+    <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
+    <docker-java.version>3.6.0</docker-java.version>
+  </properties>
+
   <dependencies>
+    <!-- https://mvnrepository.com/artifact/org.antlr/ST4 -->
+    <dependency>
+      <groupId>org.antlr</groupId>
+      <artifactId>ST4</artifactId>
+      <version>4.3.4</version>
+    </dependency>
+
+    <!-- docker-java -->
+    <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
     <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java</artifactId>
+      <version>${docker-java.version}</version>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java-transport-httpclient5 -->
     <dependency>
       <groupId>com.github.docker-java</groupId>
       <artifactId>docker-java-transport-httpclient5</artifactId>
+      <version>${docker-java.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>io.github.cdimascio</groupId>
-      <artifactId>dotenv-java</artifactId>
-    </dependency>
-
+    <!-- CLI -->
     <!-- https://mvnrepository.com/artifact/info.picocli/picocli -->
     <dependency>
       <groupId>info.picocli</groupId>
@@ -36,18 +49,13 @@
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli-shell-jline3</artifactId>
-      <version>4.6.3</version> <!-- support for jdk 11 lts -->
+      <version>4.7.7</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.fusesource.jansi/jansi -->
     <dependency>
       <groupId>org.fusesource.jansi</groupId>
       <artifactId>jansi</artifactId>
-      <version>2.4.1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.antlr</groupId>
-      <artifactId>ST4</artifactId>
+      <version>2.4.2</version>
     </dependency>
 
     <dependency>
