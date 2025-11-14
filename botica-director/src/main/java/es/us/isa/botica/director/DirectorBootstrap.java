@@ -24,6 +24,8 @@ public class DirectorBootstrap {
   private static final String FALLBACK_RESOURCE_CONFIG_NAME = "environment.yml";
 
   public static void main(String[] args) {
+    new UpdateManager().checkForUpdates();
+
     try {
       File mainConfigurationFile = resolveConfigurationFile(args);
 
