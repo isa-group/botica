@@ -1,0 +1,83 @@
+#!/bin/bash
+#
+# Botica Director - Unix Launcher & Updater
+#
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
+BOTICA_HOME="$SCRIPT_DIR/.botica"
+LIB_DIR="$BOTICA_HOME/lib"
+JAR_FILE="$LIB_DIR/botica-director.jar"
+UPDATE_FILE="$LIB_DIR/botica-director.jar.update"
+LATEST_RELEASE_URL="https://api.github.com/repos/isa-group/botica/releases/latest"
+
+UPDATE_EXIT_CODE=99
+
+check_java_version() {
+  if ! type -p java >/dev/null; then
+    echo "Error: Java is not installed or not in your PATH."
+    echo "Please install Java 11 or higher and try again."
+    return 1
+  fi
+
+  version=$("java" -version 2>&1 | awk -F[\"\._] '/version/ {print $2}')
+  if [[ "$version" -lt 11 ]]; then
+    echo "Error: You need at least Java 11 to run Botica. Found version: $version."
+    echo "Please install Java 11 or higher and try again."
+    return 1
+  fi
+  return 0
+}
+
+download_director() {
+  echo "Botica Director not found. Downloading the latest version..."
+  local tag
+  tag=$(curl -sL "$LATEST_RELEASE_URL" | grep -oP '"tag_name": "\K(.*)(?=")')
+
+  if [[ -z "$tag" ]]; then
+    echo "Error: Could not determine the latest version from GitHub." >&2
+    echo "Please check your internet connection and GitHub API status." >&2
+    return 1
+  fi
+
+  local download_url="https://github.com/isa-group/botica/releases/download/$tag/botica-director.jar"
+  echo "Downloading Botica Director version $tag..."
+
+  mkdir -p "$LIB_DIR"
+  if ! curl -# -L -o "$JAR_FILE" "$download_url"; then
+    echo "Error: Failed to download Botica Director." >&2
+    echo "Please check your internet connection." >&2
+    rm -f "$JAR_FILE"
+    return 1
+  fi
+  echo "Download complete."
+}
+
+if ! check_java_version; then
+  exit 1
+fi
+
+if [[ ! -f "$JAR_FILE" ]]; then
+  if ! download_director; then
+    exit 1
+  fi
+fi
+
+while true; do
+  export BOTICA_WRAPPER_ACTIVE=true
+  java -jar "$JAR_FILE" "$@"
+  EXIT_CODE=$?
+
+  if [[ $EXIT_CODE -eq $UPDATE_EXIT_CODE ]]; then
+    UPDATE_FILE="${JAR_FILE}.update"
+    if [[ -f "$UPDATE_FILE" ]]; then
+      rm -f "$JAR_FILE"
+      mv "$UPDATE_FILE" "$JAR_FILE"
+      continue
+    else
+      echo "Error: Update requested, but the update file was not found (expected: $UPDATE_FILE)." >&2
+      exit 1
+    fi
+  else
+    exit $EXIT_CODE
+  fi
+done
