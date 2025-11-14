@@ -7,6 +7,7 @@ import static es.us.isa.botica.BoticaConstants.CONTAINER_PREFIX;
 import static es.us.isa.botica.util.StringUtils.buildEnv;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
@@ -19,6 +20,7 @@ import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.director.Director;
 import es.us.isa.botica.director.bot.Bot;
 import es.us.isa.botica.director.docker.DockerClientFactory;
+import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.exception.MountNotFoundException;
 import java.io.File;
 import java.io.IOException;
@@ -115,21 +117,33 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
     if (!this.director.isRunning()) {
       return null;
     }
-    List<PortBinding> portBindings = buildPorts(bot);
-    return this.dockerClient
-        .createContainerCmd(bot.getTypeConfiguration().getImage())
-        .withName(this.buildContainerName(bot.getId()))
-        .withEnv(this.buildEnvironmentVariables(bot.getConfiguration()))
-        .withExposedPorts(
-            portBindings.stream().map(PortBinding::getExposedPort).collect(Collectors.toList()))
-        .withHostConfig(
-            new HostConfig()
-                .withNetworkMode(this.buildNetworkName())
-                .withMounts(this.buildMounts(bot.getTypeConfiguration()))
-                .withPortBindings(portBindings)
-                .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
-        .exec()
-        .getId();
+
+    try {
+      List<PortBinding> portBindings = buildPorts(bot);
+      return this.dockerClient
+          .createContainerCmd(bot.getTypeConfiguration().getImage())
+          .withName(this.buildContainerName(bot.getId()))
+          .withEnv(this.buildEnvironmentVariables(bot.getConfiguration()))
+          .withExposedPorts(
+              portBindings.stream().map(PortBinding::getExposedPort).collect(Collectors.toList()))
+          .withHostConfig(
+              new HostConfig()
+                  .withNetworkMode(this.buildNetworkName())
+                  .withMounts(this.buildMounts(bot.getTypeConfiguration()))
+                  .withPortBindings(portBindings)
+                  .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
+          .exec()
+          .getId();
+    } catch (NotFoundException e) {
+      throw new DirectorException(
+          String.format(
+              "Docker image '%s' (used by '%s' bots) was not found. "
+                  + "Please verify that the image name or tag is correct in the bot's configuration. "
+                  + "Ensure the image has either been built locally "
+                  + "(if it's a custom bot) or pulled from a Docker registry (e.g., Docker Hub).",
+              bot.getTypeConfiguration().getImage(), bot.getTypeConfiguration().getId()),
+          e);
+    }
   }
 
   private List<String> buildEnvironmentVariables(BotInstanceConfiguration botConfiguration) {

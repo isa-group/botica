@@ -32,6 +32,7 @@ import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.command.RemoveVolumeCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.command.StopContainerCmd;
+import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -45,6 +46,7 @@ import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.docker.DockerConfiguration;
 import es.us.isa.botica.director.Director;
 import es.us.isa.botica.director.bot.Bot;
+import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.exception.MountNotFoundException;
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +83,7 @@ class DockerJavaBotDeploymentHandlerTest {
   @Mock private CreateContainerCmd createContainerCmd;
   @Mock private CreateContainerResponse createContainerResponse;
   @Mock private StartContainerCmd startContainerCmd;
-  @Mock private StopContainerCmd Cmd;
+  @Mock private StopContainerCmd stopContainerCmd;
 
   private DockerJavaBotDeploymentHandler deploymentHandler;
 
@@ -128,7 +130,7 @@ class DockerJavaBotDeploymentHandlerTest {
 
     when(dockerClient.startContainerCmd(anyString())).thenReturn(startContainerCmd);
 
-    when(dockerClient.stopContainerCmd(anyString())).thenReturn(Cmd);
+    when(dockerClient.stopContainerCmd(anyString())).thenReturn(stopContainerCmd);
 
     when(mainConfiguration.getBotTypes()).thenReturn(Collections.emptyMap());
     when(mainConfiguration.getDockerConfiguration()).thenReturn(mock(DockerConfiguration.class));
@@ -377,6 +379,33 @@ class DockerJavaBotDeploymentHandlerTest {
   }
 
   @Test
+  @DisplayName("createContainer should throw DirectorException when Docker image not found")
+  void createContainer_dockerImageNotFound_throwsDirectorException() {
+    // Arrange
+    when(director.isRunning()).thenReturn(true);
+
+    BotTypeConfiguration typeConfig = new BotTypeConfiguration();
+    typeConfig.setId("test-bot-type");
+    typeConfig.setImage("non-existent-image:latest");
+
+    BotInstanceConfiguration instanceConfig = new BotInstanceConfiguration();
+    instanceConfig.setId("test-bot-id");
+    instanceConfig.setTypeConfiguration(typeConfig);
+
+    Bot bot = new Bot(typeConfig, instanceConfig);
+
+    NotFoundException dockerNotFoundException = new NotFoundException("No such image");
+    when(createContainerCmd.exec()).thenThrow(dockerNotFoundException);
+
+    // Act & Assert
+    assertThatThrownBy(() -> deploymentHandler.createContainer(bot))
+        .isInstanceOf(DirectorException.class)
+        .hasMessageContaining("image")
+        .hasMessageContaining("not found")
+        .hasCause(dockerNotFoundException);
+  }
+
+  @Test
   @DisplayName("startContainer should not start container if director is not running")
   void startContainer_directorNotRunning_doesNotStart() {
     // Arrange
@@ -411,15 +440,15 @@ class DockerJavaBotDeploymentHandlerTest {
 
     // Assert
     verify(dockerClient, times(1)).stopContainerCmd(eq("container-id-1"));
-    verify(Cmd, times(1)).exec();
+    verify(stopContainerCmd, times(1)).exec();
   }
 
   @Test
   @DisplayName("stopContainer should handle RuntimeException gracefully")
   void stopContainer_handlesRuntimeException() {
     // Arrange
-    when(Cmd.exec()).thenThrow(new RuntimeException("Docker error"));
-    when(dockerClient.stopContainerCmd(anyString())).thenReturn(Cmd);
+    when(stopContainerCmd.exec()).thenThrow(new RuntimeException("Docker error"));
+    when(dockerClient.stopContainerCmd(anyString())).thenReturn(stopContainerCmd);
 
     // Act & Assert
     assertThatCode(() -> deploymentHandler.stopContainer("container-id-1"))

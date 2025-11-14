@@ -12,4 +12,8 @@ public class DirectorException extends RuntimeException {
   public DirectorException(Throwable cause) {
     super(cause.getMessage());
   }
+
+  public DirectorException(String message, Throwable cause) {
+    super(message, cause);
+  }
 }
