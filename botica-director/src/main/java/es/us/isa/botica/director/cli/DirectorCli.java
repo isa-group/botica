@@ -42,10 +42,13 @@ public class DirectorCli {
     try {
       CommandLine commands = new CommandLine(CommandSpec.create().name(""));
       commands.addSubcommand(this.shutdownCommand);
-
       PicocliCommands picocliCommands = new PicocliCommands(commands);
-      Terminal terminal =
-          TerminalBuilder.builder().system(true).provider("jansi").dumb(true).build();
+
+      // Cannot use the new FFM terminal provider because it's Java 22+ and we want to support 11+
+      // Using JNA (best option, default) prints an ugly warning
+      System.setProperty("org.jline.terminal.disableDeprecatedProviderWarning", "true");
+
+      Terminal terminal = TerminalBuilder.builder().system(true).build();
       Parser parser = new DefaultParser();
 
       SystemRegistry systemRegistry =

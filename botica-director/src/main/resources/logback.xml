@@ -8,4 +8,6 @@
   <root level="${BOTICA_LOG_LEVEL:-INFO}">
     <appender-ref ref="STDOUT" />
   </root>
+
+  <logger name="com.github.dockerjava.api.async.ResultCallbackTemplate" level="OFF" />
 </configuration>
