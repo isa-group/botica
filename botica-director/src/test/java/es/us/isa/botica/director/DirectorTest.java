@@ -80,6 +80,7 @@ class DirectorTest {
         .hasMessage(exception.getMessage());
 
     assertThat(director.isRunning()).isFalse();
+    assertThat(director.getState()).isEqualTo(DirectorState.STARTING);
   }
 
   @Test
@@ -209,7 +210,7 @@ class DirectorTest {
     when(mockServer.isConnected()).thenReturn(true);
 
     setField(director, "botManager", botManager);
-    setField(director, "running", true);
+    setField(director, "state", DirectorState.RUNNING);
     setField(director, "botDeploymentHandler", mockBotDeploymentHandler);
     setField(director, "brokerDeploymentHandler", mockBrokerDeploymentHandler);
     setField(director, "server", mockServer);
@@ -227,7 +228,7 @@ class DirectorTest {
     verify(mockBrokerDeploymentHandler, times(1)).shutdown();
     verify(mockServer, times(1)).close();
     verify(externalCallback, times(1)).run();
-    assertThat(director.isRunning()).isFalse();
+    assertThat(director.getState()).isEqualTo(DirectorState.STOPPED);
   }
 
   @Test
@@ -239,7 +240,7 @@ class DirectorTest {
     BoticaServer mockServer = mock(BoticaServer.class);
     when(mockServer.isConnected()).thenReturn(true);
 
-    setField(director, "running", true);
+    setField(director, "state", DirectorState.RUNNING);
     setField(director, "botDeploymentHandler", mockBotDeploymentHandler);
     setField(director, "brokerDeploymentHandler", mockBrokerDeploymentHandler);
     setField(director, "server", mockServer);
@@ -251,7 +252,7 @@ class DirectorTest {
     verify(mockBotDeploymentHandler, times(1)).shutdown();
     verify(mockServer, times(1)).close();
     verify(mockBrokerDeploymentHandler, times(1)).shutdown();
-    assertThat(director.isRunning()).isFalse();
+    assertThat(director.getState()).isEqualTo(DirectorState.STOPPED);
   }
 
   @Test
@@ -264,7 +265,7 @@ class DirectorTest {
     director.shutdownInfrastructure();
 
     // Assert
-    assertThat(director.isRunning()).isFalse();
+    assertThat(director.getState()).isEqualTo(DirectorState.STOPPED);
   }
 
   private void setField(Object target, String fieldName, Object value) throws Exception {

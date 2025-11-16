@@ -24,17 +24,15 @@ public class DirectorBootstrap {
   private static final String FALLBACK_RESOURCE_CONFIG_NAME = "environment.yml";
 
   public static void main(String[] args) {
+    Dotenv.configure().ignoreIfMissing().systemProperties().load();
     new UpdateManager().checkForUpdates();
 
     try {
       File mainConfigurationFile = resolveConfigurationFile(args);
 
-      Dotenv.configure().ignoreIfMissing().systemProperties().load();
-
       Director director = startDirectorInstance(mainConfigurationFile);
       DirectorCli cli = new DirectorCli(director);
       new Thread(cli::start).start();
-
     } catch (ConfigurationResolutionException e) {
       log.error(e.getMessage());
       System.exit(1);
@@ -98,14 +96,15 @@ public class DirectorBootstrap {
       director.start();
     } catch (DirectorException e) {
       log.error(e.getMessage(), e.getCause());
-      System.exit(0);
     } catch (Exception e) {
       log.error("An unexpected error occurred during startup: {}", e.getMessage(), e);
-      System.exit(0);
     }
     if (director.isRunning()) {
       // User interrupt will be handled by DirectorCli from this point
       Runtime.getRuntime().removeShutdownHook(shutdownHook);
+    } else {
+      director.shutdownInfrastructure();
+      System.exit(0);
     }
     return director;
   }

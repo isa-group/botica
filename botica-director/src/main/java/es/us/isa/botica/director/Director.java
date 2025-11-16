@@ -38,7 +38,7 @@ public class Director {
   private BotDeploymentHandler botDeploymentHandler;
   private BotManager botManager;
 
-  private boolean running = false;
+  private DirectorState state = DirectorState.STOPPED;
 
   public Director(File mainConfigurationFile) {
     this(mainConfigurationFile, new JacksonConfigurationFileLoader());
@@ -51,34 +51,30 @@ public class Director {
 
   /** Starts this director instance. */
   public void start() throws IOException {
-    this.running = true;
+    this.state = DirectorState.STARTING;
     log.info("Starting the botica environment!");
 
-    try {
-      this.loadConfiguration();
-      Files.createDirectories(DATA_DIRECTORY);
-      this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
+    this.loadConfiguration();
+    Files.createDirectories(DATA_DIRECTORY);
+    this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
 
-      this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
-      this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
-      this.botDeploymentHandler =
-          new DockerJavaBotDeploymentHandler(this, RESOLVED_CONFIG_FILE, this.mainConfiguration);
-      this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
+    this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
+    this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
+    this.botDeploymentHandler =
+        new DockerJavaBotDeploymentHandler(this, RESOLVED_CONFIG_FILE, this.mainConfiguration);
+    this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
 
-      this.botDeploymentHandler.removePreviousDeployment();
+    this.botDeploymentHandler.removePreviousDeployment();
 
-      log.info("Deploying the internal message broker...");
-      this.brokerDeploymentHandler.deploy();
-      log.info("Starting the server...");
-      this.startServer();
-      log.info("Deploying bots...");
-      this.botDeploymentHandler.setupInfrastructure();
-      this.botManager.deploy();
-      log.info("Botica is running! Use the 'stop' command to shut down the environment.");
-    } catch (Exception e) {
-      this.running = false;
-      throw e;
-    }
+    log.info("Deploying the internal message broker...");
+    this.brokerDeploymentHandler.deploy();
+    log.info("Starting the server...");
+    this.startServer();
+    log.info("Deploying bots...");
+    this.botDeploymentHandler.setupInfrastructure();
+    this.botManager.deploy();
+    log.info("Botica is running! Use the 'stop' command to shut down the environment.");
+    this.state = DirectorState.RUNNING;
   }
 
   private void loadConfiguration() {
@@ -152,8 +148,8 @@ public class Director {
    * @see #shutdown(ShutdownMode)
    */
   public void shutdownInfrastructure() {
-    if (!this.running) return;
-    this.running = false;
+    if (this.state == DirectorState.STOPPED) return;
+    this.state = DirectorState.STOPPED;
 
     if (this.botDeploymentHandler != null) {
       log.info("Shutting down the container infrastructure...");
@@ -175,6 +171,10 @@ public class Director {
   }
 
   public boolean isRunning() {
-    return running;
+    return this.state == DirectorState.RUNNING;
+  }
+
+  public DirectorState getState() {
+    return state;
   }
 }

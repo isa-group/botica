@@ -6,6 +6,7 @@ import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.director.Director;
+import es.us.isa.botica.director.DirectorState;
 import es.us.isa.botica.director.bot.shutdown.ShutdownHandler;
 import es.us.isa.botica.director.bot.shutdown.ShutdownMode;
 import es.us.isa.botica.director.deploy.BotDeploymentHandler;
@@ -92,7 +93,8 @@ public class BotManager {
   }
 
   public void deploy(Bot bot) {
-    if (!this.director.isRunning()) {
+    if (this.director.getState() != DirectorState.STARTING
+        && this.director.getState() != DirectorState.RUNNING) {
       return;
     }
     log.info("Creating {} container...", bot.getId());

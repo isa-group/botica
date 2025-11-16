@@ -18,6 +18,7 @@ import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotMountConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.director.Director;
+import es.us.isa.botica.director.DirectorState;
 import es.us.isa.botica.director.bot.Bot;
 import es.us.isa.botica.director.docker.DockerClientFactory;
 import es.us.isa.botica.director.exception.DirectorException;
@@ -114,7 +115,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
 
   @Override
   public String createContainer(Bot bot) {
-    if (!this.director.isRunning()) {
+    if (this.director.getState() == DirectorState.STOPPED) {
       return null;
     }
 
@@ -197,7 +198,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
 
   @Override
   public void startContainer(String containerId) {
-    if (!this.director.isRunning()) {
+    if (this.director.getState() == DirectorState.STOPPED) {
       return;
     }
     this.dockerClient.startContainerCmd(containerId).exec();

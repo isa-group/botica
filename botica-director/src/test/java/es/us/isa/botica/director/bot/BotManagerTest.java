@@ -19,6 +19,7 @@ import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
 import es.us.isa.botica.director.Director;
+import es.us.isa.botica.director.DirectorState;
 import es.us.isa.botica.director.bot.shutdown.ShutdownHandler;
 import es.us.isa.botica.director.bot.shutdown.ShutdownMode;
 import es.us.isa.botica.director.deploy.BotDeploymentHandler;
@@ -86,7 +87,7 @@ class BotManagerTest {
   @DisplayName("Should deploy all bots from configuration and schedule heartbeat")
   void deploy_shouldDeployAllBotsAndScheduleHeartbeat() {
     // Arrange
-    when(director.isRunning()).thenReturn(true);
+    when(director.getState()).thenReturn(DirectorState.STARTING);
     when(director.getMainConfiguration()).thenReturn(mainConfiguration);
 
     // Setup bot type configuration for deployment
@@ -117,7 +118,7 @@ class BotManagerTest {
   @DisplayName("Should set UNMANAGED status for unmanaged bot types during deployment")
   void deploy_shouldSetUnmanagedStatusForUnmanagedBots() {
     // Arrange
-    when(director.isRunning()).thenReturn(true);
+    when(director.getState()).thenReturn(DirectorState.STARTING);
     when(director.getMainConfiguration()).thenReturn(mainConfiguration);
 
     when(mainConfiguration.getBotTypes()).thenReturn(Map.of("type-id-1", mockBotTypeConfig));
@@ -152,7 +153,7 @@ class BotManagerTest {
   @DisplayName("Should not deploy bot if director is not running")
   void deploy_singleBot_shouldNotDeployIfNotRunning() {
     // Arrange
-    when(director.isRunning()).thenReturn(false);
+    when(director.getState()).thenReturn(DirectorState.STOPPED);
     Bot bot = new Bot(mockBotTypeConfig, mockBotInstanceConfig);
 
     // Act

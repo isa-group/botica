@@ -45,6 +45,7 @@ import es.us.isa.botica.configuration.bot.BotMountConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.docker.DockerConfiguration;
 import es.us.isa.botica.director.Director;
+import es.us.isa.botica.director.DirectorState;
 import es.us.isa.botica.director.bot.Bot;
 import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.exception.MountNotFoundException;
@@ -194,7 +195,7 @@ class DockerJavaBotDeploymentHandlerTest {
   @DisplayName("createContainer should return null if director is not running")
   void createContainer_directorNotRunning_returnsNull() {
     // Arrange
-    when(director.isRunning()).thenReturn(false);
+    when(director.getState()).thenReturn(DirectorState.STOPPED);
     Bot bot = mock(Bot.class);
 
     // Act
@@ -409,7 +410,7 @@ class DockerJavaBotDeploymentHandlerTest {
   @DisplayName("startContainer should not start container if director is not running")
   void startContainer_directorNotRunning_doesNotStart() {
     // Arrange
-    when(director.isRunning()).thenReturn(false);
+    when(director.getState()).thenReturn(DirectorState.STOPPED);
 
     // Act
     deploymentHandler.startContainer("container-id-1");
