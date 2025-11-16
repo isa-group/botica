@@ -100,10 +100,7 @@ public class DirectorBootstrap {
     } catch (Exception e) {
       log.error("An unexpected error occurred during startup: {}", e.getMessage(), e);
     }
-    if (director.isRunning()) {
-      // User interrupt will be handled by DirectorCli from this point
-      Runtime.getRuntime().removeShutdownHook(shutdownHook);
-    } else {
+    if (!director.isRunning()) {
       director.shutdownInfrastructure();
       System.exit(0);
     }

@@ -112,13 +112,8 @@ public class DirectorCli {
       new Thread(() -> this.director.shutdown(ShutdownMode.FORCE, () -> System.exit(0))).start();
     } else if (this.userInterrupts == 1) {
       log.info("Forcing system shutdown...");
-      new Thread(this::shutdownSystem).start();
+      System.exit(0);
     }
     this.userInterrupts++;
-  }
-
-  private void shutdownSystem() {
-    this.director.shutdownInfrastructure();
-    System.exit(0);
   }
 }

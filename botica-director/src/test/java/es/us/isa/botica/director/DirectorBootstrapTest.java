@@ -103,9 +103,8 @@ class DirectorBootstrapTest {
   }
 
   @Test
-  @DisplayName(
-      "startDirectorInstance should start Director, add and then remove shutdown hook on success")
-  void startDirectorInstance_startsDirectorAndManagesShutdownHookOnSuccess() throws IOException {
+  @DisplayName("startDirectorInstance should start Director, and add shutdown hook")
+  void startDirectorInstance_startsDirectorAndRegistersShutdownHook() throws IOException {
     // Arrange
     File configFile = tempDir.resolve("config.yml").toFile();
 
@@ -128,7 +127,6 @@ class DirectorBootstrapTest {
 
         verify(constructedDirector, times(1)).start();
         verify(mockRuntime, times(1)).addShutdownHook(shutdownHookCaptor.capture());
-        verify(mockRuntime, times(1)).removeShutdownHook(shutdownHookCaptor.getValue());
 
         // Verify shutdown hook's behavior
         Thread shutdownHook = shutdownHookCaptor.getValue();
