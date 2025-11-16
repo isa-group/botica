@@ -20,14 +20,18 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback.Adapter;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.CreateVolumeCmd;
 import com.github.dockerjava.api.command.CreateVolumeResponse;
+import com.github.dockerjava.api.command.InspectImageCmd;
+import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.command.InspectVolumeResponse;
 import com.github.dockerjava.api.command.ListContainersCmd;
 import com.github.dockerjava.api.command.ListVolumesCmd;
 import com.github.dockerjava.api.command.ListVolumesResponse;
+import com.github.dockerjava.api.command.PullImageCmd;
 import com.github.dockerjava.api.command.RemoveContainerCmd;
 import com.github.dockerjava.api.command.RemoveVolumeCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
@@ -38,6 +42,7 @@ import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
+import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.api.model.RestartPolicy;
 import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
@@ -85,6 +90,9 @@ class DockerJavaBotDeploymentHandlerTest {
   @Mock private CreateContainerResponse createContainerResponse;
   @Mock private StartContainerCmd startContainerCmd;
   @Mock private StopContainerCmd stopContainerCmd;
+  @Mock private InspectImageCmd inspectImageCmd;
+  @Mock private PullImageCmd pullImageCmd;
+  @Mock private Adapter<PullResponseItem> pullImageResponse;
 
   private DockerJavaBotDeploymentHandler deploymentHandler;
 
@@ -132,6 +140,12 @@ class DockerJavaBotDeploymentHandlerTest {
     when(dockerClient.startContainerCmd(anyString())).thenReturn(startContainerCmd);
 
     when(dockerClient.stopContainerCmd(anyString())).thenReturn(stopContainerCmd);
+
+    when(dockerClient.inspectImageCmd(anyString())).thenReturn(inspectImageCmd);
+    when(inspectImageCmd.exec()).thenReturn(mock(InspectImageResponse.class));
+
+    when(dockerClient.pullImageCmd(anyString())).thenReturn(pullImageCmd);
+    when(pullImageCmd.start()).thenReturn(pullImageResponse);
 
     when(mainConfiguration.getBotTypes()).thenReturn(Collections.emptyMap());
     when(mainConfiguration.getDockerConfiguration()).thenReturn(mock(DockerConfiguration.class));
@@ -230,6 +244,8 @@ class DockerJavaBotDeploymentHandlerTest {
 
     // Assert
     assertThat(containerId).isEqualTo("new-container-id");
+    verify(dockerClient, times(1)).inspectImageCmd(eq("my-bot-image:latest"));
+    verify(dockerClient, never()).pullImageCmd(anyString()); // Ensure no pull if image found locally (default mock)
     verify(dockerClient, times(1)).createContainerCmd(eq("my-bot-image:latest"));
     verify(createContainerCmd, times(1)).withName(eq(containerPrefix + "bot-id-1"));
     verify(createContainerCmd, times(1))
@@ -379,6 +395,68 @@ class DockerJavaBotDeploymentHandlerTest {
                 nonExistentHostMountPath.toFile().getCanonicalFile().getAbsolutePath()));
   }
 
+
+  @Test
+  @DisplayName("createContainer should not pull image if it's already local")
+  void createContainer_imageAlreadyLocal_doesNotPull() {
+    // Arrange
+    when(director.isRunning()).thenReturn(true);
+    String existingImage = "local-image:1.0";
+
+    BotTypeConfiguration typeConfig = new BotTypeConfiguration();
+    typeConfig.setId("type-id-1");
+    typeConfig.setImage(existingImage);
+    BotInstanceConfiguration instanceConfig = new BotInstanceConfiguration();
+    instanceConfig.setId("bot-id-1");
+    instanceConfig.setTypeConfiguration(typeConfig);
+    Bot bot = new Bot(typeConfig, instanceConfig);
+
+    // Default setUp mocks inspectImageCmd().exec() to return InspectImageResponse,
+    // simulating image being found locally. No explicit change needed here.
+
+    // Act
+    String containerId = deploymentHandler.createContainer(bot);
+
+    // Assert
+    assertThat(containerId).isEqualTo("new-container-id");
+    verify(dockerClient, times(1)).inspectImageCmd(eq(existingImage));
+    verify(dockerClient, never()).pullImageCmd(anyString()); // Verify pull was NOT called
+    verify(dockerClient, times(1)).createContainerCmd(eq(existingImage)); // Verify container was created
+  }
+
+  @Test
+  @DisplayName("createContainer should pull image if not local and then create container")
+  void createContainer_imageNotLocal_pullsImageAndCreatesContainer() throws InterruptedException {
+    // Arrange
+    when(director.isRunning()).thenReturn(true);
+    String imageToPull = "remote-image:latest";
+
+    BotTypeConfiguration typeConfig = new BotTypeConfiguration();
+    typeConfig.setId("type-id-1");
+    typeConfig.setImage(imageToPull);
+    BotInstanceConfiguration instanceConfig = new BotInstanceConfiguration();
+    instanceConfig.setId("bot-id-1");
+    instanceConfig.setTypeConfiguration(typeConfig);
+    Bot bot = new Bot(typeConfig, instanceConfig);
+
+    // Simulate image not found locally on inspect
+    when(inspectImageCmd.exec()).thenThrow(new NotFoundException("No such image: " + imageToPull));
+    // Simulate pull is successful
+    // The default mock for pullImageCmd.start() returns pullImageCmd itself,
+    // and awaitCompletion is void, so it will proceed without throwing.
+
+    // Act
+    String containerId = deploymentHandler.createContainer(bot);
+
+    // Assert
+    assertThat(containerId).isEqualTo("new-container-id");
+    verify(dockerClient, times(1)).inspectImageCmd(eq(imageToPull)); // Inspect was called
+    verify(dockerClient, times(1)).pullImageCmd(eq(imageToPull)); // Pull was called
+    verify(pullImageCmd, times(1)).start();
+    verify(pullImageResponse, times(1)).awaitCompletion(); // awaitCompletion was called
+    verify(dockerClient, times(1)).createContainerCmd(eq(imageToPull)); // Container was created
+  }
+
   @Test
   @DisplayName("createContainer should throw DirectorException when Docker image not found")
   void createContainer_dockerImageNotFound_throwsDirectorException() {
@@ -396,7 +474,8 @@ class DockerJavaBotDeploymentHandlerTest {
     Bot bot = new Bot(typeConfig, instanceConfig);
 
     NotFoundException dockerNotFoundException = new NotFoundException("No such image");
-    when(createContainerCmd.exec()).thenThrow(dockerNotFoundException);
+    when(inspectImageCmd.exec()).thenThrow(dockerNotFoundException);
+    when(pullImageCmd.start()).thenThrow(dockerNotFoundException);
 
     // Act & Assert
     assertThatThrownBy(() -> deploymentHandler.createContainer(bot))

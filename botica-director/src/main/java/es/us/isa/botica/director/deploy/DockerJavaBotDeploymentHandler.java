@@ -7,6 +7,7 @@ import static es.us.isa.botica.BoticaConstants.CONTAINER_PREFIX;
 import static es.us.isa.botica.util.StringUtils.buildEnv;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.HostConfig;
 import com.github.dockerjava.api.model.Mount;
@@ -119,30 +120,58 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
       return null;
     }
 
+    this.ensureImageExistsLocally(bot);
+    List<PortBinding> portBindings = buildPorts(bot);
+    return this.dockerClient
+        .createContainerCmd(bot.getTypeConfiguration().getImage())
+        .withName(this.buildContainerName(bot.getId()))
+        .withEnv(this.buildEnvironmentVariables(bot.getConfiguration()))
+        .withExposedPorts(
+            portBindings.stream().map(PortBinding::getExposedPort).collect(Collectors.toList()))
+        .withHostConfig(
+            new HostConfig()
+                .withNetworkMode(this.buildNetworkName())
+                .withMounts(this.buildMounts(bot.getTypeConfiguration()))
+                .withPortBindings(portBindings)
+                .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
+        .exec()
+        .getId();
+  }
+
+  private void ensureImageExistsLocally(Bot bot) {
+    String imageName = bot.getTypeConfiguration().getImage();
     try {
-      List<PortBinding> portBindings = buildPorts(bot);
-      return this.dockerClient
-          .createContainerCmd(bot.getTypeConfiguration().getImage())
-          .withName(this.buildContainerName(bot.getId()))
-          .withEnv(this.buildEnvironmentVariables(bot.getConfiguration()))
-          .withExposedPorts(
-              portBindings.stream().map(PortBinding::getExposedPort).collect(Collectors.toList()))
-          .withHostConfig(
-              new HostConfig()
-                  .withNetworkMode(this.buildNetworkName())
-                  .withMounts(this.buildMounts(bot.getTypeConfiguration()))
-                  .withPortBindings(portBindings)
-                  .withRestartPolicy(RestartPolicy.onFailureRestart(0)))
-          .exec()
-          .getId();
+      this.dockerClient.inspectImageCmd(imageName).exec();
+      return;
+    } catch (NotFoundException e) {
+      log.info("Pulling image {}...", imageName);
+    } catch (DockerClientException e) {
+      log.warn(
+          "Error fetching Docker image '{}' ({}). Attempting to pull anyway.",
+          imageName,
+          e.getMessage());
+    }
+
+    try {
+      dockerClient.pullImageCmd(imageName).start().awaitCompletion();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new DirectorException(
+          String.format("Docker image pull for '%s' was interrupted.", imageName), e);
     } catch (NotFoundException e) {
       throw new DirectorException(
           String.format(
-              "Docker image '%s' (used by '%s' bots) was not found. "
-                  + "Please verify that the image name or tag is correct in the bot's configuration. "
-                  + "Ensure the image has either been built locally "
-                  + "(if it's a custom bot) or pulled from a Docker registry (e.g., Docker Hub).",
-              bot.getTypeConfiguration().getImage(), bot.getTypeConfiguration().getId()),
+              "Docker image '%s' (used by '%s' bots) was not found.\n\n"
+                  + "Please verify that the image name or tag is correct in the bot's configuration.\n"
+                  + "Ensure the image has either been built locally (if it's a custom bot) or pushed "
+                  + "to a public or accessible private registry (e.g., Docker Hub).",
+              imageName, bot.getTypeConfiguration().getId()),
+          e);
+    } catch (Exception e) {
+      throw new DirectorException(
+          String.format(
+              "An unexpected error occurred while pulling Docker image '%s': %s",
+              imageName, e.getMessage()),
           e);
     }
   }
