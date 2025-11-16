@@ -95,7 +95,8 @@ public class DirectorBootstrap {
     try {
       director.start();
     } catch (DirectorException e) {
-      log.error(e.getMessage(), e.getCause());
+      log.error(e.getMessage());
+      if (e.getCause() != null) log.debug(e.getMessage(), e.getCause());
     } catch (Exception e) {
       log.error("An unexpected error occurred during startup: {}", e.getMessage(), e);
     }
