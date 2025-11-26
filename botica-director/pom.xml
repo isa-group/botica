@@ -6,14 +6,14 @@
   <parent>
     <groupId>io.github.isa-group.botica</groupId>
     <artifactId>botica-parent</artifactId>
-    <version>0.6.0-SNAPSHOT</version>
+    <version>0.6.0</version>
   </parent>
 
   <artifactId>botica-director</artifactId>
-  <version>0.6.0-SNAPSHOT</version>
+  <version>0.6.0</version>
 
   <properties>
-    <botica-core.version>0.6.0-SNAPSHOT</botica-core.version>
+    <botica-core.version>0.6.0</botica-core.version>
     <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
     <docker-java.version>3.6.0</docker-java.version>
   </properties>
