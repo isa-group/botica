@@ -165,7 +165,7 @@ A typical Botica project repository will contain:
 Congratulations, you have successfully set up your Botica environment!
 
 - To understand the fundamental concepts behind Botica, head over to
-  **[Core Concepts](./2-core-concepts/0-the-botica-environment.md)**.
+  **[Core concepts](./2-core-concepts/1-the-botica-environment.md)**.
 - Now, you can start defining your bots in the `environment.yml` file. To learn about all the
   available configuration options, refer to the
   **[Environment File Reference](./4-reference/0-the-environment-file.md)**.

@@ -138,7 +138,7 @@ command. It will ensure all bots and associated container infrastructure are ter
 
 To begin developing with Botica:
 
-- **[Explore core concepts](docs/2-core-concepts/0-the-botica-environment.md)** to understand the
+- **[Explore core concepts](docs/2-core-concepts/1-the-botica-environment.md)** to understand the
   foundational principles.
 - **[Follow the getting started guide](docs/1-getting-started.md)** for installation and your
   first deployment.
