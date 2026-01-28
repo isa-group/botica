@@ -1,4 +1,4 @@
-package es.us.isa.botica.director.deploy;
+package es.us.isa.botica.director.deploy.dockerjava;
 
 import static es.us.isa.botica.BoticaConstants.BOT_ID_ENV;
 import static es.us.isa.botica.BoticaConstants.BOT_TYPE_ENV;
@@ -7,6 +7,7 @@ import static es.us.isa.botica.BoticaConstants.CONTAINER_PREFIX;
 import static es.us.isa.botica.util.StringUtils.buildEnv;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.command.BuildImageCmd;
 import com.github.dockerjava.api.exception.DockerClientException;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.HostConfig;
@@ -21,14 +22,26 @@ import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.director.Director;
 import es.us.isa.botica.director.DirectorState;
 import es.us.isa.botica.director.bot.Bot;
+import es.us.isa.botica.director.deploy.BotDeploymentHandler;
 import es.us.isa.botica.director.docker.DockerClientFactory;
 import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.exception.MountNotFoundException;
+import es.us.isa.botica.util.ExecutorUtils;
+import es.us.isa.botica.util.FutureUtils;
+import es.us.isa.botica.util.StringUtils;
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,32 +53,42 @@ import org.slf4j.LoggerFactory;
  */
 public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
   private static final Logger log = LoggerFactory.getLogger(DockerJavaBotDeploymentHandler.class);
-
   private static final String SHARED_VOLUME_NAME = "shared";
   private static final String SHARED_VOLUME_PATH = "/shared";
   private static final String CONFIGURATION_SECRET_PATH = "/run/secrets/botica-config";
+  private static final int BUILD_THREAD_POOL_SIZE =
+      Math.min(4, Runtime.getRuntime().availableProcessors());
+  private static final int BUILD_LOG_INTERVAL_SECONDS = 10;
+  private static final int ERROR_LOG_TAIL_SIZE = 50;
 
   private final Director director;
-  private final File mainConfigurationFile;
+  private final File configurationFile;
+  private final File resolvedConfigurationFile;
   private final MainConfiguration mainConfiguration;
   private final DockerClient dockerClient;
 
   public DockerJavaBotDeploymentHandler(
-      Director director, File mainConfigurationFile, MainConfiguration mainConfiguration) {
+      Director director,
+      File configurationFile,
+      File resolvedConfigurationFile,
+      MainConfiguration mainConfiguration) {
     this(
         director,
-        mainConfigurationFile,
+        configurationFile,
+        resolvedConfigurationFile,
         mainConfiguration,
         DockerClientFactory.createDockerClient(mainConfiguration.getDockerConfiguration()));
   }
 
   public DockerJavaBotDeploymentHandler(
       Director director,
-      File mainConfigurationFile,
+      File configurationFile,
+      File resolvedConfigurationFile,
       MainConfiguration mainConfiguration,
       DockerClient dockerClient) {
     this.director = director;
-    this.mainConfigurationFile = mainConfigurationFile;
+    this.configurationFile = configurationFile.getAbsoluteFile();
+    this.resolvedConfigurationFile = resolvedConfigurationFile;
     this.mainConfiguration = mainConfiguration;
     this.dockerClient = dockerClient;
   }
@@ -103,6 +126,97 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
         .exec()
         .getVolumes()
         .forEach(volume -> this.dockerClient.removeVolumeCmd(volume.getName()).exec());
+  }
+
+  public void buildBotImages() {
+    List<BotTypeConfiguration> botsToBuild =
+        this.mainConfiguration.getBotTypes().values().stream()
+            .filter(botType -> botType.getBuild() != null && !botType.getBuild().isBlank())
+            .collect(Collectors.toList());
+
+    if (botsToBuild.isEmpty()) {
+      log.debug("No bots to build from source.");
+      return;
+    }
+
+    log.info("Building Docker images for {} bot type(s)...", botsToBuild.size());
+    ExecutorService buildExecutor = ExecutorUtils.newDaemonFixedThreadPool(BUILD_THREAD_POOL_SIZE);
+    try {
+      List<CompletableFuture<Void>> buildFutures =
+          botsToBuild.stream()
+              .map(botType -> CompletableFuture.runAsync(() -> buildImage(botType), buildExecutor))
+              .collect(Collectors.toList());
+
+      FutureUtils.awaitCompletion(buildFutures);
+    } finally {
+      buildExecutor.shutdown();
+    }
+  }
+
+  private void buildImage(BotTypeConfiguration botType) {
+    String buildPath = botType.getBuild();
+    Path buildContext = this.configurationFile.toPath().getParent().resolve(buildPath);
+
+    if (!Files.isDirectory(buildContext)) {
+      throw new DirectorException(
+          String.format(
+              "Build path '%s' for bot type '%s' does not exist or is not a directory.",
+              buildContext.toAbsolutePath(), botType.getId()));
+    }
+
+    log.info("[{}] Preparing image...", botType.getId());
+
+    try {
+      String imageTag = generateImageTag(botType);
+      BuildImageCmd buildImageCmd =
+          dockerClient
+              .buildImageCmd()
+              .withDockerfile(buildContext.resolve("Dockerfile").toFile())
+              .withPull(true)
+              .withBaseDirectory(buildContext.toFile())
+              .withTags(Set.of(imageTag))
+              .withForcerm(true);
+      BuildResult result = new BuildResult(botType.getId(), ERROR_LOG_TAIL_SIZE);
+      buildImageCmd.exec(result);
+
+      while (!result.awaitHeartbeat(BUILD_LOG_INTERVAL_SECONDS, TimeUnit.SECONDS)) {
+        result.logHeartbeat();
+      }
+      result.awaitCompletion();
+
+      if (result.hasError()) {
+        result.logBuildFailure();
+        throw new DirectorException(
+            String.format(
+                "An error occurred while building image for bot '%s'. Check the logs for details.",
+                botType.getId()));
+      }
+
+      result.logSummary();
+      botType.setImage(imageTag);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      throw new DirectorException(
+          String.format("Build process for bot '%s' was interrupted.", botType.getId()), e);
+    }
+  }
+
+  private String generateImageTag(BotTypeConfiguration botType) {
+    try {
+      Path projectRoot = this.configurationFile.getParentFile().getCanonicalFile().toPath();
+      String projectName = projectRoot.getFileName().toString().toLowerCase();
+
+      MessageDigest digest = MessageDigest.getInstance("SHA-1");
+      byte[] pathHashBytes = digest.digest(projectRoot.toString().getBytes(StandardCharsets.UTF_8));
+
+      String projectHash = StringUtils.bytesToHex(pathHashBytes).substring(0, 8);
+      String namespace = String.format("%s-%s", projectName, projectHash);
+      String botName = botType.getId().toLowerCase();
+
+      return String.format("%s/%s:latest", namespace, botName);
+    } catch (IOException | NoSuchAlgorithmException e) {
+      throw new DirectorException("Failed to generate a unique image tag.", e);
+    }
   }
 
   @Override
@@ -221,7 +335,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
     return new Mount() // actually not a secret but a bind mount, not supporting swarm for now
         .withType(MountType.BIND)
         .withReadOnly(true)
-        .withSource(this.mainConfigurationFile.getAbsolutePath())
+        .withSource(this.resolvedConfigurationFile.getAbsolutePath())
         .withTarget(CONFIGURATION_SECRET_PATH);
   }
 

@@ -12,14 +12,15 @@
 5. [Bots top-level element](#bots-top-level-element)
 6. [Bot type object](#bot-type-object)
     1. [image](#image)
-    2. [replicas (optional)](#replicas-optional)
-    3. [mount (optional)](#mount-optional)
-    4. [publish (optional)](#publish-optional)
-    5. [subscribe (optional)](#subscribe-optional)
-    6. [lifecycle (optional)](#lifecycle-optional-defaults-to-reactive)
-    7. [ports (optional)](#ports-optional)
-    8. [environment (optional)](#environment-optional)
-    9. [instances (optional)](#instances-optional)
+    2. [build](#build)
+    3. [replicas (optional)](#replicas-optional)
+    4. [mount (optional)](#mount-optional)
+    5. [publish (optional)](#publish-optional)
+    6. [subscribe (optional)](#subscribe-optional)
+    7. [lifecycle (optional)](#lifecycle-optional-defaults-to-reactive)
+    8. [ports (optional)](#ports-optional)
+    9. [environment (optional)](#environment-optional)
+    10. [instances (optional)](#instances-optional)
         1. [lifecycle (optional)](#lifecycle-optional)
         2. [ports (optional)](#ports-optional-1)
         3. [environment (optional)](#environment-optional-1)
@@ -147,9 +148,38 @@ bots:
 
 ## Bot type object
 
+### build
+
+Specifies a relative path to a local directory containing the bot's source code and a
+`Dockerfile`. The Botica Director will automatically build a Docker image from this directory before
+deploying the bot. This option is suitable for bots whose source code is managed within the same
+Botica project.
+
+The path should be relative to the `environment.yml` file.
+
+The Director will automatically generate a Docker image tag for this bot in the format:
+`<project-root-directory-name>-<project-path-hash>/<bot-type-id>:latest`
+
+Example: If your `environment.yml` is in `/home/user/my-botica-project` and you define a bot type
+`my-worker-bot` with `build: "./my-worker-bot-src"`, the image tag might be
+`my-botica-project-a1b2c3d4/my-worker-bot:latest`.
+
+```yaml
+bots:
+  my_bot_type:
+    build: "./path/to/bot/source"
+```
+
 ### image
 
-The container image of the bot type.
+Specifies the Docker image name and tag (e.g., `my-org/my-bot:latest`) that Botica should use. This
+image must either be available locally or pushed to a Docker registry (like Docker Hub or a private
+registry).
+
+This option is suitable for:
+
+- Pre-built images (e.g., third-party services like `postgres:15`).
+- Bots developed in separate repositories and built independently.
 
 ```yaml
 bots:

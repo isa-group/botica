@@ -7,7 +7,7 @@
   },
   "bots": {
     "bot-type-name": {
-      "image": "container-image",
+      "build": "./my-bot",
       "replicas": 2,
       "mount": [
         {

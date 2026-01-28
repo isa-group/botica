@@ -1,6 +1,8 @@
 bots:
   my-bot:
-    image: "my-bot-container-image:latest"
+    # The 'build' property tells the Director to build a Docker image from the
+    # project located at the specified relative path before running it.
+    build: "./my-bot"
     replicas: 2
     mount: # Optional section
       - source: "path/to/host/file.extension"
@@ -16,6 +18,7 @@ bots:
       - KEY2=VALUE2
 
   my-other-bot:
+    # Use the 'image' property for pre-built bots or bots managed in other repositories.
     image: "my-other-bot-container-image:latest"
     ports:
       - "8000:8000"

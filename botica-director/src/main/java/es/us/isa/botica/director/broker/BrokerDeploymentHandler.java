@@ -30,7 +30,7 @@ public interface BrokerDeploymentHandler {
     if (mainConfiguration.getBrokerConfiguration() instanceof RabbitMqConfiguration) {
       DockerClient dockerClient =
           DockerClientFactory.createDockerClient(mainConfiguration.getDockerConfiguration());
-      return new DockerRabbitMqDeploymentHandler(dockerClient, mainConfiguration);
+      return new DockerJavaRabbitMqDeploymentHandler(dockerClient, mainConfiguration);
     } else {
       throw new UnsupportedOperationException("unsupported broker type");
     }

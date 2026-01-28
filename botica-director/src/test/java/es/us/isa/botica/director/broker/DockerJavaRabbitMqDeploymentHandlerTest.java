@@ -52,7 +52,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
 
 @MockitoSettings(strictness = Strictness.LENIENT)
-class DockerRabbitMqDeploymentHandlerTest {
+class DockerJavaRabbitMqDeploymentHandlerTest {
   private final String DEFINITIONS_PATH = "/run/secrets/definitions";
   private final String IMAGE = "rabbitmq:3.13-management";
   private final ExposedPort DEFAULT_PORT = new ExposedPort(5672);
@@ -76,7 +76,7 @@ class DockerRabbitMqDeploymentHandlerTest {
   @Mock private CreateContainerResponse createContainerResponse;
   @Mock private StartContainerCmd startContainerCmd;
 
-  private DockerRabbitMqDeploymentHandler deploymentHandler;
+  private DockerJavaRabbitMqDeploymentHandler deploymentHandler;
 
   private String rabbitMqContainerName;
   private String brokerNetworkName;
@@ -129,7 +129,7 @@ class DockerRabbitMqDeploymentHandlerTest {
     when(rabbitMqConfiguration.getPort()).thenReturn(5672);
 
     deploymentHandler =
-        new DockerRabbitMqDeploymentHandler(
+        new DockerJavaRabbitMqDeploymentHandler(
             dockerClient, configurationGenerator, rabbitMqConfiguration);
   }
 

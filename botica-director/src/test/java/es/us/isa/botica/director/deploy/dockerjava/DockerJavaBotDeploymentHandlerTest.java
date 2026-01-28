@@ -1,15 +1,18 @@
-package es.us.isa.botica.director.deploy;
+package es.us.isa.botica.director.deploy.dockerjava;
 
 import static es.us.isa.botica.BoticaConstants.BOT_ID_ENV;
 import static es.us.isa.botica.BoticaConstants.BOT_TYPE_ENV;
 import static es.us.isa.botica.BoticaConstants.BROKER_NETWORK_NAME;
 import static es.us.isa.botica.BoticaConstants.CONTAINER_PREFIX;
 import static es.us.isa.botica.util.StringUtils.buildEnv;
+import static org.assertj.core.api.Assertions.as;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatCode;
+import static org.assertj.core.api.InstanceOfAssertFactories.STRING;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -20,7 +23,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.github.dockerjava.api.DockerClient;
+import com.github.dockerjava.api.async.ResultCallback;
 import com.github.dockerjava.api.async.ResultCallback.Adapter;
+import com.github.dockerjava.api.command.BuildImageCmd;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.CreateVolumeCmd;
@@ -37,6 +42,7 @@ import com.github.dockerjava.api.command.RemoveVolumeCmd;
 import com.github.dockerjava.api.command.StartContainerCmd;
 import com.github.dockerjava.api.command.StopContainerCmd;
 import com.github.dockerjava.api.exception.NotFoundException;
+import com.github.dockerjava.api.model.BuildResponseItem;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
 import com.github.dockerjava.api.model.HostConfig;
@@ -56,12 +62,14 @@ import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.exception.MountNotFoundException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -75,7 +83,6 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DockerJavaBotDeploymentHandlerTest {
   @Mock private Director director;
-  @Mock private File mainConfigurationFile;
   @Mock private MainConfiguration mainConfiguration;
   @Mock private DockerClient dockerClient;
 
@@ -85,6 +92,7 @@ class DockerJavaBotDeploymentHandlerTest {
   @Mock private ListVolumesCmd listVolumesCmd;
   @Mock private ListVolumesResponse listVolumesResponse;
   @Mock private RemoveVolumeCmd removeVolumeCmd;
+  @Mock private BuildImageCmd buildImageCmd;
   @Mock private CreateVolumeCmd createVolumeCmd;
   @Mock private CreateContainerCmd createContainerCmd;
   @Mock private CreateContainerResponse createContainerResponse;
@@ -97,6 +105,7 @@ class DockerJavaBotDeploymentHandlerTest {
   private DockerJavaBotDeploymentHandler deploymentHandler;
 
   @TempDir Path tempDir; // For temporary files/directories for mount tests
+  private File resolvedConfigurationFile;
 
   private String sharedVolumeName;
   private String brokerNetworkName;
@@ -107,8 +116,10 @@ class DockerJavaBotDeploymentHandlerTest {
   @Captor private ArgumentCaptor<List<ExposedPort>> portBindingsCaptor;
 
   @BeforeEach
-  void setUp() {
-    when(mainConfigurationFile.getAbsolutePath()).thenReturn("/path/to/config.yml");
+  void setUp() throws IOException {
+    File mainConfigurationFile = Files.createFile(tempDir.resolve("environment.yml")).toFile();
+    Path dataDir = Files.createDirectories(tempDir.resolve(".botica"));
+    resolvedConfigurationFile = Files.createFile(dataDir.resolve("environment.yml")).toFile();
 
     when(dockerClient.listContainersCmd()).thenReturn(listContainersCmd);
     when(listContainersCmd.withNameFilter(anyList())).thenReturn(listContainersCmd);
@@ -124,6 +135,13 @@ class DockerJavaBotDeploymentHandlerTest {
     when(listVolumesResponse.getVolumes()).thenReturn(Collections.emptyList());
 
     when(dockerClient.removeVolumeCmd(anyString())).thenReturn(removeVolumeCmd);
+
+    when(dockerClient.buildImageCmd()).thenReturn(buildImageCmd);
+    when(buildImageCmd.withDockerfile(any())).thenReturn(buildImageCmd);
+    when(buildImageCmd.withPull(anyBoolean())).thenReturn(buildImageCmd);
+    when(buildImageCmd.withBaseDirectory(any())).thenReturn(buildImageCmd);
+    when(buildImageCmd.withTags(any())).thenReturn(buildImageCmd);
+    when(buildImageCmd.withForcerm(anyBoolean())).thenReturn(buildImageCmd);
 
     when(dockerClient.createVolumeCmd()).thenReturn(createVolumeCmd);
     when(createVolumeCmd.withName(anyString())).thenReturn(createVolumeCmd);
@@ -152,7 +170,11 @@ class DockerJavaBotDeploymentHandlerTest {
 
     deploymentHandler =
         new DockerJavaBotDeploymentHandler(
-            director, mainConfigurationFile, mainConfiguration, dockerClient);
+            director,
+            mainConfigurationFile,
+            resolvedConfigurationFile,
+            mainConfiguration,
+            dockerClient);
 
     sharedVolumeName = CONTAINER_PREFIX + "shared";
     brokerNetworkName = CONTAINER_PREFIX + BROKER_NETWORK_NAME;
@@ -191,6 +213,92 @@ class DockerJavaBotDeploymentHandlerTest {
 
     verify(listVolumesCmd, times(1)).withFilter(eq("name"), eq(List.of(sharedVolumeName)));
     verify(dockerClient, times(1)).removeVolumeCmd(eq(sharedVolumeName));
+  }
+
+  @Test
+  @DisplayName("buildBotImages should build images for bots with 'build' property")
+  void buildBotImages_shouldBuildCorrectImages() throws Exception {
+    // Arrange
+    when(buildImageCmd.exec(any()))
+        .thenAnswer(
+            invocation -> {
+              ResultCallback<BuildResponseItem> callback = invocation.getArgument(0);
+              callback.onComplete();
+              return callback;
+            });
+
+    Path botSourceDir = tempDir.resolve("my-test-bot");
+    Files.createDirectory(botSourceDir);
+    Files.createFile(botSourceDir.resolve("Dockerfile"));
+
+    BotTypeConfiguration botType = new BotTypeConfiguration();
+    botType.setId("my-test-bot");
+    botType.setBuild("./my-test-bot");
+
+    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("my-test-bot", botType));
+
+    // Act
+    deploymentHandler.buildBotImages();
+
+    // Assert
+    ArgumentCaptor<Set<String>> tagCaptor = ArgumentCaptor.captor();
+    verify(buildImageCmd, times(1)).withTags(tagCaptor.capture());
+
+    Set<String> generatedTags = tagCaptor.getValue();
+    assertThat(generatedTags)
+        .singleElement(as(STRING))
+        .startsWith(tempDir.getFileName().toString() + "-")
+        .endsWith("/my-test-bot:latest");
+
+    assertThat(botType.getImage()).isEqualTo(generatedTags.stream().findFirst().orElseThrow());
+  }
+
+  @Test
+  @DisplayName("buildBotImages should fail gracefully and report error logs if build fails")
+  void buildBotImages_shouldFailOnBuildError() throws Exception {
+    // Arrange
+    when(buildImageCmd.exec(any()))
+        .thenAnswer(
+            invocation -> {
+              ResultCallback<BuildResponseItem> callback = invocation.getArgument(0);
+
+              // Simulate log line
+              BuildResponseItem logItem = new BuildResponseItem();
+              setField(logItem, "stream", "Step 1/5 : RUN mvn clean package\n");
+              callback.onNext(logItem);
+
+              // Simulate error
+              BuildResponseItem errorItem = new BuildResponseItem();
+              setField(
+                  errorItem,
+                  "error",
+                  "The command '/bin/sh -c mvn clean package' returned a non-zero code: 1");
+              callback.onNext(errorItem);
+
+              callback.onComplete();
+              return callback;
+            });
+
+    Path botSourceDir = tempDir.resolve("my-failing-bot");
+    Files.createDirectory(botSourceDir);
+    Files.createFile(botSourceDir.resolve("Dockerfile"));
+
+    BotTypeConfiguration botType = new BotTypeConfiguration();
+    botType.setId("my-failing-bot");
+    botType.setBuild("./my-failing-bot");
+
+    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("my-failing-bot", botType));
+
+    // Act & Assert
+    assertThatThrownBy(() -> deploymentHandler.buildBotImages())
+        .isInstanceOf(DirectorException.class)
+        .hasMessageContaining("An error occurred while building image for bot 'my-failing-bot'");
+  }
+
+  private void setField(BuildResponseItem target, String fieldName, Object value) throws Exception {
+    Field field = target.getClass().getSuperclass().getDeclaredField(fieldName);
+    field.setAccessible(true);
+    field.set(target, value);
   }
 
   @Test
@@ -245,7 +353,8 @@ class DockerJavaBotDeploymentHandlerTest {
     // Assert
     assertThat(containerId).isEqualTo("new-container-id");
     verify(dockerClient, times(1)).inspectImageCmd(eq("my-bot-image:latest"));
-    verify(dockerClient, never()).pullImageCmd(anyString()); // Ensure no pull if image found locally (default mock)
+    verify(dockerClient, never())
+        .pullImageCmd(anyString()); // Ensure no pull if image found locally (default mock)
     verify(dockerClient, times(1)).createContainerCmd(eq("my-bot-image:latest"));
     verify(createContainerCmd, times(1)).withName(eq(containerPrefix + "bot-id-1"));
     verify(createContainerCmd, times(1))
@@ -276,7 +385,7 @@ class DockerJavaBotDeploymentHandlerTest {
         .anyMatch(
             m ->
                 m.getType() == MountType.BIND
-                    && Objects.equals(m.getSource(), "/path/to/config.yml")
+                    && Objects.equals(m.getSource(), resolvedConfigurationFile.getAbsolutePath())
                     && Objects.equals(m.getTarget(), "/run/secrets/botica-config")
                     && Boolean.TRUE.equals(m.getReadOnly()));
   }
@@ -395,7 +504,6 @@ class DockerJavaBotDeploymentHandlerTest {
                 nonExistentHostMountPath.toFile().getCanonicalFile().getAbsolutePath()));
   }
 
-
   @Test
   @DisplayName("createContainer should not pull image if it's already local")
   void createContainer_imageAlreadyLocal_doesNotPull() {
@@ -421,7 +529,8 @@ class DockerJavaBotDeploymentHandlerTest {
     assertThat(containerId).isEqualTo("new-container-id");
     verify(dockerClient, times(1)).inspectImageCmd(eq(existingImage));
     verify(dockerClient, never()).pullImageCmd(anyString()); // Verify pull was NOT called
-    verify(dockerClient, times(1)).createContainerCmd(eq(existingImage)); // Verify container was created
+    verify(dockerClient, times(1))
+        .createContainerCmd(eq(existingImage)); // Verify container was created
   }
 
   @Test

@@ -99,8 +99,8 @@ class BotTypeConfigurationTest {
   // --- Validation Tests ---
 
   @Test
-  @DisplayName("validate should report error for missing image")
-  void validate_missingImage_reportsError() {
+  @DisplayName("validate should report error for missing both image and build")
+  void validate_missingImageAndBuild_reportsError() {
     // Arrange
     BotTypeConfiguration config = new BotTypeConfiguration();
     config.setId("valid-id");
@@ -111,11 +111,69 @@ class BotTypeConfigurationTest {
 
     // Assert
     assertThat(report.hasErrors()).isTrue();
-    assertThat(report.getResults("image"))
+    assertThat(report.getResults("image/build"))
         .hasSize(1)
         .first()
         .extracting(ValidationResult::getMessage)
-        .isEqualTo("missing or empty image");
+        .isEqualTo("must specify either 'image' or 'build'");
+  }
+
+  @Test
+  @DisplayName("validate should report error for specifying both image and build")
+  void validate_bothImageAndBuild_reportsError() {
+    // Arrange
+    BotTypeConfiguration config = new BotTypeConfiguration();
+    config.setId("valid-id");
+    config.setImage("valid-image");
+    config.setBuild("./valid-build-path");
+    ValidationReport report = new ValidationReport();
+
+    // Act
+    config.validate(report);
+
+    // Assert
+    assertThat(report.hasErrors()).isTrue();
+    assertThat(report.getResults("image/build"))
+        .hasSize(1)
+        .first()
+        .extracting(ValidationResult::getMessage)
+        .isEqualTo("cannot specify both 'image' and 'build'; please choose one");
+  }
+
+  @Test
+  @DisplayName("validate should be valid with only image specified")
+  void validate_onlyImage_producesCleanReport() {
+    // Arrange
+    BotTypeConfiguration config = new BotTypeConfiguration();
+    config.setId("valid-id");
+    config.setImage("valid-image");
+    config.setReplicas(1);
+    ValidationReport report = new ValidationReport();
+
+    // Act
+    config.validate(report);
+
+    // Assert
+    assertThat(report.hasErrors()).isFalse();
+    assertThat(report.hasWarnings()).isFalse();
+  }
+
+  @Test
+  @DisplayName("validate should be valid with only build specified")
+  void validate_onlyBuild_producesCleanReport() {
+    // Arrange
+    BotTypeConfiguration config = new BotTypeConfiguration();
+    config.setId("valid-id");
+    config.setBuild("./valid-build-path");
+    config.setReplicas(1);
+    ValidationReport report = new ValidationReport();
+
+    // Act
+    config.validate(report);
+
+    // Assert
+    assertThat(report.hasErrors()).isFalse();
+    assertThat(report.hasWarnings()).isFalse();
   }
 
   @Test

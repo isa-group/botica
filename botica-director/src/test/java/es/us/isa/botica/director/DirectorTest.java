@@ -17,7 +17,7 @@ import es.us.isa.botica.director.bot.BotManager;
 import es.us.isa.botica.director.bot.shutdown.ShutdownMode;
 import es.us.isa.botica.director.broker.BrokerDeploymentHandler;
 import es.us.isa.botica.director.deploy.BotDeploymentHandler;
-import es.us.isa.botica.director.deploy.DockerJavaBotDeploymentHandler;
+import es.us.isa.botica.director.deploy.dockerjava.DockerJavaBotDeploymentHandler;
 import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.protocol.BoticaServer;
 import es.us.isa.botica.director.protocol.RabbitMqBoticaServer;

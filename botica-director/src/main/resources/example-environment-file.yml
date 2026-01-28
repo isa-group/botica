@@ -9,7 +9,9 @@ broker: # Check file documentation
 
 bots:
   bot-type-name:
-    image: "container-image"
+    # Use the 'build' property for bots managed within this project.
+    # The Director will build the image from the specified local directory.
+    build: "./my-bot"
     replicas: 2
     mount: # Optional section
       - source: "path/to/host/file.extension"
@@ -34,6 +36,7 @@ bots:
       - KEY2=VALUE2
 
   other-bot-type:
+    # Use the 'image' property for pre-built bots or bots managed in other repositories.
     image: "other-container-image"
     replicas: 2
     mount: # Optional section

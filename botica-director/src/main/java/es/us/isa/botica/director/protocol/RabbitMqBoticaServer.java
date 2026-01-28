@@ -79,6 +79,7 @@ public class RabbitMqBoticaServer implements BoticaServer {
         configuration.getPassword(),
         "localhost",
         configuration.getPort());
+    log.info("Connected to RabbitMQ.");
 
     this.installProtocol();
   }

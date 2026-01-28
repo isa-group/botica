@@ -25,8 +25,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author Alberto Mimbrero
  */
-public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler {
-  private static final Logger log = LoggerFactory.getLogger(DockerRabbitMqDeploymentHandler.class);
+public class DockerJavaRabbitMqDeploymentHandler implements BrokerDeploymentHandler {
+  private static final Logger log =
+      LoggerFactory.getLogger(DockerJavaRabbitMqDeploymentHandler.class);
 
   private static final String RABBITMQ_IMAGE = "rabbitmq:3.13-management";
   private static final String DEFINITIONS_SECRET_PATH = "/run/secrets/definitions";
@@ -36,7 +37,7 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
   private final RabbitMqConfigurationGenerator configurationGenerator;
   private final RabbitMqConfiguration rabbitMqConfiguration;
 
-  public DockerRabbitMqDeploymentHandler(
+  public DockerJavaRabbitMqDeploymentHandler(
       DockerClient dockerClient, MainConfiguration mainConfiguration) {
     this.dockerClient = dockerClient;
     this.configurationGenerator = new RabbitMqConfigurationGenerator(mainConfiguration);
@@ -44,7 +45,7 @@ public class DockerRabbitMqDeploymentHandler implements BrokerDeploymentHandler 
   }
 
   @VisibleForTesting
-  DockerRabbitMqDeploymentHandler(
+  DockerJavaRabbitMqDeploymentHandler(
       DockerClient dockerClient,
       RabbitMqConfigurationGenerator configurationGenerator,
       RabbitMqConfiguration rabbitMqConfiguration) {

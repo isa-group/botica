@@ -1,6 +1,7 @@
 package es.us.isa.botica.director.deploy;
 
 import es.us.isa.botica.director.bot.Bot;
+import es.us.isa.botica.director.deploy.dockerjava.DockerJavaBotDeploymentHandler;
 
 /**
  * Interface for handling the deployment of bots.
@@ -13,6 +14,8 @@ public interface BotDeploymentHandler {
    * running.
    */
   void removePreviousDeployment();
+
+  void buildBotImages();
 
   void setupInfrastructure();
 

@@ -93,7 +93,7 @@ class MainConfigurationValidationTest {
   void validate_registersChildReportsForEachBotType() {
     // Arrange
     MainConfiguration configuration = new MainConfiguration();
-    BotTypeConfiguration invalidBotType = new BotTypeConfiguration(); // Missing 'image'
+    BotTypeConfiguration invalidBotType = new BotTypeConfiguration(); // Missing 'image' and 'build'
     invalidBotType.setId("invalid-bot");
 
     Map<String, BotTypeConfiguration> botTypes = new LinkedHashMap<>();
@@ -110,7 +110,7 @@ class MainConfigurationValidationTest {
     assertThat(report.getChildren()).containsKey("bots.invalid-bot");
     ValidationReport childReport = report.getChild("bots.invalid-bot");
     assertThat(childReport.hasErrors()).isTrue();
-    assertThat(childReport.getResults("image")).hasSize(1);
+    assertThat(childReport.getResults("image/build")).hasSize(1);
   }
 
   // Helper method to create a BotTypeConfiguration with specified bot instance IDs

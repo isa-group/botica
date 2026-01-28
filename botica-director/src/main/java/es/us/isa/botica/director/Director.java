@@ -1,15 +1,19 @@
 package es.us.isa.botica.director;
 
+import static java.util.concurrent.CompletableFuture.runAsync;
+
 import es.us.isa.botica.configuration.MainConfiguration;
 import es.us.isa.botica.director.bot.BotManager;
 import es.us.isa.botica.director.bot.shutdown.ShutdownMode;
 import es.us.isa.botica.director.broker.BrokerDeploymentHandler;
 import es.us.isa.botica.director.deploy.BotDeploymentHandler;
-import es.us.isa.botica.director.deploy.DockerJavaBotDeploymentHandler;
+import es.us.isa.botica.director.deploy.dockerjava.DockerJavaBotDeploymentHandler;
 import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.protocol.BoticaServer;
 import es.us.isa.botica.director.protocol.RabbitMqBoticaServer;
 import es.us.isa.botica.protocol.JacksonPacketConverter;
+import es.us.isa.botica.util.ExecutorUtils;
+import es.us.isa.botica.util.FutureUtils;
 import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
 import es.us.isa.botica.util.configuration.ConfigurationLoadingException;
 import es.us.isa.botica.util.configuration.jackson.JacksonConfigurationFileLoader;
@@ -19,6 +23,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,15 +67,33 @@ public class Director {
     this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
     this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
     this.botDeploymentHandler =
-        new DockerJavaBotDeploymentHandler(this, RESOLVED_CONFIG_FILE, this.mainConfiguration);
+        new DockerJavaBotDeploymentHandler(
+            this, this.mainConfigurationFile, RESOLVED_CONFIG_FILE, this.mainConfiguration);
     this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
 
     this.botDeploymentHandler.removePreviousDeployment();
 
-    log.info("Deploying the internal message broker...");
-    this.brokerDeploymentHandler.deploy();
-    log.info("Starting the server...");
-    this.startServer();
+    ExecutorService startupExecutor = ExecutorUtils.newDaemonFixedThreadPool(2);
+    try {
+      CompletableFuture<Void> brokerFuture =
+          runAsync(
+              () -> {
+                log.info("Deploying the internal message broker...");
+                this.brokerDeploymentHandler.deploy();
+                log.info("Starting the server...");
+                this.startServer();
+                log.info("Server started.");
+              },
+              startupExecutor);
+
+      CompletableFuture<Void> buildFuture =
+          runAsync(() -> this.botDeploymentHandler.buildBotImages(), startupExecutor);
+
+      FutureUtils.awaitCompletion(brokerFuture, buildFuture);
+    } finally {
+      startupExecutor.shutdown();
+    }
+
     log.info("Deploying bots...");
     this.botDeploymentHandler.setupInfrastructure();
     this.botManager.deploy();

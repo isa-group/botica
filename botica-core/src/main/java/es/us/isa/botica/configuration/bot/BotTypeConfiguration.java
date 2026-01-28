@@ -15,6 +15,7 @@ import java.util.Map;
 public class BotTypeConfiguration implements Configuration {
   private String id;
   private String image;
+  private String build;
 
   @JsonProperty("mount")
   private List<BotMountConfiguration> mounts = Collections.emptyList();
@@ -41,7 +42,15 @@ public class BotTypeConfiguration implements Configuration {
   @Override
   public void validate(ValidationReport report) {
     if (id == null || id.isBlank()) report.addError("id", "missing or empty id");
-    if (image == null || image.isBlank()) report.addError("image", "missing or empty image");
+
+    boolean hasImage = image != null && !image.isBlank();
+    boolean hasBuild = build != null && !build.isBlank();
+    if (hasImage && hasBuild) {
+      report.addError("image/build", "cannot specify both 'image' and 'build'; please choose one");
+    } else if (!hasImage && !hasBuild) {
+      report.addError("image/build", "must specify either 'image' or 'build'");
+    }
+
     if (this.getReplicas() < 0) {
       report.addError("replicas", "negative number of replicas");
     }
@@ -80,6 +89,14 @@ public class BotTypeConfiguration implements Configuration {
 
   public void setImage(String image) {
     this.image = image;
+  }
+
+  public String getBuild() {
+    return build;
+  }
+
+  public void setBuild(String build) {
+    this.build = build;
   }
 
   public List<BotMountConfiguration> getMounts() {
@@ -157,6 +174,9 @@ public class BotTypeConfiguration implements Configuration {
         + '\''
         + ", image='"
         + image
+        + '\''
+        + ", build='"
+        + build
         + '\''
         + ", mounts="
         + mounts
