@@ -10,7 +10,7 @@
   </parent>
 
   <artifactId>botica-director</artifactId>
-  <version>0.6.0</version>
+  <version>0.6.1-SNAPSHOT</version>
 
   <properties>
     <botica-core.version>0.6.0</botica-core.version>
