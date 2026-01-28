@@ -2,6 +2,8 @@ package es.us.isa.botica.director;
 
 import es.us.isa.botica.director.cli.DirectorCli;
 import es.us.isa.botica.director.exception.DirectorException;
+import es.us.isa.botica.director.initialize.ProjectInitializationException;
+import es.us.isa.botica.director.initialize.ProjectInitializer;
 import es.us.isa.botica.util.annotation.VisibleForTesting;
 import io.github.cdimascio.dotenv.Dotenv;
 import java.io.File;
@@ -24,6 +26,11 @@ public class DirectorBootstrap {
   private static final String FALLBACK_RESOURCE_CONFIG_NAME = "environment.yml";
 
   public static void main(String[] args) {
+    if (args.length > 0 && args[0].equalsIgnoreCase("init")) {
+      handleInitCommand(args);
+      return;
+    }
+
     Dotenv.configure().ignoreIfMissing().systemProperties().load();
     new UpdateManager().checkForUpdates();
 
@@ -38,6 +45,24 @@ public class DirectorBootstrap {
       System.exit(1);
     } catch (Exception e) {
       log.error("An unexpected error occurred during application startup: {}", e.getMessage(), e);
+      System.exit(1);
+    }
+  }
+
+  private static void handleInitCommand(String[] args) {
+    if (args.length != 3) {
+      log.error("Invalid usage. Syntax: init <template-name> <directory-name>");
+      log.info("Available templates: java, js, javascript, ts, typescript");
+      System.exit(1);
+    }
+    String templateAlias = args[1];
+    String directoryName = args[2];
+
+    try {
+      new ProjectInitializer().initialize(templateAlias, directoryName);
+      System.exit(0);
+    } catch (ProjectInitializationException e) {
+      log.error("Project initialization failed: {}", e.getMessage());
       System.exit(1);
     }
   }
