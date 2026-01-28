@@ -123,10 +123,9 @@ public class UpdateManager {
 
   private boolean promptForUpdate() {
     System.out.print("Do you want to download and install it now? (y/N): ");
-    try (Scanner scanner = new Scanner(System.in)) {
-      String input = scanner.nextLine().trim().toLowerCase();
-      return "y".equals(input);
-    }
+    Scanner scanner = new Scanner(System.in);
+    String input = scanner.nextLine().trim().toLowerCase();
+    return "y".equals(input);
   }
 
   private void performUpdate(String downloadUrl) {
