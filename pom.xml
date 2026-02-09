@@ -9,6 +9,33 @@
   <version>0.6.1-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <name>Botica Parent</name>
+  <description>Parent POM for the Botica projects</description>
+  <url>https://github.com/isa-group/botica</url>
+
+  <licenses>
+    <license>
+      <name>GNU Lesser General Public License v2.1</name>
+      <url>https://www.gnu.org/licenses/old-licenses/lgpl-2.1.en.html</url>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>alberto-mimbrero</id>
+      <name>Alberto Mimbrero Sánchez</name>
+      <email>mimbrero@us.es</email>
+      <organization>ISA Group</organization>
+      <organizationUrl>https://www.isa.us.es/</organizationUrl>
+    </developer>
+  </developers>
+
+  <scm>
+    <connection>scm:git:git://github.com/isa-group/botica.git</connection>
+    <developerConnection>scm:git:ssh://github.com:isa-group/botica.git</developerConnection>
+    <url>https://github.com/isa-group/botica/tree/main</url>
+  </scm>
+
   <modules>
     <module>botica-core</module>
     <module>botica-director</module>
@@ -24,6 +51,13 @@
     <!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind -->
     <jackson.version>2.17.1</jackson.version>
   </properties>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>central</id>
+      <url>https://central.sonatype.com/repository/maven-snapshots/</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <dependencies>
     <!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->
@@ -51,13 +85,13 @@
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-core</artifactId>
-      <version>1.5.20</version>
+      <version>1.5.25</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/ch.qos.logback/logback-classic -->
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.16</version>
+      <version>1.5.25</version>
     </dependency>
     <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
     <dependency>
@@ -85,7 +119,7 @@
     <dependency>
       <groupId>org.assertj</groupId>
       <artifactId>assertj-core</artifactId>
-      <version>3.27.6</version>
+      <version>3.27.7</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -156,10 +190,12 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
         <configuration>
           <source>${maven.compiler.source}</source>
           <target>${maven.compiler.target}</target>
@@ -178,6 +214,43 @@
             </goals>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.3.2</version>
+        <executions>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>3.1.0</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.9.0</version>
+        <extensions>true</extensions>
+        <configuration>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>false</autoPublish>
+        </configuration>
       </plugin>
     </plugins>
   </build>

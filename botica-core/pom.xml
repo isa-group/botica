@@ -6,10 +6,14 @@
   <parent>
     <groupId>io.github.isa-group.botica</groupId>
     <artifactId>botica-parent</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>botica-core</artifactId>
+
+  <name>Botica Core</name>
+  <description>Core shared classes and utilities for Botica modules</description>
+  <url>https://github.com/isa-group/botica</url>
 
   <build>
     <plugins>

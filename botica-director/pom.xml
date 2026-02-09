@@ -6,16 +6,16 @@
   <parent>
     <groupId>io.github.isa-group.botica</groupId>
     <artifactId>botica-parent</artifactId>
-    <version>0.6.0</version>
+    <version>0.6.1-SNAPSHOT</version>
   </parent>
 
   <artifactId>botica-director</artifactId>
-  <version>0.6.1-SNAPSHOT</version>
+  <name>Botica Director</name>
 
   <properties>
-    <botica-core.version>0.6.0</botica-core.version>
+    <botica-core.version>0.6.1-SNAPSHOT</botica-core.version>
     <!-- https://mvnrepository.com/artifact/com.github.docker-java/docker-java -->
-    <docker-java.version>3.6.0</docker-java.version>
+    <docker-java.version>3.7.0</docker-java.version>
   </properties>
 
   <dependencies>
@@ -91,6 +91,20 @@
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <configuration>
+          <skipPublishing>true</skipPublishing>
+        </configuration>
       </plugin>
     </plugins>
   </build>
