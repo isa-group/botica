@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class MainConfiguration implements Configuration {
+public class EnvironmentConfiguration implements Configuration {
   @JsonProperty("docker")
   private DockerConfiguration dockerConfiguration = new DockerConfiguration();
 
@@ -91,7 +91,7 @@ public class MainConfiguration implements Configuration {
 
   @Override
   public String toString() {
-    return "MainConfiguration{"
+    return "EnvironmentConfiguration{"
         + "dockerConfiguration="
         + dockerConfiguration
         + ", brokerConfiguration="

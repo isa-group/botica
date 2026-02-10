@@ -4,7 +4,7 @@ import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_PROTOCOL_IN_FORMAT
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.DIRECTOR_PROTOCOL;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.PROTOCOL_EXCHANGE;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.protocol.Packet;
 import es.us.isa.botica.protocol.PacketConverter;
@@ -36,7 +36,7 @@ public class RabbitMqBoticaServer implements BoticaServer {
   private static final Logger log = LoggerFactory.getLogger(RabbitMqBoticaServer.class);
   private static final int MAX_THREAD_POOL_SIZE = 16;
 
-  private final MainConfiguration mainConfiguration;
+  private final EnvironmentConfiguration configuration;
   private final PacketConverter packetConverter;
   private final ExecutorService executorService;
 
@@ -45,9 +45,9 @@ public class RabbitMqBoticaServer implements BoticaServer {
   private final Map<Class<?>, List<PacketListener<?>>> packetListeners = new HashMap<>();
 
   public RabbitMqBoticaServer(
-      MainConfiguration mainConfiguration, PacketConverter packetConverter) {
+      EnvironmentConfiguration configuration, PacketConverter packetConverter) {
     this(
-        mainConfiguration,
+        configuration,
         packetConverter,
         new ThreadPoolExecutor(
             0, MAX_THREAD_POOL_SIZE, 60L, TimeUnit.SECONDS, new SynchronousQueue<>()),
@@ -56,12 +56,12 @@ public class RabbitMqBoticaServer implements BoticaServer {
   }
 
   public RabbitMqBoticaServer(
-      MainConfiguration mainConfiguration,
+      EnvironmentConfiguration configuration,
       PacketConverter packetConverter,
       ExecutorService executorService,
       QueryHandler queryHandler,
       RabbitMqClient rabbitClient) {
-    this.mainConfiguration = mainConfiguration;
+    this.configuration = configuration;
     this.packetConverter = packetConverter;
     this.executorService = executorService;
     this.queryHandler = queryHandler;
@@ -71,7 +71,7 @@ public class RabbitMqBoticaServer implements BoticaServer {
   @Override
   public void start() throws TimeoutException {
     RabbitMqConfiguration configuration =
-        (RabbitMqConfiguration) this.mainConfiguration.getBrokerConfiguration();
+        (RabbitMqConfiguration) this.configuration.getBrokerConfiguration();
 
     log.info("Waiting for RabbitMQ to start...");
     this.rabbitClient.connect(

@@ -27,7 +27,7 @@ public class ShutdownHandler {
     this.director = director;
     this.botManager = botManager;
     this.server = server;
-    this.configuration = director.getMainConfiguration().getShutdownConfiguration();
+    this.configuration = director.getConfiguration().getShutdownConfiguration();
   }
 
   public void requestShutdown(Bot bot, ShutdownMode mode) {

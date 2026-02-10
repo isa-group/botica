@@ -15,7 +15,7 @@ import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.RestartPolicy;
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotMountConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
@@ -61,36 +61,36 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
   private static final int BUILD_LOG_INTERVAL_SECONDS = 10;
   private static final int ERROR_LOG_TAIL_SIZE = 50;
 
-  private final Director director;
-  private final File configurationFile;
-  private final File resolvedConfigurationFile;
-  private final MainConfiguration mainConfiguration;
   private final DockerClient dockerClient;
+  private final Director director;
+  private final EnvironmentConfiguration configuration;
+  private final File resolvedConfigurationFile;
+  private final Path workingPath;
 
   public DockerJavaBotDeploymentHandler(
       Director director,
-      File configurationFile,
+      EnvironmentConfiguration configuration,
       File resolvedConfigurationFile,
-      MainConfiguration mainConfiguration) {
+      Path workingPath) {
     this(
+        DockerClientFactory.createDockerClient(configuration.getDockerConfiguration()),
         director,
-        configurationFile,
+        configuration,
         resolvedConfigurationFile,
-        mainConfiguration,
-        DockerClientFactory.createDockerClient(mainConfiguration.getDockerConfiguration()));
+        workingPath);
   }
 
   public DockerJavaBotDeploymentHandler(
+      DockerClient dockerClient,
       Director director,
-      File configurationFile,
+      EnvironmentConfiguration configuration,
       File resolvedConfigurationFile,
-      MainConfiguration mainConfiguration,
-      DockerClient dockerClient) {
-    this.director = director;
-    this.configurationFile = configurationFile.getAbsoluteFile();
-    this.resolvedConfigurationFile = resolvedConfigurationFile;
-    this.mainConfiguration = mainConfiguration;
+      Path workingPath) {
     this.dockerClient = dockerClient;
+    this.director = director;
+    this.configuration = configuration;
+    this.resolvedConfigurationFile = resolvedConfigurationFile;
+    this.workingPath = workingPath.toAbsolutePath();
   }
 
   @Override
@@ -101,7 +101,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
 
   private void removeBotContainers() {
     List<String> containerNames =
-        this.mainConfiguration.getBotTypes().values().stream()
+        this.configuration.getBotTypes().values().stream()
             .flatMap(type -> type.buildInstances().stream())
             .map(BotInstanceConfiguration::getId)
             .map(this::buildContainerName)
@@ -130,7 +130,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
 
   public void buildBotImages() {
     List<BotTypeConfiguration> botsToBuild =
-        this.mainConfiguration.getBotTypes().values().stream()
+        this.configuration.getBotTypes().values().stream()
             .filter(botType -> botType.getBuild() != null && !botType.getBuild().isBlank())
             .collect(Collectors.toList());
 
@@ -155,7 +155,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
 
   private void buildImage(BotTypeConfiguration botType) {
     String buildPath = botType.getBuild();
-    Path buildContext = this.configurationFile.toPath().getParent().resolve(buildPath);
+    Path buildContext = this.workingPath.resolve(buildPath);
 
     if (!Files.isDirectory(buildContext)) {
       throw new DirectorException(
@@ -203,7 +203,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
 
   private String generateImageTag(BotTypeConfiguration botType) {
     try {
-      Path projectRoot = this.configurationFile.getParentFile().getCanonicalFile().toPath();
+      Path projectRoot = this.workingPath.getFileName();
       String projectName = projectRoot.getFileName().toString().toLowerCase();
 
       MessageDigest digest = MessageDigest.getInstance("SHA-1");
@@ -214,7 +214,7 @@ public class DockerJavaBotDeploymentHandler implements BotDeploymentHandler {
       String botName = botType.getId().toLowerCase();
 
       return String.format("%s/%s:latest", namespace, botName);
-    } catch (IOException | NoSuchAlgorithmException e) {
+    } catch (NoSuchAlgorithmException e) {
       throw new DirectorException("Failed to generate a unique image tag.", e);
     }
   }

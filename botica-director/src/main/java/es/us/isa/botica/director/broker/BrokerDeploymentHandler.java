@@ -1,7 +1,7 @@
 package es.us.isa.botica.director.broker;
 
 import com.github.dockerjava.api.DockerClient;
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.director.docker.DockerClientFactory;
 
@@ -24,13 +24,13 @@ public interface BrokerDeploymentHandler {
    * Creates a {@link BrokerDeploymentHandler} instance for the broker type specified in the
    * configuration.
    *
-   * @param mainConfiguration the Botica main configuration
+   * @param configuration the Botica main configuration
    */
-  static BrokerDeploymentHandler fromConfig(MainConfiguration mainConfiguration) {
-    if (mainConfiguration.getBrokerConfiguration() instanceof RabbitMqConfiguration) {
+  static BrokerDeploymentHandler fromConfig(EnvironmentConfiguration configuration) {
+    if (configuration.getBrokerConfiguration() instanceof RabbitMqConfiguration) {
       DockerClient dockerClient =
-          DockerClientFactory.createDockerClient(mainConfiguration.getDockerConfiguration());
-      return new DockerJavaRabbitMqDeploymentHandler(dockerClient, mainConfiguration);
+          DockerClientFactory.createDockerClient(configuration.getDockerConfiguration());
+      return new DockerJavaRabbitMqDeploymentHandler(dockerClient, configuration);
     } else {
       throw new UnsupportedOperationException("unsupported broker type");
     }

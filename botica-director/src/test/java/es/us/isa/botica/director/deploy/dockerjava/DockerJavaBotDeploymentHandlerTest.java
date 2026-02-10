@@ -50,7 +50,7 @@ import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
 import com.github.dockerjava.api.model.PullResponseItem;
 import com.github.dockerjava.api.model.RestartPolicy;
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotMountConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
@@ -83,7 +83,7 @@ import org.mockito.quality.Strictness;
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DockerJavaBotDeploymentHandlerTest {
   @Mock private Director director;
-  @Mock private MainConfiguration mainConfiguration;
+  @Mock private EnvironmentConfiguration configuration;
   @Mock private DockerClient dockerClient;
 
   // DockerClient Command Mocks
@@ -117,7 +117,7 @@ class DockerJavaBotDeploymentHandlerTest {
 
   @BeforeEach
   void setUp() throws IOException {
-    File mainConfigurationFile = Files.createFile(tempDir.resolve("environment.yml")).toFile();
+    File environmentFile = Files.createFile(tempDir.resolve("environment.yml")).toFile();
     Path dataDir = Files.createDirectories(tempDir.resolve(".botica"));
     resolvedConfigurationFile = Files.createFile(dataDir.resolve("environment.yml")).toFile();
 
@@ -165,16 +165,12 @@ class DockerJavaBotDeploymentHandlerTest {
     when(dockerClient.pullImageCmd(anyString())).thenReturn(pullImageCmd);
     when(pullImageCmd.start()).thenReturn(pullImageResponse);
 
-    when(mainConfiguration.getBotTypes()).thenReturn(Collections.emptyMap());
-    when(mainConfiguration.getDockerConfiguration()).thenReturn(mock(DockerConfiguration.class));
+    when(configuration.getBotTypes()).thenReturn(Collections.emptyMap());
+    when(configuration.getDockerConfiguration()).thenReturn(mock(DockerConfiguration.class));
 
     deploymentHandler =
         new DockerJavaBotDeploymentHandler(
-            director,
-            mainConfigurationFile,
-            resolvedConfigurationFile,
-            mainConfiguration,
-            dockerClient);
+            dockerClient, director, configuration, resolvedConfigurationFile, tempDir);
 
     sharedVolumeName = CONTAINER_PREFIX + "shared";
     brokerNetworkName = CONTAINER_PREFIX + BROKER_NETWORK_NAME;
@@ -189,7 +185,7 @@ class DockerJavaBotDeploymentHandlerTest {
     typeConfig.setId("type1");
     typeConfig.setDeclaredInstances(
         Map.of("bot-1", buildBotInstanceConfig("bot-1"), "bot-2", buildBotInstanceConfig("bot-2")));
-    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("type1", typeConfig));
+    when(configuration.getBotTypes()).thenReturn(Map.of("type1", typeConfig));
 
     Container mockContainer1 = mock(Container.class);
     when(mockContainer1.getId()).thenReturn("container-id-1");
@@ -235,7 +231,7 @@ class DockerJavaBotDeploymentHandlerTest {
     botType.setId("my-test-bot");
     botType.setBuild("./my-test-bot");
 
-    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("my-test-bot", botType));
+    when(configuration.getBotTypes()).thenReturn(Map.of("my-test-bot", botType));
 
     // Act
     deploymentHandler.buildBotImages();
@@ -287,7 +283,7 @@ class DockerJavaBotDeploymentHandlerTest {
     botType.setId("my-failing-bot");
     botType.setBuild("./my-failing-bot");
 
-    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("my-failing-bot", botType));
+    when(configuration.getBotTypes()).thenReturn(Map.of("my-failing-bot", botType));
 
     // Act & Assert
     assertThatThrownBy(() -> deploymentHandler.buildBotImages())
@@ -650,7 +646,7 @@ class DockerJavaBotDeploymentHandlerTest {
     // Arrange
     BotTypeConfiguration typeConfig = new BotTypeConfiguration();
     typeConfig.setDeclaredInstances(Collections.emptyMap());
-    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("type1", typeConfig));
+    when(configuration.getBotTypes()).thenReturn(Map.of("type1", typeConfig));
 
     // Act
     deploymentHandler.shutdown();

@@ -17,7 +17,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 @DisplayName("Configuration Deserialization Tests")
-class MainConfigurationDeserializationTest {
+class EnvironmentConfigurationDeserializationTest {
   private ObjectMapper objectMapper;
 
   @BeforeEach

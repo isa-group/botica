@@ -12,7 +12,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.ShutdownConfiguration;
 import es.us.isa.botica.director.Director;
 import es.us.isa.botica.director.bot.Bot;
@@ -37,7 +37,7 @@ class ShutdownHandlerTest {
   @Mock private Director director;
   @Mock private BotManager botManager;
   @Mock private BoticaServer server;
-  @Mock private MainConfiguration mainConfiguration;
+  @Mock private EnvironmentConfiguration configuration;
   @Mock private ShutdownConfiguration shutdownConfiguration;
   @Mock private Bot bot;
 
@@ -48,8 +48,8 @@ class ShutdownHandlerTest {
 
   @BeforeEach
   void setUp() {
-    when(director.getMainConfiguration()).thenReturn(mainConfiguration);
-    when(mainConfiguration.getShutdownConfiguration()).thenReturn(shutdownConfiguration);
+    when(director.getConfiguration()).thenReturn(configuration);
+    when(configuration.getShutdownConfiguration()).thenReturn(shutdownConfiguration);
     lenient().when(shutdownConfiguration.getTimeout()).thenReturn(5000L);
 
     when(bot.getId()).thenReturn("test-bot-id");

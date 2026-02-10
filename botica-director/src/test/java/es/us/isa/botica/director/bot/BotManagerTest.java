@@ -14,7 +14,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleConfiguration;
@@ -48,7 +48,7 @@ class BotManagerTest {
   @Mock private BotDeploymentHandler deploymentHandler;
   @Mock private BoticaServer server;
   @Mock private ScheduledExecutorService mockExecutorService;
-  @Mock private MainConfiguration mainConfiguration;
+  @Mock private EnvironmentConfiguration configuration;
   @Mock private ShutdownHandler shutdownHandler;
 
   private BotManager botManager;
@@ -88,10 +88,10 @@ class BotManagerTest {
   void deploy_shouldDeployAllBotsAndScheduleHeartbeat() {
     // Arrange
     when(director.getState()).thenReturn(DirectorState.STARTING);
-    when(director.getMainConfiguration()).thenReturn(mainConfiguration);
+    when(director.getConfiguration()).thenReturn(configuration);
 
     // Setup bot type configuration for deployment
-    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("type-id-1", mockBotTypeConfig));
+    when(configuration.getBotTypes()).thenReturn(Map.of("type-id-1", mockBotTypeConfig));
     when(mockBotTypeConfig.buildInstances()).thenReturn(List.of(mockBotInstanceConfig));
 
     when(deploymentHandler.createContainer(any(Bot.class))).thenReturn("container-id-1");
@@ -119,9 +119,9 @@ class BotManagerTest {
   void deploy_shouldSetUnmanagedStatusForUnmanagedBots() {
     // Arrange
     when(director.getState()).thenReturn(DirectorState.STARTING);
-    when(director.getMainConfiguration()).thenReturn(mainConfiguration);
+    when(director.getConfiguration()).thenReturn(configuration);
 
-    when(mainConfiguration.getBotTypes()).thenReturn(Map.of("type-id-1", mockBotTypeConfig));
+    when(configuration.getBotTypes()).thenReturn(Map.of("type-id-1", mockBotTypeConfig));
     when(mockBotTypeConfig.buildInstances()).thenReturn(List.of(mockBotInstanceConfig));
 
     when(deploymentHandler.createContainer(any(Bot.class))).thenReturn("container-id-1");

@@ -2,7 +2,7 @@ package es.us.isa.botica.director.bot;
 
 import static es.us.isa.botica.configuration.bot.lifecycle.BotLifecycleType.UNMANAGED;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.bot.BotInstanceConfiguration;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
 import es.us.isa.botica.director.Director;
@@ -70,8 +70,8 @@ public class BotManager {
   }
 
   public void deploy() {
-    MainConfiguration mainConfiguration = this.director.getMainConfiguration();
-    for (BotTypeConfiguration typeConfiguration : mainConfiguration.getBotTypes().values()) {
+    EnvironmentConfiguration configuration = this.director.getConfiguration();
+    for (BotTypeConfiguration typeConfiguration : configuration.getBotTypes().values()) {
       for (BotInstanceConfiguration botConfiguration : typeConfiguration.buildInstances()) {
         Bot bot = new Bot(typeConfiguration, botConfiguration);
         this.register(bot);

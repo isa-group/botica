@@ -6,7 +6,7 @@ import static es.us.isa.botica.rabbitmq.RabbitMqConstants.BOT_TYPE_ORDERS_DISTRI
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.ORDER_EXCHANGE;
 import static es.us.isa.botica.rabbitmq.RabbitMqConstants.PROTOCOL_EXCHANGE;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.bot.BotSubscribeConfiguration;
 import es.us.isa.botica.configuration.bot.BotSubscribeConfiguration.RoutingStrategy;
 import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
@@ -34,9 +34,9 @@ public class RabbitMqConfigurationGenerator {
   public static final Path DEFINITIONS_TARGET_PATH =
       DATA_DIRECTORY.resolve("rabbitmq/definitions.json");
 
-  private final MainConfiguration configuration;
+  private final EnvironmentConfiguration configuration;
 
-  public RabbitMqConfigurationGenerator(MainConfiguration configuration) {
+  public RabbitMqConfigurationGenerator(EnvironmentConfiguration configuration) {
     this.configuration = configuration;
   }
 

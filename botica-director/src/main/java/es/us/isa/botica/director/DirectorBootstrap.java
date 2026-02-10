@@ -1,5 +1,6 @@
 package es.us.isa.botica.director;
 
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.director.cli.DirectorCli;
 import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.initialize.ProjectInitializationException;
@@ -15,6 +16,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
+import es.us.isa.botica.util.configuration.ConfigurationLoadingException;
+import es.us.isa.botica.util.configuration.validate.ValidationReport;
+import es.us.isa.botica.util.configuration.validate.Validator;
+import es.us.isa.botica.util.configuration.jackson.JacksonConfigurationFileLoader;
 
 public class DirectorBootstrap {
   private static final Logger log = LoggerFactory.getLogger(DirectorBootstrap.class);
@@ -35,9 +41,13 @@ public class DirectorBootstrap {
     new UpdateManager().checkForUpdates();
 
     try {
-      File mainConfigurationFile = resolveConfigurationFile(args);
+      File configurationFile = resolveConfigurationFile(args);
+      EnvironmentConfiguration configuration = loadConfiguration(configurationFile);
+      validateConfiguration(configuration, configurationFile);
 
-      Director director = startDirectorInstance(mainConfigurationFile);
+      Path workingPath = configurationFile.getParentFile().toPath();
+      Director director = startDirectorInstance(configuration, workingPath);
+
       DirectorCli cli = new DirectorCli(director);
       new Thread(cli::start).start();
     } catch (ConfigurationResolutionException e) {
@@ -112,9 +122,40 @@ public class DirectorBootstrap {
     }
   }
 
+  private static EnvironmentConfiguration loadConfiguration(File file) {
+    ConfigurationFileLoader loader = new JacksonConfigurationFileLoader();
+    try {
+      return loader.load(file, EnvironmentConfiguration.class);
+    } catch (ConfigurationLoadingException e) {
+      throw new DirectorException(e);
+    }
+  }
+
+  private static void validateConfiguration(EnvironmentConfiguration configuration, File file) {
+    ValidationReport report = new Validator().validate(configuration);
+
+    if (report.hasErrors()) {
+      throw new DirectorException(
+          String.format(
+              "There are %d errors and %d warnings in your configuration file at %s:\n%s",
+              report.countErrors(),
+              report.countWarnings(),
+              file.getAbsolutePath(),
+              report.render()));
+    }
+
+    if (report.hasWarnings()) {
+      log.warn(
+          "There are {} warnings in your configuration file at {}:\n{}",
+          report.countWarnings(),
+          file.getAbsolutePath(),
+          report.render());
+    }
+  }
+
   @VisibleForTesting
-  static Director startDirectorInstance(File mainConfigurationFile) {
-    Director director = new Director(mainConfigurationFile);
+  static Director startDirectorInstance(EnvironmentConfiguration configuration, Path workingPath) {
+    Director director = new Director(configuration, workingPath);
     Thread shutdownHook = new Thread(director::shutdownInfrastructure);
     Runtime.getRuntime().addShutdownHook(shutdownHook);
     try {

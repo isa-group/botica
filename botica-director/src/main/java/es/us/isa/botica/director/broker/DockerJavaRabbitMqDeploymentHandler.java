@@ -12,7 +12,7 @@ import com.github.dockerjava.api.model.Mount;
 import com.github.dockerjava.api.model.MountType;
 import com.github.dockerjava.api.model.PortBinding;
 import com.github.dockerjava.api.model.Ports.Binding;
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.util.annotation.VisibleForTesting;
 import java.io.IOException;
@@ -38,10 +38,10 @@ public class DockerJavaRabbitMqDeploymentHandler implements BrokerDeploymentHand
   private final RabbitMqConfiguration rabbitMqConfiguration;
 
   public DockerJavaRabbitMqDeploymentHandler(
-      DockerClient dockerClient, MainConfiguration mainConfiguration) {
+      DockerClient dockerClient, EnvironmentConfiguration configuration) {
     this.dockerClient = dockerClient;
-    this.configurationGenerator = new RabbitMqConfigurationGenerator(mainConfiguration);
-    this.rabbitMqConfiguration = (RabbitMqConfiguration) mainConfiguration.getBrokerConfiguration();
+    this.configurationGenerator = new RabbitMqConfigurationGenerator(configuration);
+    this.rabbitMqConfiguration = (RabbitMqConfiguration) configuration.getBrokerConfiguration();
   }
 
   @VisibleForTesting

@@ -12,13 +12,13 @@ import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("MainConfiguration Validation Tests")
-class MainConfigurationValidationTest {
+@DisplayName("EnvironmentConfiguration Validation Tests")
+class EnvironmentConfigurationValidationTest {
   @Test
   @DisplayName("validate should report an error for duplicate bot IDs across different bot types")
   void validate_duplicateBotIds_reportsSingleErrorWithAllDuplicates() {
     // Arrange
-    MainConfiguration configuration = new MainConfiguration();
+    EnvironmentConfiguration configuration = new EnvironmentConfiguration();
     Map<String, BotTypeConfiguration> botTypes = new LinkedHashMap<>();
     botTypes.put("type-A", createBotTypeWithInstances("bot-1", "bot-2"));
     botTypes.put("type-B", createBotTypeWithInstances("bot-3"));
@@ -48,7 +48,7 @@ class MainConfigurationValidationTest {
   @DisplayName("validate should not report errors when all bot IDs are unique")
   void validate_uniqueBotIds_reportsNoErrors() {
     // Arrange
-    MainConfiguration configuration = new MainConfiguration();
+    EnvironmentConfiguration configuration = new EnvironmentConfiguration();
     Map<String, BotTypeConfiguration> botTypes = new LinkedHashMap<>();
     botTypes.put("type-A", createBotTypeWithInstances("bot-1", "bot-2"));
     botTypes.put("type-B", createBotTypeWithInstances("bot-3", "bot-4"));
@@ -68,7 +68,7 @@ class MainConfigurationValidationTest {
   @DisplayName("validate should report a warning if no bots are declared")
   void validate_noBotsDeclared_reportsWarning() {
     // Arrange
-    MainConfiguration configuration = new MainConfiguration();
+    EnvironmentConfiguration configuration = new EnvironmentConfiguration();
     configuration.setBotTypes(Collections.emptyMap());
     ValidationReport report = new ValidationReport();
 
@@ -92,7 +92,7 @@ class MainConfigurationValidationTest {
   @DisplayName("validate should register child reports for each bot type")
   void validate_registersChildReportsForEachBotType() {
     // Arrange
-    MainConfiguration configuration = new MainConfiguration();
+    EnvironmentConfiguration configuration = new EnvironmentConfiguration();
     BotTypeConfiguration invalidBotType = new BotTypeConfiguration(); // Missing 'image' and 'build'
     invalidBotType.setId("invalid-bot");
 

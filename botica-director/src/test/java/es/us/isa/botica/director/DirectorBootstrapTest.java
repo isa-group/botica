@@ -4,13 +4,15 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockConstruction;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
+import es.us.isa.botica.configuration.bot.BotTypeConfiguration;
+import es.us.isa.botica.configuration.bot.lifecycle.UnmanagedBotLifecycleConfiguration;
 import es.us.isa.botica.director.DirectorBootstrap.ConfigurationResolutionException;
 import es.us.isa.botica.director.cli.DirectorCli;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -19,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -30,7 +33,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoSettings;
 
-@SuppressWarnings("ResultOfMethodCallIgnored")
 @MockitoSettings
 class DirectorBootstrapTest {
   @TempDir Path tempDir;
@@ -106,8 +108,6 @@ class DirectorBootstrapTest {
   @DisplayName("startDirectorInstance should start Director, and add shutdown hook")
   void startDirectorInstance_startsDirectorAndRegistersShutdownHook() throws IOException {
     // Arrange
-    File configFile = tempDir.resolve("config.yml").toFile();
-
     try (MockedStatic<Runtime> mockedRuntime = mockStatic(Runtime.class)) {
       mockedRuntime.when(Runtime::getRuntime).thenReturn(mockRuntime);
 
@@ -118,11 +118,12 @@ class DirectorBootstrapTest {
                 when(director.isRunning()).thenReturn(true);
               })) {
         // Act
-        Director directorInstance = DirectorBootstrap.startDirectorInstance(configFile);
+        Director directorInstance =
+            DirectorBootstrap.startDirectorInstance(new EnvironmentConfiguration(), tempDir);
 
         // Assert
         assertThat(mockedDirector.constructed()).hasSize(1);
-        Director constructedDirector = mockedDirector.constructed().get(0);
+        Director constructedDirector = mockedDirector.constructed().getFirst();
         assertThat(directorInstance).isEqualTo(constructedDirector);
 
         verify(constructedDirector, times(1)).start();
@@ -139,13 +140,24 @@ class DirectorBootstrapTest {
 
   @Test
   @DisplayName("main method should initialize dependencies and start Director and CLI")
-  void main_initializesAndStartsServices() {
+  void main_initializesAndStartsServices() throws IOException {
     // Arrange
     String[] args = {};
+    Path configPath = tempDir.resolve("botica.yml");
+    Files.writeString(
+        configPath,
+        """
+            bots:
+              test-bot:
+                image: "test-bot:latest"
+                lifecycle:
+                  type: unmanaged
+            """);
 
     // Mock static dependencies and constructors for a full flow test
     try (MockedStatic<DirectorBootstrap> mockedBootstrap =
             mockStatic(DirectorBootstrap.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<Runtime> mockedRuntime = mockStatic(Runtime.class);
         MockedStatic<Dotenv> mockedDotenv = mockStatic(Dotenv.class);
         MockedConstruction<Director> mockedDirector =
             mockConstruction(
@@ -158,7 +170,7 @@ class DirectorBootstrapTest {
                 Thread.class,
                 (thread, context) -> {
                   // Get the Runnable passed to the Thread's constructor
-                  Runnable runnable = (Runnable) context.arguments().get(0);
+                  Runnable runnable = (Runnable) context.arguments().getFirst();
                   // When #start() is called on this mock Thread, run the Runnable immediately
                   // in the current thread instead of starting a new one
                   doAnswer(
@@ -169,29 +181,28 @@ class DirectorBootstrapTest {
                       .when(thread)
                       .start();
                 })) {
+      mockedRuntime.when(Runtime::getRuntime).thenReturn(mockRuntime);
       mockedDotenv.when(Dotenv::configure).thenReturn(mockDotenvBuilder);
       when(mockDotenvBuilder.ignoreIfMissing()).thenReturn(mockDotenvBuilder);
       when(mockDotenvBuilder.systemProperties()).thenReturn(mockDotenvBuilder);
       when(mockDotenvBuilder.load()).thenReturn(mockDotenv);
 
-      File mockConfigFile = mock(File.class);
+      // Mock resolveConfigurationFile to return our test config
+      File mockConfigFile = configPath.toFile();
       mockedBootstrap
           .when(() -> DirectorBootstrap.resolveConfigurationFile(any(String[].class)))
           .thenReturn(mockConfigFile);
-      mockedBootstrap
-          .when(() -> DirectorBootstrap.startDirectorInstance(any(File.class)))
-          .thenReturn(mockedDirector.constructed().get(0));
 
       // Act
       DirectorBootstrap.main(args);
 
       // Assert
       verify(mockDotenvBuilder, times(1)).load();
-      mockedBootstrap.verify(() -> DirectorBootstrap.startDirectorInstance(mockConfigFile));
+      mockedBootstrap.verify(() -> DirectorBootstrap.resolveConfigurationFile(any(String[].class)));
       assertThat(mockedDirector.constructed()).hasSize(1);
 
       assertThat(mockedCli.constructed()).hasSize(1);
-      DirectorCli cliInstance = mockedCli.constructed().get(0);
+      DirectorCli cliInstance = mockedCli.constructed().getFirst();
 
       verify(cliInstance, times(1)).start();
       assertThat(mockedThread.constructed()).hasSize(2); // 2 threads: Shutdown hook and CLI

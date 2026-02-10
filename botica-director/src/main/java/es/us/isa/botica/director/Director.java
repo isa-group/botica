@@ -2,23 +2,19 @@ package es.us.isa.botica.director;
 
 import static java.util.concurrent.CompletableFuture.runAsync;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.director.bot.BotManager;
 import es.us.isa.botica.director.bot.shutdown.ShutdownMode;
 import es.us.isa.botica.director.broker.BrokerDeploymentHandler;
 import es.us.isa.botica.director.deploy.BotDeploymentHandler;
 import es.us.isa.botica.director.deploy.dockerjava.DockerJavaBotDeploymentHandler;
-import es.us.isa.botica.director.exception.DirectorException;
 import es.us.isa.botica.director.protocol.BoticaServer;
 import es.us.isa.botica.director.protocol.RabbitMqBoticaServer;
 import es.us.isa.botica.protocol.JacksonPacketConverter;
 import es.us.isa.botica.util.ExecutorUtils;
 import es.us.isa.botica.util.FutureUtils;
 import es.us.isa.botica.util.configuration.ConfigurationFileLoader;
-import es.us.isa.botica.util.configuration.ConfigurationLoadingException;
 import es.us.isa.botica.util.configuration.jackson.JacksonConfigurationFileLoader;
-import es.us.isa.botica.util.configuration.validate.ValidationReport;
-import es.us.isa.botica.util.configuration.validate.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,46 +26,55 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Director {
-  public static final Path DATA_DIRECTORY = Path.of(".botica");
-  public static final File RESOLVED_CONFIG_FILE =
-      DATA_DIRECTORY.resolve("environment.yml").toFile();
   private static final Logger log = LoggerFactory.getLogger(Director.class);
+  public static final Path DATA_DIRECTORY = Path.of(".botica");
 
-  private final File mainConfigurationFile;
+  private final EnvironmentConfiguration configuration;
   private final ConfigurationFileLoader configurationFileLoader;
-  private MainConfiguration mainConfiguration;
+  private final File resolvedConfigurationFile;
 
-  private BoticaServer server;
-  private BrokerDeploymentHandler brokerDeploymentHandler;
-  private BotDeploymentHandler botDeploymentHandler;
-  private BotManager botManager;
+  private final BoticaServer server;
+  private final BrokerDeploymentHandler brokerDeploymentHandler;
+  private final BotDeploymentHandler botDeploymentHandler;
+  private final BotManager botManager;
 
   private DirectorState state = DirectorState.STOPPED;
 
-  public Director(File mainConfigurationFile) {
-    this(mainConfigurationFile, new JacksonConfigurationFileLoader());
+  public Director(EnvironmentConfiguration configuration, Path workingPath) {
+    this.configuration = configuration;
+    this.configurationFileLoader = new JacksonConfigurationFileLoader();
+    this.resolvedConfigurationFile = DATA_DIRECTORY.resolve("environment.yml").toFile();
+    this.server = new RabbitMqBoticaServer(configuration, new JacksonPacketConverter());
+    this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(configuration);
+    this.botDeploymentHandler =
+        new DockerJavaBotDeploymentHandler(
+            this, configuration, this.resolvedConfigurationFile, workingPath);
+    this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
   }
 
-  public Director(File mainConfigurationFile, ConfigurationFileLoader configurationFileLoader) {
-    this.mainConfigurationFile = mainConfigurationFile;
+  public Director(
+      EnvironmentConfiguration configuration,
+      ConfigurationFileLoader configurationFileLoader,
+      BoticaServer server,
+      BrokerDeploymentHandler brokerDeploymentHandler,
+      BotDeploymentHandler botDeploymentHandler,
+      BotManager botManager) {
+    this.configuration = configuration;
     this.configurationFileLoader = configurationFileLoader;
+    this.resolvedConfigurationFile = DATA_DIRECTORY.resolve("environment.yml").toFile();
+    this.server = server;
+    this.brokerDeploymentHandler = brokerDeploymentHandler;
+    this.botDeploymentHandler = botDeploymentHandler;
+    this.botManager = botManager;
   }
 
   /** Starts this director instance. */
   public void start() throws IOException {
-    this.state = DirectorState.STARTING;
     log.info("Starting the botica environment!");
+    this.state = DirectorState.STARTING;
 
-    this.loadConfiguration();
     Files.createDirectories(DATA_DIRECTORY);
-    this.configurationFileLoader.write(this.mainConfiguration, RESOLVED_CONFIG_FILE);
-
-    this.server = new RabbitMqBoticaServer(this.mainConfiguration, new JacksonPacketConverter());
-    this.brokerDeploymentHandler = BrokerDeploymentHandler.fromConfig(this.mainConfiguration);
-    this.botDeploymentHandler =
-        new DockerJavaBotDeploymentHandler(
-            this, this.mainConfigurationFile, RESOLVED_CONFIG_FILE, this.mainConfiguration);
-    this.botManager = new BotManager(this, this.botDeploymentHandler, this.server);
+    this.configurationFileLoader.write(this.configuration, this.resolvedConfigurationFile);
 
     this.botDeploymentHandler.removePreviousDeployment();
 
@@ -87,7 +92,7 @@ public class Director {
               startupExecutor);
 
       CompletableFuture<Void> buildFuture =
-          runAsync(() -> this.botDeploymentHandler.buildBotImages(), startupExecutor);
+          runAsync(this.botDeploymentHandler::buildBotImages, startupExecutor);
 
       FutureUtils.awaitCompletion(brokerFuture, buildFuture);
     } finally {
@@ -99,36 +104,6 @@ public class Director {
     this.botManager.deploy();
     log.info("Botica is running! Use the 'stop' command to shut down the environment.");
     this.state = DirectorState.RUNNING;
-  }
-
-  private void loadConfiguration() {
-    try {
-      this.mainConfiguration =
-          this.configurationFileLoader.load(this.mainConfigurationFile, MainConfiguration.class);
-      this.validateConfigurationFile();
-    } catch (ConfigurationLoadingException e) {
-      throw new DirectorException(e);
-    }
-  }
-
-  private void validateConfigurationFile() {
-    ValidationReport validationReport = new Validator().validate(mainConfiguration);
-    if (validationReport.hasErrors()) {
-      throw new DirectorException(
-          String.format(
-              "There are %d errors and %d warnings in your configuration file at %s:\n%s",
-              validationReport.countErrors(),
-              validationReport.countWarnings(),
-              this.mainConfigurationFile.getAbsolutePath(),
-              validationReport.render()));
-    }
-    if (validationReport.hasWarnings()) {
-      log.warn(
-          "There are {} warnings in your configuration file at {}:\n{}",
-          validationReport.countWarnings(),
-          this.mainConfigurationFile.getAbsolutePath(),
-          validationReport.render());
-    }
   }
 
   private void startServer() {
@@ -190,8 +165,8 @@ public class Director {
     log.info("Botica environment shut down successfully!");
   }
 
-  public MainConfiguration getMainConfiguration() {
-    return mainConfiguration;
+  public EnvironmentConfiguration getConfiguration() {
+    return configuration;
   }
 
   public boolean isRunning() {

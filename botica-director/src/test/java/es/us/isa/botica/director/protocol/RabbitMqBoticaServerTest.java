@@ -20,7 +20,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import es.us.isa.botica.configuration.MainConfiguration;
+import es.us.isa.botica.configuration.EnvironmentConfiguration;
 import es.us.isa.botica.configuration.broker.RabbitMqConfiguration;
 import es.us.isa.botica.protocol.Packet;
 import es.us.isa.botica.protocol.PacketConverter;
@@ -43,7 +43,7 @@ import org.mockito.junit.jupiter.MockitoSettings;
 
 @MockitoSettings
 class RabbitMqBoticaServerTest {
-  @Mock private MainConfiguration mainConfiguration;
+  @Mock private EnvironmentConfiguration configuration;
   @Mock private PacketConverter packetConverter;
   @Mock private ExecutorService executorService;
   @Mock private QueryHandler queryHandler;
@@ -54,7 +54,7 @@ class RabbitMqBoticaServerTest {
 
   @BeforeEach
   void setUp() {
-    lenient().when(mainConfiguration.getBrokerConfiguration()).thenReturn(rabbitMqConfiguration);
+    lenient().when(configuration.getBrokerConfiguration()).thenReturn(rabbitMqConfiguration);
 
     lenient()
         .doAnswer(
@@ -68,7 +68,7 @@ class RabbitMqBoticaServerTest {
 
     server =
         new RabbitMqBoticaServer(
-            mainConfiguration, packetConverter, executorService, queryHandler, rabbitClient);
+            configuration, packetConverter, executorService, queryHandler, rabbitClient);
   }
 
   @Test
