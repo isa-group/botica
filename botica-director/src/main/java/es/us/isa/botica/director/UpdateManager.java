@@ -28,6 +28,16 @@ public class UpdateManager {
   private static final String UPDATE_JAR_NAME = "botica-director.jar.update";
   private static final int UPDATE_EXIT_CODE = 99;
 
+  private final Runtime runtime;
+
+  public UpdateManager() {
+    this(Runtime.getRuntime());
+  }
+
+  public UpdateManager(Runtime runtime) {
+    this.runtime = runtime;
+  }
+
   public void checkForUpdates() {
     try {
       String currentVersion = getCurrentVersion();
@@ -148,10 +158,10 @@ public class UpdateManager {
       boolean usingWrapper = "true".equals(System.getenv("BOTICA_WRAPPER_ACTIVE"));
 
       if (usingWrapper) {
-        System.exit(UPDATE_EXIT_CODE);
+        runtime.exit(UPDATE_EXIT_CODE);
       } else {
         updateWithDetachedScript(currentJarPath, updateJarPath);
-        System.exit(0);
+        runtime.exit(0);
       }
 
     } catch (IOException | URISyntaxException e) {
