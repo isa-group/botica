@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeoutException;
 import org.slf4j.Logger;
@@ -80,21 +79,9 @@ public class Director {
 
     ExecutorService startupExecutor = ExecutorUtils.newDaemonFixedThreadPool(2);
     try {
-      CompletableFuture<Void> brokerFuture =
-          runAsync(
-              () -> {
-                log.info("Deploying the internal message broker...");
-                this.brokerDeploymentHandler.deploy();
-                log.info("Starting the server...");
-                this.startServer();
-                log.info("Server started.");
-              },
-              startupExecutor);
-
-      CompletableFuture<Void> buildFuture =
-          runAsync(this.botDeploymentHandler::buildBotImages, startupExecutor);
-
-      FutureUtils.awaitCompletion(brokerFuture, buildFuture);
+      FutureUtils.awaitCompletion(
+          runAsync(this::startServer, startupExecutor),
+          runAsync(botDeploymentHandler::buildBotImages, startupExecutor));
     } finally {
       startupExecutor.shutdown();
     }
@@ -102,13 +89,18 @@ public class Director {
     log.info("Deploying bots...");
     this.botDeploymentHandler.setupInfrastructure();
     this.botManager.deploy();
-    log.info("Botica is running! Use the 'stop' command to shut down the environment.");
+
     this.state = DirectorState.RUNNING;
+    log.info("Botica is running! Use the 'stop' command to shut down the environment.");
   }
 
   private void startServer() {
     try {
+      log.info("Deploying the internal message broker...");
+      this.brokerDeploymentHandler.deploy();
+      log.info("Starting the server...");
       this.server.start();
+      log.info("Server started.");
     } catch (TimeoutException e) {
       throw new RuntimeException(e);
     }
