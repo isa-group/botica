@@ -1,4 +1,4 @@
-# Botica: the multi-bot collaboration framework
+# Botica: The Multi-Bot Collaboration Framework
 
 Build, deploy, and scale your collaborative software bots with ease. Botica provides the framework
 for development and the infrastructure for orchestration.
@@ -18,57 +18,113 @@ isolated container and the **connections to the message broker and their complet
 
 ## Features
 
-- **Easy development:** Official libraries for **Java** and **Node.js** (with **Python** and more
-  planned) provide simplified APIs for building robust and collaborative bots.
-- **Declarative deployment:** Define your multi-bot environment in a single YAML file, eliminating
-  manual Docker commands and complex scripting.
-- **Simplified messaging:** Bots interact via "orders"; Botica abstracts away the underlying message
-  broker logic and message routing complexities.
-- **Integrated scalability:** Scale bot instances by modifying a single `replicas` value, supporting
-  both distributed (work-stealing) and broadcast messaging strategies.
-- **Shared filesystem:** A common `/shared` volume is automatically mounted across all bot
-  containers for seamless data exchange.
-- **Automated lifecycle management:** Comprehensive handling of bot startup, readiness checks,
-  heartbeats, and graceful shutdowns ensures system resilience.
+- **Multi-language Support:** Write bots in **Java**, **Node.js** (JavaScript/TypeScript), with more
+  languages planned. Official libraries provide idiomatic APIs for each platform.
+- **Containerized Architecture:** Every bot runs in its own isolated Docker container, ensuring
+  consistent environments and dependency management.
+- **Declarative Orchestration:** Define your entire infrastructure in a simple `environment.yml`
+  file. No complex orchestration scripts or manual Docker commands required.
+- **Built-in Communication:** Botica handles all message routing through a managed broker. Bots
+  communicate via high-level "orders" using distributed (work-stealing) or broadcast strategies.
+- **Seamless Local Development:** Developing a multi-bot system is as easy as running a single
+  command. Botica handles building images from source, setting up networks, and managing the
+  lifecycle.
 
-## How it works
+## Requirements
 
-This example demonstrates how Botica orchestrates a simple workflow: a **Node.js generator bot**
-periodically publishes random data, which is then processed by a scalable team of
-**Java worker bots**. The setup involves defining the bots in an `environment.yml` file and then
-implementing each bot's specific logic using the respective Botica library.
+Before you begin, ensure you have the following installed:
 
-### 1. Environment configuration (`environment.yml`)
+- **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** (or Docker Engine): Must be
+  installed and running.
+- **Java 11 or newer**: Required to run the Botica Director.
+
+## Installation
+
+To start a new Botica project, follow these steps:
+
+1. **Create a directory** for your project.
+
+2. **Download the Director executables**:
+   Download `botica-director` and `botica-director.cmd` from the
+   [latest release](https://github.com/isa-group/botica/releases/latest) and place them in your
+   directory.
+
+    - **Linux / macOS:** You need to mark the `botica-director` file as executable:
+      ```bash
+      chmod +x botica-director
+      ```
+
+3. **Run the Director**: Execute `./botica-director` on **Linux**/**macOS**, or
+   `botica-director.cmd` on **Windows** in your project's directory. The first time you run Botica
+   Director, it will download the necessary Botica runtime JAR and initialize a default
+   `environment.yml` file.
+
+> [!NOTE]
+> **Git Integration**
+>
+> If you are using Git, we recommend committing the `botica-director` and `botica-director.cmd`
+> executables, as they are lightweight scripts that download and run the actual Java program.
+>
+> However, add the `.botica/` directory to your `.gitignore` file, as it contains the heavy runtime
+> JAR and temporary files.
+
+## Quick example
+
+This example demonstrates how to build a simple system where a **Node.js generator** creates data
+and **Java workers** process it. We'll use Botica's monorepo support to build everything from a
+single project.
+
+> [!TIP]
+> **Alternative: Separate Repositories**
+>
+> You can also manage bots in separate repositories. Use
+> the [botica-seed-java](https://github.com/isa-group/botica-seed-java)
+> or [botica-seed-node](https://github.com/isa-group/botica-seed-node) templates to create
+> standalone repositories. Then, instead of `build`, use the `image` property in your
+> `environment.yml` to reference your pre-built Docker images.
+
+### 1. Initialize your bots
+
+Use the `init` command to create your bot projects directly in your folder.
+
+```bash
+# Create a Typescript/Node.js bot named 'generator'
+./botica-director init typescript generator
+
+# Create a Java bot named 'worker'
+./botica-director init java worker
+```
+
+This creates two directories, `generator` and `worker`, each with a complete project structure and
+`Dockerfile`.
+
+### 2. Configure the environment (`environment.yml`)
+
+Edit the generated `environment.yml` to define your system. Notice how we use `build` to point to
+our local directories.
 
 ```yml
 bots:
   generator-bot:
-    image: "my-org/generator-bot-node" # Your Docker image for the Node.js bot
-    replicas: 1 # Botica deploys 1 instance of this bot type
+    build: "./generator" # Build the Docker image from this directory
+    replicas: 1
     lifecycle:
       type: proactive
-      period: 5 # Executes its proactive task every 5 seconds
+      period: 5 # Run task every 5 seconds
 
   worker-bot:
-    image: "my-org/worker-bot-java" # Your Docker image for the Java bot
-    replicas: 3 # Botica deploys 3 instances of this bot type
+    build: "./worker" # Build the Docker image from this directory
+    replicas: 3
     lifecycle:
       type: reactive
     subscribe:
       - key: "worker_jobs"
-        strategy: distributed # Each order with "worker_jobs" key is sent to only one of the 3 workers
+        strategy: distributed # Distribute orders among the 3 replicas
 ```
 
-This configuration defines two bot types: `generator-bot` (Node.js) and `worker-bot` (Java).
+### 3. Implement bot logic
 
-- The `generator-bot` is configured as `proactive` to run a task every 5 seconds.
-- The `worker-bot` is configured as `reactive` and `subscribes` to the `worker_jobs` key with a
-  `distributed` strategy, ensuring that each incoming order is processed by only one of its three
-  `replicas`.
-
-Botica translates this configuration into a running, coordinated multi-bot system.
-
-### 2. Node.js data generator bot
+**Generator Bot (Node.js):** Open `generator/src/index.ts` and add logic to publish data.
 
 ```ts
 import botica from "botica-lib-node";
@@ -90,68 +146,69 @@ bot.proactive(async () => {
 await bot.start();
 ```
 
-This bot's logic uses [botica-lib-node](https://github.com/isa-group/botica-lib-node) to define a
-proactive task. It generates a unique data payload every 5 seconds (as configured in
-`environment.yml`) and publishes it as an order with the action `process_data` to the `worker_jobs`
-key.
-
-### 3. Java data worker bot
+**Worker Bot (Java):**
+Open `worker/src/main/java/com/example/Bot.java`. The `Bot` class is where your bot logic resides.
 
 ```java
-import es.us.isa.botica.bot.BaseBot;
-import es.us.isa.botica.bot.OrderHandler;
-import org.json.JSONObject;
+public class Bot extends BaseBot {
+  private static final Logger log = LoggerFactory.getLogger(Bot.class);
 
-public class WorkerBot extends BaseBot {
-
+  // This method handles orders with the action "process_data".
+  // The key (e.g., "worker_jobs") is defined in environment.yml, so the bot code
+  // doesn't need to know it.
+  //
+  // Note: You can also use any custom class or String as the argument, and Botica
+  // will automatically inject it!
   @OrderHandler("process_data")
-  public void onProcessData(JSONObject payload) { // Order handler methods can accept String, JSONObject or any POJO types
-    String processedResult = 
-        "Processed-" + payload.getString("id") + "-" + payload.getDouble("value") * 2;
+  public void onProcessData(JSONObject payload) {
+    String id = payload.getString("id");
+    double value = payload.getDouble("value");
 
-    System.out.println("Worker " + getBotId() + " finished processing: " + processedResult);
+    log.info("Worker {} processing item {}", getBotId(), id);
   }
 }
 ```
 
-This bot's logic uses [botica-lib-java](https://github.com/isa-group/botica-lib-java) to define an
-`@OrderHandler` method. When an order with the `process_data` action arrives on a subscribed key (in
-this case, `worker_jobs`), this method is automatically invoked to simulate data processing and log
-the result.
+> [!WARNING]
+> **Note on Java Templates**
+>
+> The default Java template uses `com.example.Bot` as the main bot class, invoked by
+> `com.example.BotBootstrap`. If you rename packages or classes, you must also
+> update the `pom.xml` property that points to the bootstrap class.
 
-### 4. Build and run the system
+### 4. Run the system
 
-Once your bot code is implemented and your `environment.yml` is defined:
+Simply run the Director again by executing `./botica-director` on **Linux**/**macOS**, or
+`botica-director.cmd` on **Windows** in your project's directory.
 
-1. **Build your bot images**: For each bot project (e.g., `generator-bot`, `worker-bot`), use the
-   `build.sh` (Linux/macOS) or `build.bat` (Windows) script provided in the official library
-   templates to build your Docker images. These scripts automatically handle compilation and Docker
-   image tagging.
-2. **Run the Botica Director**: Navigate to the directory containing your `environment.yml` file and
-   execute the Botica Director program. The Director will read your configuration, deploy the
-   message broker and all bot containers, and manage their interactions.
+Botica will automatically:
 
-To gracefully shut down the entire system, simply stop the Botica Director program with the `stop`
-command. It will ensure all bots and associated container infrastructure are terminated cleanly.
+1. **Build** the Docker images for your bots from the source directories.
+2. **Deploy** the message broker and bot containers.
+3. **Connect** everything together.
 
-## Getting started
+> [!NOTE]
+> The first run may take a few minutes as Docker downloads the base images (e.g., Node.js, OpenJDK).
+> Subsequent runs will use the cached image, or only take a few seconds to build if you change the
+> source code.
 
-To begin developing with Botica:
+## Learn More
 
-- **[Explore core concepts](docs/2-core-concepts/1-the-botica-environment.md)** to understand the
-  foundational principles.
-- **[Follow the getting started guide](docs/1-getting-started.md)** for installation and your
-  first deployment.
-- **[Review example projects](docs/5-example-projects.md)** for practical implementations.
+This is just a quick glimpse! To fully understand Botica's concepts (Orders, Strategies,
+Lifecycle) and learn how to build complex workflows, check out the
+**[Getting Started Guide](docs/1-getting-started.md)** and
+**[Core Concepts](docs/2-core-concepts/1-the-botica-environment.md)**.
 
-### [Read full documentation, detailed guides and example projects](docs/0-index.md)
+## Documentation
+
+- **[Core concepts](docs/2-core-concepts/1-the-botica-environment.md)**
+- **[Getting started guide](docs/1-getting-started.md)**
 
 ## Libraries
 
-- [**botica-lib-java**](https://github.com/isa-group/botica-lib-java) - The official Java library
-  for building Botica bots.
-- [**botica-lib-node**](https://github.com/isa-group/botica-lib-node) - The official Node.js library
-  for building Botica bots.
+- [**botica-lib-java**](https://github.com/isa-group/botica-lib-java) - The official Java library.
+- [**botica-lib-node**](https://github.com/isa-group/botica-lib-node) - The official Node.js
+  library.
 
 ## License
 
